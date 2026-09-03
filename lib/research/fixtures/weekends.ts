@@ -32,7 +32,7 @@ export const joshuaTree: PlanFixture = {
           provider: 'National Park Service',
           detail:
             'Tent site with water and flush toilets, on the north-west edge of the park. Reservable up to six months out and it does sell out for weekends.',
-          url: 'https://www.nps.gov/jotr/planyourvisit/camping.htm',
+          url: 'https://www.nps.gov/jotr/planyourvisit/campgrounds.htm',
           basis: '$25 a night for the whole site, {nights} nights, up to 6 people per site',
           price: { kind: 'split', min: 25, max: 25, splitCap: 6 },
           perNight: true,
@@ -103,7 +103,7 @@ export const joshuaTree: PlanFixture = {
           label: 'Black Rock Campground',
           provider: 'National Park Service',
           detail: 'Same site as the option above.',
-          url: 'https://www.nps.gov/jotr/planyourvisit/camping.htm',
+          url: 'https://www.nps.gov/jotr/planyourvisit/campgrounds.htm',
           basis: '$25 a night for the site, {nights} nights, up to 6 people',
           price: { kind: 'split', min: 25, max: 25, splitCap: 6 },
           perNight: true,
@@ -248,7 +248,7 @@ export const joshuaTree: PlanFixture = {
     'The cost of getting to and from Union Station at either end.',
   ],
   sources: [
-    { title: 'Joshua Tree camping and fees, National Park Service', url: 'https://www.nps.gov/jotr/planyourvisit/camping.htm' },
+    { title: 'Joshua Tree camping and fees, National Park Service', url: 'https://www.nps.gov/jotr/planyourvisit/campgrounds.htm' },
     { title: 'Morongo Basin Transit Authority timetables', url: 'https://mbtabus.com/' },
     { title: 'Recreation.gov campground reservations', url: 'https://www.recreation.gov/' },
   ],
@@ -407,7 +407,7 @@ export const zion: PlanFixture = {
           provider: 'National Park Service',
           detail:
             'Inside the park, walking distance to the visitor centre and the first shuttle stop. Reservable six months ahead and it goes.',
-          url: 'https://www.nps.gov/zion/planyourvisit/camping.htm',
+          url: 'https://www.nps.gov/zion/planyourvisit/watchman-campground.htm',
           basis: '$30 a night per site, {nights} nights, up to 6 per site',
           price: { kind: 'split', min: 30, max: 30, splitCap: 6 },
           perNight: true,
@@ -575,7 +575,7 @@ export const sanDiego: PlanFixture = {
           provider: 'San Diego MTS',
           detail:
             'Covers the trolley and every bus. The Blue Line runs from downtown to the border and the Green Line to Old Town.',
-          url: 'https://www.sdmts.com/fares/day-passes',
+          url: 'https://www.sdmts.com/fares',
           basis: '$6 a day, {nights} days',
           price: { kind: 'per-person', min: 6, max: 6 },
           perNight: true,
@@ -587,7 +587,7 @@ export const sanDiego: PlanFixture = {
           provider: 'HI San Diego Downtown or ITH Beach Bungalow',
           detail:
             'Little Italy and Ocean Beach respectively. The downtown one is better placed for the trolley; the beach one is better placed for everything else.',
-          url: 'https://www.hiusa.org/find-hostels/california/san-diego-downtown',
+          url: 'https://www.hiusa.org/find-hostels/',
           basis: 'About $46 a night per bed, {nights} nights',
           price: { kind: 'per-person', min: 42, max: 58 },
           perNight: true,
@@ -630,7 +630,7 @@ export const sanDiego: PlanFixture = {
           label: 'Buses in Ocean Beach and Pacific Beach',
           provider: 'San Diego MTS',
           detail: 'The 35 and the 8 cover the whole beach strip.',
-          url: 'https://www.sdmts.com/fares/day-passes',
+          url: 'https://www.sdmts.com/fares',
           basis: '$6 a day, {nights} days',
           price: { kind: 'per-person', min: 6, max: 6 },
           perNight: true,
@@ -679,7 +679,7 @@ export const sanDiego: PlanFixture = {
   ],
   sources: [
     { title: 'Amtrak Pacific Surfliner fares and timetable', url: 'https://www.amtrak.com/pacific-surfliner-train' },
-    { title: 'San Diego MTS day passes', url: 'https://www.sdmts.com/fares/day-passes' },
+    { title: 'San Diego MTS day passes', url: 'https://www.sdmts.com/fares' },
     { title: 'Balboa Park admission', url: 'https://balboapark.org/' },
   ],
   itinerary: [

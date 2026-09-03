@@ -617,6 +617,92 @@ const plans: SeedQuest[] = [
     approved: ['u-jonas', 'u-yuki', 'u-nils'],
     createdDaysAgo: 5,
   },
+
+  /*
+   * Four hosts whose other post is full, closed or cancelled. Without one of these, picking
+   * their profile at onboarding leaves the host console with nothing to approve or decline —
+   * a whole flow that would be unreachable for one person in six.
+   */
+  {
+    id: 'p-melrose-flea',
+    kind: 'plan',
+    title: 'Melrose Trading Post on a Sunday',
+    destination: 'Fairfax High School',
+    cover: PHOTOS.vintageRack,
+    startDate: isoDate(6),
+    timeLabel: 'From 10am',
+    capacity: 8,
+    hostId: 'u-chloe',
+    description:
+      'Two hundred stalls in a school car park, $5 in, and it goes to the school. Different thing entirely from walking the shops on Melrose — this is where the actual finds are, and the prices are negotiable in a way the shops are not. Get there before eleven or the good rails are picked over. I am nineteen and nothing here cares.',
+    signupDeadline: isoAt(5, 20, 0),
+    costEstimate: { minPerPerson: 12, maxPerPerson: 60, basis: '$5 entry, the bus, and whatever you talk yourself into' },
+    lifecycle: 'active',
+    tags: ['thrifting', 'photography', 'food'],
+    meetingPoint: 'Fairfax & Melrose, by the entrance',
+    approved: ['u-yuki', 'u-camila'],
+    createdDaysAgo: 3,
+  },
+  {
+    id: 'p-friendship-bell',
+    kind: 'plan',
+    title: 'Sunset at the Korean Friendship Bell, San Pedro',
+    destination: 'Angels Gate Park, San Pedro',
+    cover: PHOTOS.sanDiegoCliffs,
+    startDate: isoDate(11),
+    timeLabel: 'Meeting 4pm',
+    capacity: 7,
+    hostId: 'u-seoyeon',
+    description:
+      'A seventeen-tonne bronze bell that South Korea gave the US in 1976, on a cliff above the harbour, and almost nobody from campus has been. The Silver Line to Harbor Gateway then the 205 — about an hour and ten. We eat in San Pedro afterwards, which is Croatian and Italian rather than Korean, and better than that sounds.',
+    signupDeadline: isoAt(9, 20, 0),
+    costEstimate: { minPerPerson: 6, maxPerPerson: 28, basis: 'Metro both ways, dinner if you stay for it' },
+    lifecycle: 'active',
+    tags: ['photography', 'food', 'wellness'],
+    meetingPoint: 'Harbor Freeway station, southbound platform',
+    approved: ['u-priya', 'u-marta'],
+    createdDaysAgo: 4,
+  },
+  {
+    id: 'p-echo-allages',
+    kind: 'plan',
+    title: 'All-ages show at the Echo, Echo Park',
+    destination: 'The Echo, Echo Park',
+    cover: PHOTOS.smallVenue,
+    startDate: isoDate(16),
+    timeLabel: 'Doors 8pm',
+    capacity: 9,
+    hostId: 'u-sofia',
+    description:
+      'I am twenty-three and I have got tired of picking places half of you cannot get into. This one is all ages — they wristband over-21s at the bar and everyone else just watches the band, which is the point anyway. Tickets are $18 in advance and it is a 350-capacity room, so you are close.',
+    signupDeadline: isoAt(14, 20, 0),
+    costEstimate: { minPerPerson: 22, maxPerPerson: 38, basis: 'Advance ticket plus the Metro, no drinks' },
+    lifecycle: 'active',
+    tags: ['live-music', 'nightlife'],
+    meetingPoint: 'Echo Park Ave & Sunset, 7:30pm',
+    approved: ['u-rafael', 'u-camila', 'u-chloe'],
+    createdDaysAgo: 6,
+  },
+  {
+    id: 'p-sturtevant',
+    kind: 'plan',
+    title: 'Sturtevant Falls, Chantry Flat',
+    destination: 'Angeles National Forest',
+    cover: PHOTOS.hikingTrail,
+    startDate: isoDate(18),
+    timeLabel: 'Leaving 7am',
+    capacity: 6,
+    hostId: 'u-nils',
+    description:
+      'Three and a half miles round to a fifty-foot waterfall, and it is shaded almost the whole way, which matters more than the distance does out here. I have four seats. Adventure Pass is $5 for the car and I have one already. It is genuinely worth the early start — the car park fills by eight at weekends and then you are parking a mile down the road.',
+    signupDeadline: isoAt(16, 20, 0),
+    costEstimate: { minPerPerson: 7, maxPerPerson: 16, basis: 'Fuel split 5 ways and the parking pass' },
+    lifecycle: 'active',
+    tags: ['hiking', 'photography', 'wellness'],
+    meetingPoint: 'Parkside Apartments, 7am',
+    approved: ['u-freya', 'u-aisling'],
+    createdDaysAgo: 5,
+  },
 ];
 
 /* ------------------------------------------------------------------ actuals */
@@ -766,24 +852,57 @@ export function buildMemberships(): Membership[] {
     return pool[used % pool.length];
   }
 
-  COHORT_USERS.forEach((user, i) => {
-    const start = (i * 7 + 3) % joinable.length;
-    for (let step = 0; step < joinable.length; step += 1) {
-      const q = joinable[(start + step) % joinable.length];
-      const alreadyIn = q.hostId === user.id || q.approved.includes(user.id);
-      const spotsLeft = q.capacity - 1 - q.approved.length;
-      if (alreadyIn || spotsLeft <= 0) continue;
-      const note = noteFor(q);
-      memberships.push({
-        questId: q.id,
-        userId: user.id,
-        state: 'requested',
-        message: note || undefined,
-        requestedAt: isoAt(-((i % 3) + 1), 11 + (i % 8), 0),
-      });
-      break;
+  /**
+   * Two passes, because two different things have to be true and neither implies the other:
+   * every host needs somebody waiting on them, or their console has nothing to decide; and
+   * every member needs a request outstanding, or the "you have already asked" state is
+   * unreachable. Requests are capped at the seats actually left so every one of them can be
+   * approved rather than dead on arrival.
+   */
+  const pending: Membership[] = [];
+  const pendingPerQuest = new Map<string, number>();
+
+  const canRequest = (q: SeedQuest, userId: string): boolean => {
+    if (q.hostId === userId) return false;
+    if (q.approved.includes(userId)) return false;
+    if (pending.some((p) => p.questId === q.id && p.userId === userId)) return false;
+    const seatsLeft = q.capacity - 1 - q.approved.length - (pendingPerQuest.get(q.id) ?? 0);
+    return seatsLeft > 0;
+  };
+
+  const addRequest = (q: SeedQuest, userId: string, i: number) => {
+    pending.push({
+      questId: q.id,
+      userId,
+      state: 'requested',
+      message: noteFor(q) || undefined,
+      requestedAt: isoAt(-((i % 3) + 1), 11 + (i % 8), 0),
+    });
+    pendingPerQuest.set(q.id, (pendingPerQuest.get(q.id) ?? 0) + 1);
+  };
+
+  // Pass one: every joinable post gets somebody waiting on it.
+  joinable.forEach((q, qi) => {
+    for (let step = 0; step < COHORT_USERS.length; step += 1) {
+      const i = (qi * 5 + step) % COHORT_USERS.length;
+      const user = COHORT_USERS[i];
+      if (!canRequest(q, user.id)) continue;
+      addRequest(q, user.id, i);
+      return;
     }
   });
 
-  return memberships;
+  // Pass two: anybody still without an outstanding request gets one.
+  COHORT_USERS.forEach((user, i) => {
+    if (pending.some((p) => p.userId === user.id)) return;
+    const start = (i * 7 + 3) % Math.max(joinable.length, 1);
+    for (let step = 0; step < joinable.length; step += 1) {
+      const q = joinable[(start + step) % joinable.length];
+      if (!canRequest(q, user.id)) continue;
+      addRequest(q, user.id, i);
+      return;
+    }
+  });
+
+  return [...memberships, ...pending];
 }

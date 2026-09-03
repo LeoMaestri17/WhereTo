@@ -143,7 +143,9 @@ function normalise(raw: PartifulInvite): NormalizedEvent {
     venueArea: raw.neighbourhood,
     costLabel: cost.label,
     costUsd: cost.usd,
-    url: `https://partiful.com/e/${raw.event_id.replace('ptf-', '')}`,
+    // Fixture invites, so there is no real permalink. A live adapter emits
+    // `https://partiful.com/e/${id}` from sourceEventId.
+    url: 'https://partiful.com/',
     tags: TAGS[raw.event_id] ?? [],
     category: raw.event_id === 'ptf-friendsgiving' ? 'food' : 'nightlife',
     hostOrg: raw.host_handle,

@@ -118,7 +118,9 @@ function normalise(raw: HandshakeEvent): NormalizedEvent {
     venueArea: 'University Park Campus',
     costLabel: registrationNote,
     costUsd: null,
-    url: `https://usc.joinhandshake.com/stu/events/${raw.id}`,
+    // Fixture events. A live adapter emits `https://usc.joinhandshake.com/stu/events/${id}`
+    // from sourceEventId; these ids are invented, so link to the real event list.
+    url: 'https://usc.joinhandshake.com/stu/events',
     tags: ['career'],
     category: 'career',
     hostOrg: raw.employer?.name ?? 'USC Career Center',

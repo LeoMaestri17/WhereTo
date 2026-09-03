@@ -209,16 +209,29 @@ export interface AttendanceSignal {
   sentence: string;
 }
 
-function buildSentence(named: CohortUser[], others: number, verb: string): string {
+function buildSentence(
+  named: CohortUser[],
+  others: number,
+  verb: string,
+  viewerIsGoing: boolean,
+): string {
   const firstNames = named.map((u) => u.name.split(' ')[0]);
   if (firstNames.length === 0) {
-    if (others === 0) return `Nobody from the cohort yet`;
-    return `${others} exchange ${others === 1 ? 'student' : 'students'} ${verb}`;
+    if (others === 0) {
+      // Your own post, before anyone has joined. "Nobody from the cohort yet" would be wrong —
+      // you are somebody, and you are going.
+      return viewerIsGoing ? `Just you so far` : `Nobody from the cohort yet`;
+    }
+    const line = `${others} exchange ${others === 1 ? 'student' : 'students'} ${verb}`;
+    return viewerIsGoing ? `You and ${line}` : line;
   }
   const names =
     firstNames.length === 1 ? firstNames[0] : `${firstNames[0]} and ${firstNames[1]}`;
-  if (others === 0) return `${names} ${verb}`;
-  return `${names}, plus ${others} other exchange ${others === 1 ? 'student' : 'students'} ${verb}`;
+  const tail =
+    others === 0
+      ? `${names} ${verb}`
+      : `${names}, plus ${others} other exchange ${others === 1 ? 'student' : 'students'} ${verb}`;
+  return viewerIsGoing ? `You, ${tail}` : tail;
 }
 
 /**
@@ -235,6 +248,7 @@ export function attendanceSignal(
   verb = 'going',
 ): AttendanceSignal {
   const friendSet = new Set(friendIds);
+  const viewerIsGoing = viewerId !== null && goingUserIds.includes(viewerId);
   const going = goingUserIds.filter((id) => id !== viewerId);
 
   const friends = going
@@ -250,7 +264,7 @@ export function attendanceSignal(
     friendCount: friends.length,
     otherCount,
     totalGoing: going.length,
-    sentence: buildSentence(namedFriends, otherCount, verb),
+    sentence: buildSentence(namedFriends, otherCount, verb, viewerIsGoing),
   };
 }
 

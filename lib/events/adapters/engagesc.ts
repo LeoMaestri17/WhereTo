@@ -112,7 +112,10 @@ function normalise(raw: EngageScVEvent): NormalizedEvent {
     venueArea: 'University Park Campus',
     costLabel: raw.admission,
     costUsd: isFree ? null : priceMatch ? Number(priceMatch[1]) : null,
-    url: `https://engage.usc.edu/event/${raw.uid.replace('engage-', '')}`,
+    // These events are fixtures, so the permalink they would carry does not exist. Link to
+    // the real calendar instead; the shape a live adapter emits is
+    // `https://engage.usc.edu/event/${id}`, built from sourceEventId.
+    url: 'https://engage.usc.edu/',
     tags: CATEGORY_TAGS[raw.uid] ?? [],
     category: raw.categories.includes('outdoors')
       ? 'outdoors'

@@ -110,9 +110,31 @@ async function main() {
 
   /* ------------------------------------------------ every profile is playable */
 
+  const hostsWithPending = new Set(
+    memberships
+      .filter((m) => m.state === 'requested')
+      .map((m) => quests.find((q) => q.id === m.questId)?.hostId)
+      .filter(Boolean) as string[],
+  );
+
   for (const u of users) {
     const hostsActive = quests.some((q) => q.hostId === u.id && q.lifecycle === 'active');
     check(hostsActive, `${u.name} hosts no active quest, so their host console would be empty`);
+
+    // Hosting something *joinable* is what makes approve and decline reachable. A host whose
+    // only post is full or past its deadline can never exercise that flow.
+    const hostsJoinable = quests.some(
+      (q) => q.hostId === u.id && ['open', 'filling'].includes(deriveQuestStatus(q, memberships)),
+    );
+    check(
+      hostsJoinable,
+      `${u.name} hosts nothing joinable, so approve/decline is unreachable on their profile`,
+    );
+
+    check(
+      hostsWithPending.has(u.id),
+      `${u.name} has no request waiting on them, so the host console has nothing to decide`,
+    );
 
     const approved = memberships.some((m) => m.userId === u.id && m.state === 'approved');
     check(approved, `${u.name} has joined nothing, so the "you are going" state is unreachable`);
@@ -123,17 +145,6 @@ async function main() {
       `${u.name} has no pending request, so the "already requested" state is unreachable`,
     );
   }
-
-  const hostsWithPending = new Set(
-    memberships
-      .filter((m) => m.state === 'requested')
-      .map((m) => quests.find((q) => q.id === m.questId)?.hostId)
-      .filter(Boolean) as string[],
-  );
-  check(
-    hostsWithPending.size >= 15,
-    `Only ${hostsWithPending.size} hosts have a request waiting; approve/decline should be reachable for most profiles`,
-  );
 
   /* ---------------------------------------------------------------- statuses */
 

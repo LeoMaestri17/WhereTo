@@ -105,7 +105,7 @@ export const newYork: PlanFixture = {
           provider: 'HI New York City or Q4 Hotel',
           detail:
             'Priced per bed, so it does not care how many of you there are — which is the reason to choose it over an apartment for a group of two or three.',
-          url: 'https://www.hiusa.org/find-hostels/new-york/new-york-city',
+          url: 'https://www.hiusa.org/find-hostels/',
           basis: 'About $75 a night per bed over Thanksgiving, {nights} nights',
           price: { kind: 'per-person', min: 68, max: 105 },
           perNight: true,

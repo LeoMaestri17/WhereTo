@@ -40,7 +40,7 @@ export const santaMonica: PlanFixture = {
           provider: 'Pacific Park, Santa Monica Pier',
           detail:
             'The Ferris wheel on its own is $5. An unlimited wristband is $45 and is not worth it for a group that will do three rides.',
-          url: 'https://pacpark.com/tickets-and-pricing/',
+          url: 'https://pacpark.com/',
           basis: 'Per person, two or three rides',
           price: { kind: 'per-person', min: 0, max: 18 },
         },
@@ -94,8 +94,8 @@ export const santaMonica: PlanFixture = {
   ],
   sources: [
     { title: 'Big Blue Bus Rapid 10 timetable', url: 'https://www.bigbluebus.com/Routes-and-Schedules/Route.aspx?rt=R10' },
-    { title: 'Pacific Park ticket prices', url: 'https://pacpark.com/tickets-and-pricing/' },
-    { title: 'Santa Monica Beach visitor information', url: 'https://www.santamonica.gov/places/beaches' },
+    { title: 'Pacific Park ticket prices', url: 'https://pacpark.com/' },
+    { title: 'Santa Monica Beach visitor information', url: 'https://www.santamonica.gov/' },
   ],
   itinerary: [
     {
@@ -134,7 +134,7 @@ export const griffith: PlanFixture = {
           provider: 'LA Metro and LADOT',
           detail:
             'E Line to 7th Street, B Line to Vermont/Sunset, then the DASH Observatory shuttle up the hill. About an hour door to door.',
-          url: 'https://www.ladottransit.com/dash/routes/observatory/observatory.html',
+          url: 'https://www.ladottransit.com/dash/',
           basis: 'Return, per person, including both fares',
           price: { kind: 'per-person', min: 4.5, max: 4.5 },
         },
@@ -215,7 +215,7 @@ export const griffith: PlanFixture = {
   ],
   sources: [
     { title: 'Griffith Observatory hours and admission', url: 'https://griffithobservatory.org/visit/hours-admission-directions/' },
-    { title: 'DASH Observatory shuttle', url: 'https://www.ladottransit.com/dash/routes/observatory/observatory.html' },
+    { title: 'DASH Observatory shuttle', url: 'https://www.ladottransit.com/dash/' },
     { title: 'LA Metro fares', url: 'https://www.metro.net/riding/fares/' },
   ],
   itinerary: [
