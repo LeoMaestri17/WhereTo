@@ -1,13 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 import { countdownTo, formatCountdown } from '@/lib/util/dates';
 import type { QuestCapacity } from '@/lib/domain/logic';
 
 /**
- * The deadline is the thing that makes anyone act, so it ticks. It only starts ticking after
- * mount — the server has no business rendering a clock it cannot keep.
+ * The wall clock, read as what it is: an external source of truth that changes on its own.
+ *
+ * Returns 0 until the component has mounted, which is also what the server renders, so there is
+ * nothing for hydration to disagree about — the server has no business rendering a clock it
+ * cannot keep ticking.
  */
+function useClock(deadline: string): number {
+  const nowRef = useRef(0);
+
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const tick = () => {
+        nowRef.current = Date.now();
+        onChange();
+      };
+      tick();
+      // Every second inside the last hour, every half minute otherwise. There is no reason to
+      // re-render a "12 days left" label sixty times a minute.
+      const remaining = new Date(deadline).getTime() - Date.now();
+      const interval = remaining > 0 && remaining < 3_600_000 ? 1000 : 30_000;
+      const id = setInterval(tick, interval);
+      return () => clearInterval(id);
+    },
+    [deadline],
+  );
+
+  return useSyncExternalStore(
+    subscribe,
+    () => nowRef.current,
+    () => 0,
+  );
+}
+
+/** The deadline is the thing that makes anyone act, so it ticks. */
 export function DeadlineCountdown({
   deadline,
   className = '',
@@ -18,20 +49,9 @@ export function DeadlineCountdown({
   /** 'auto' turns urgent under 48 hours. 'quiet' never does. */
   emphasis?: 'auto' | 'quiet';
 }) {
-  const [now, setNow] = useState<number | null>(null);
+  const now = useClock(deadline);
 
-  useEffect(() => {
-    setNow(Date.now());
-    const remaining = new Date(deadline).getTime() - Date.now();
-    // Tick every second inside the last hour, every half minute otherwise. There is no reason
-    // to re-render a "12 days left" label sixty times a minute.
-    const interval = remaining > 0 && remaining < 3_600_000 ? 1000 : 30_000;
-    const id = setInterval(() => setNow(Date.now()), interval);
-    return () => clearInterval(id);
-  }, [deadline]);
-
-  if (now === null) {
-    // Matches the server render exactly, so there is nothing for hydration to disagree about.
+  if (now === 0) {
     return <span className={`type-meta text-muted ${className}`}>Sign-ups close soon</span>;
   }
 

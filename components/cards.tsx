@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { AttendanceSignal as Signal } from '@/lib/domain/logic';
 import { formatRange } from '@/lib/domain/logic';
-import type { Idea, NormalizedEvent, Quest } from '@/lib/domain/types';
+import type { Idea, NormalizedEvent } from '@/lib/domain/types';
 import { EVENT_SOURCE_LABELS } from '@/lib/domain/types';
 import type { QuestView } from '@/lib/store/selectors';
 import { formatDateRange, formatDayWithWeekday, formatTime, relativeDay } from '@/lib/util/dates';

@@ -44,8 +44,8 @@ export function SmartImage({
   const src = unsplashUrl(photoId, width, height);
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- see the note above: Unsplash serves
-    // the correct size and format itself, so next/image would add a redundant server hop.
+    /* eslint-disable-next-line @next/next/no-img-element -- Unsplash serves the correct size and
+       format itself, so next/image would add a redundant server-side hop. See the note above. */
     <img
       src={src}
       srcSet={`${src} 1x, ${unsplashUrl(photoId, width * 2, height * 2)} 2x`}

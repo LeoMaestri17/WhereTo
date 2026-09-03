@@ -12,7 +12,7 @@ import { Button, Chip, Panel } from './ui';
  * three questions that change every cost estimate in the app.
  */
 export function Onboarding() {
-  const { state, dispatch } = useStore();
+  const { state } = useStore();
   const me = currentUser(state);
   const [step, setStep] = useState<'who' | 'about'>(me ? 'about' : 'who');
 

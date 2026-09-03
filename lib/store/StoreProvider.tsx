@@ -57,6 +57,8 @@ export interface EventsSlice {
   error: string | null;
 }
 
+const INITIAL_EVENTS: EventsSlice = { events: [], loading: true, failed: [], error: null };
+
 interface StoreValue {
   state: AppState;
   dispatch: (action: Action) => void;
@@ -69,31 +71,26 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, null, buildSeedState);
-  const [hydrated, setHydrated] = useState(false);
-  const [events, setEvents] = useState<EventsSlice>({
-    events: [],
-    loading: true,
-    failed: [],
-    error: null,
-  });
+  const [events, setEvents] = useState<EventsSlice>(INITIAL_EVENTS);
   const [eventsNonce, setEventsNonce] = useState(0);
 
-  // Read persisted state before the first paint of real content.
+  /**
+   * Read local state back before anything renders. The `hydrate` action also flips
+   * `state.hydrated`, so a single dispatch hands over — there is never an in-between render
+   * where the app thinks it is ready but is still holding seed data.
+   */
   useEffect(() => {
-    const persisted = readPersisted();
-    if (persisted) dispatch({ type: 'hydrate', state: persisted });
-    setHydrated(true);
+    dispatch({ type: 'hydrate', state: readPersisted() ?? buildSeedState() });
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!state.hydrated) return;
     writePersisted(state);
-  }, [state, hydrated]);
+  }, [state]);
 
   // Events come from the adapters on every boot, exactly as they would from a real API.
   useEffect(() => {
     let cancelled = false;
-    setEvents((e) => ({ ...e, loading: true, error: null }));
     loadAllEvents()
       .then((result) => {
         if (cancelled) return;
@@ -114,7 +111,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
   }, [eventsNonce]);
 
-  const reloadEvents = useCallback(() => setEventsNonce((n) => n + 1), []);
+  const reloadEvents = useCallback(() => {
+    setEvents(INITIAL_EVENTS);
+    setEventsNonce((n) => n + 1);
+  }, []);
 
   const resetDemo = useCallback(() => {
     try {
@@ -123,6 +123,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Nothing to clear.
     }
     dispatch({ type: 'reset' });
+    setEvents(INITIAL_EVENTS);
     setEventsNonce((n) => n + 1);
   }, []);
 
@@ -131,7 +132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state, events, reloadEvents, resetDemo],
   );
 
-  if (!hydrated) {
+  if (!state.hydrated) {
     return <BootScreen />;
   }
 

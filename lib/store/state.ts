@@ -17,6 +17,8 @@ import { buildMemberships, buildQuests } from '@/lib/seed/quests';
  */
 export interface AppState {
   version: number;
+  /** False until local state has been read back. Not persisted — the reducer always sets it. */
+  hydrated: boolean;
   currentUserId: string | null;
   onboarded: boolean;
   users: CohortUser[];
@@ -35,6 +37,7 @@ export const STATE_VERSION = 1;
 export function buildSeedState(): AppState {
   return {
     version: STATE_VERSION,
+    hydrated: false,
     currentUserId: null,
     onboarded: false,
     users: COHORT_USERS,
@@ -82,7 +85,9 @@ function withMembership(
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'hydrate':
-      return action.state;
+      // One dispatch does the whole handover, so there is never a render where the app is
+      // considered hydrated but is still showing seed data.
+      return { ...action.state, hydrated: true };
 
     case 'seedAttendance':
       return state.attendance.length > 0 ? state : { ...state, attendance: action.attendance };
@@ -221,7 +226,8 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, planCache: { ...state.planCache, [action.key]: action.plan } };
 
     case 'reset':
-      return buildSeedState();
+      // Back to the seed, but still hydrated — the boot screen is for the first read only.
+      return { ...buildSeedState(), hydrated: true };
 
     default:
       return state;

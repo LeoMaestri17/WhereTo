@@ -703,15 +703,68 @@ export function buildMemberships(): Membership[] {
     (q) => q.lifecycle === 'active' && new Date(q.signupDeadline).getTime() > Date.now(),
   );
 
-  const REQUEST_NOTES = [
+  // Notes have to fit the thing being joined. Offering to bring a tent to a flight to New York
+  // is the kind of detail that makes seed data read as generated, so each note declares where
+  // it belongs and a per-quest counter stops two people writing the same thing.
+  const ANY_NOTES = [
     'I have never been and I would rather not go on my own.',
-    'Free that whole day. Happy to drive if you still need a second car.',
     'Two of us if there is room — my flatmate would come as well.',
-    'I can bring a tent and a stove if that helps.',
-    'Do you know yet whether this works without a US card?',
-    'I am under 21, is that a problem for this one?',
     '',
+    'Count me in if there is still space.',
   ];
+
+  const NOTES_BY_CONTEXT: Array<{ fits: (q: SeedQuest) => boolean; notes: string[] }> = [
+    {
+      fits: (q) => q.tags.includes('road-trips') || q.tags.includes('national-parks'),
+      notes: [
+        'I can bring a tent and a stove if that helps.',
+        'Happy to drive if you still want a second car.',
+        'I have a full licence but I am 20 — does that rule me out of driving?',
+      ],
+    },
+    {
+      fits: (q) => q.kind === 'trip' && !q.tags.includes('road-trips'),
+      notes: [
+        'Do you know yet whether this works without a US credit card?',
+        'Is the deposit due before the deadline or after?',
+        'I can book my own flight if that makes it easier.',
+      ],
+    },
+    {
+      fits: (q) => q.tags.includes('nightlife'),
+      notes: [
+        'I am under 21 — is that a problem for this one?',
+        'Do they card at the door, do you know?',
+      ],
+    },
+    {
+      fits: (q) => q.kind === 'plan' && q.tags.includes('sports'),
+      notes: [
+        'Never seen a game here. Happy to pay you back the same day.',
+        'I finish class at two — is that early enough?',
+      ],
+    },
+    {
+      fits: (q) => q.kind === 'plan',
+      notes: [
+        'Free that whole day.',
+        'Is it walkable from campus or should I get the Metro?',
+        'I will be coming straight from a lecture, so slightly late.',
+      ],
+    },
+  ];
+
+  const usedPerQuest = new Map<string, number>();
+
+  function noteFor(quest: SeedQuest): string {
+    const pool = [
+      ...(NOTES_BY_CONTEXT.find((c) => c.fits(quest))?.notes ?? []),
+      ...ANY_NOTES,
+    ];
+    const used = usedPerQuest.get(quest.id) ?? 0;
+    usedPerQuest.set(quest.id, used + 1);
+    return pool[used % pool.length];
+  }
 
   COHORT_USERS.forEach((user, i) => {
     const start = (i * 7 + 3) % joinable.length;
@@ -720,7 +773,7 @@ export function buildMemberships(): Membership[] {
       const alreadyIn = q.hostId === user.id || q.approved.includes(user.id);
       const spotsLeft = q.capacity - 1 - q.approved.length;
       if (alreadyIn || spotsLeft <= 0) continue;
-      const note = REQUEST_NOTES[(i + step) % REQUEST_NOTES.length];
+      const note = noteFor(q);
       memberships.push({
         questId: q.id,
         userId: user.id,
