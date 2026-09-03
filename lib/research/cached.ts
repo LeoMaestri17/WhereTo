@@ -82,7 +82,12 @@ function priceLine(
   };
 }
 
-function toLineItem(item: FixtureLineItem, groupSize: number, nights: number): LineItem {
+function toLineItem(
+  item: FixtureLineItem,
+  groupSize: number,
+  nights: number,
+  researchedAt: string,
+): LineItem {
   const { min, max } = priceLine(item, groupSize, nights);
   return {
     label: item.label,
@@ -92,13 +97,27 @@ function toLineItem(item: FixtureLineItem, groupSize: number, nights: number): L
     basis: interpolate(item.basis, groupSize, nights),
     perPersonMin: Math.round(min * 100) / 100,
     perPersonMax: Math.round(max * 100) / 100,
+    // A saved fixture price is an estimate, and saying so is the honest label. It was true on
+    // the day it was written down and nobody has checked it since.
+    provenance: {
+      source: 'estimate',
+      sourceLabel: 'Saved plan',
+      checkedAt: researchedAt,
+    },
   };
 }
 
-function toOption(option: FixtureOption, groupSize: number, nights: number): PlanOption {
-  const transport = option.transport.map((l) => toLineItem(l, groupSize, nights));
-  const accommodation = option.accommodation.map((l) => toLineItem(l, groupSize, nights));
-  const otherCosts = option.otherCosts.map((l) => toLineItem(l, groupSize, nights));
+function toOption(
+  option: FixtureOption,
+  groupSize: number,
+  nights: number,
+  researchedAt: string,
+): PlanOption {
+  const transport = option.transport.map((l) => toLineItem(l, groupSize, nights, researchedAt));
+  const accommodation = option.accommodation.map((l) =>
+    toLineItem(l, groupSize, nights, researchedAt),
+  );
+  const otherCosts = option.otherCosts.map((l) => toLineItem(l, groupSize, nights, researchedAt));
   const all = [...transport, ...accommodation, ...otherCosts];
   return {
     id: option.id,
@@ -189,8 +208,11 @@ export function composeCachedPlan(
   const tripDays = Math.max(1, daysBetween(request.startDate, request.endDate) + 1);
   const nights = Math.max(0, tripDays - 1);
   const groupSize = Math.max(1, request.groupSize);
+  const researchedAt = isoAt(-fixture.researchedDaysAgo, 10, 20);
 
-  const options = availableOptions(fixture, request).map((o) => toOption(o, groupSize, nights));
+  const options = availableOptions(fixture, request).map((o) =>
+    toOption(o, groupSize, nights, researchedAt),
+  );
   const fixtureDays = pickItinerary(fixture, request);
   const itinerary = toItinerary(fixtureDays, request.startDate, tripDays);
 
@@ -222,7 +244,7 @@ export function composeCachedPlan(
   return {
     ideaSlug: fixture.ideaSlug,
     destination: fixture.destination,
-    researchedAt: isoAt(-fixture.researchedDaysAgo, 10, 20),
+    researchedAt,
     provenance,
     confidence: fixture.confidence,
     confidenceNote: fixture.confidenceNote,

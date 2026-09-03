@@ -10,7 +10,7 @@ import type {
   ResearchPlan,
 } from '@/lib/research/types';
 import { RESEARCH_STAGES, type ResearchStageId } from '@/lib/research/types';
-import { formatDayWithWeekday, formatLongDate } from '@/lib/util/dates';
+import { formatDay, formatDayWithWeekday, formatLongDate, relativeDay } from '@/lib/util/dates';
 import { OutboundLink, Panel } from '@/components/ui';
 
 /* ------------------------------------------------------------------ provenance */
@@ -33,6 +33,19 @@ export function ProvenanceBanner({
         <span className="type-meta text-ink/70">
           Prices came from a web search run at {formatLongDate(plan.researchedAt)}.
         </span>
+      </Panel>
+    );
+  }
+
+  if (plan.provenance === 'partial') {
+    return (
+      <Panel tone="warn">
+        <p className="type-meta font-medium">This research did not finish</p>
+        <p className="type-meta mt-1 text-ink/75">
+          {fallbackReason ?? 'The run stopped part-way.'} What is below was assembled from the
+          price lookups that did complete, so it is thinner than a finished plan — but every
+          figure in it was still checked. Running it again usually works.
+        </p>
       </Panel>
     );
   }
@@ -214,6 +227,57 @@ export function ConstraintsPanel({ constraints }: { constraints: ConstraintFlag[
 
 /* ------------------------------------------------------------------ options */
 
+/**
+ * Where this number came from, on every single costed line.
+ *
+ * `estimate` is deliberately the loudest of the three. It is the one the reader needs to
+ * distrust, and burying it would defeat the point of labelling any of them.
+ */
+function ProvenanceChip({ item }: { item: LineItem }) {
+  const { source, sourceLabel, checkedAt, cachedAt } = item.provenance;
+
+  const tone =
+    source === 'api'
+      ? 'border-transparent bg-good-soft text-good'
+      : source === 'web'
+        ? 'border-line bg-surface-2 text-muted'
+        : 'border-transparent bg-warn-soft text-warn';
+
+  const text =
+    source === 'api'
+      ? `${sourceLabel} · checked ${relativeDay(checkedAt)}`
+      : source === 'web'
+        ? `${sourceLabel} · ${formatDay(checkedAt)}`
+        : 'Estimated, not checked';
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.6875rem] font-medium ${tone}`}
+      title={cachedAt ? `Served from cache stored ${formatDay(cachedAt)}` : undefined}
+    >
+      {text}
+    </span>
+  );
+}
+
+/** Only ever shown when a link was actually requested and did not resolve. */
+function LinkNote({ item }: { item: LineItem }) {
+  if (!item.url) return null;
+  const status = item.link?.status;
+
+  if (status === 'dead') {
+    return <p className="type-meta mt-1 text-warn">This link no longer resolves.</p>;
+  }
+  return (
+    <p className="type-meta mt-1">
+      <OutboundLink href={item.url}>Book or check this</OutboundLink>
+      {status === 'blocked' ? (
+        <span className="text-faint"> · we could not verify it from here</span>
+      ) : null}
+    </p>
+  );
+}
+
 function LineItemRow({ item }: { item: LineItem }) {
   return (
     <li className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line py-3 first:border-t-0">
@@ -224,16 +288,54 @@ function LineItemRow({ item }: { item: LineItem }) {
         </p>
         <p className="type-meta mt-0.5 text-muted">{item.detail}</p>
         <p className="type-meta mt-1 text-faint">Assumes: {item.basis}</p>
-        {item.url ? (
-          <p className="type-meta mt-1">
-            <OutboundLink href={item.url}>Book or check this</OutboundLink>
-          </p>
-        ) : null}
+        <LinkNote item={item} />
       </div>
-      <span className="type-body whitespace-nowrap font-medium tabular-nums">
-        {formatRange(item.perPersonMin, item.perPersonMax)}
+      <span className="flex shrink-0 flex-col items-end gap-1">
+        <span className="type-body whitespace-nowrap font-medium tabular-nums">
+          {formatRange(item.perPersonMin, item.perPersonMax)}
+        </span>
+        <ProvenanceChip item={item} />
       </span>
     </li>
+  );
+}
+
+/**
+ * The product claim, made checkable in one sentence: how much of this plan was actually priced
+ * against a live source rather than recalled.
+ */
+export function PriceSourceSummary({ plan }: { plan: ResearchPlan }) {
+  const lines = plan.options.flatMap((o) => [...o.transport, ...o.accommodation, ...o.otherCosts]);
+  if (lines.length === 0) return null;
+
+  const counts = { api: 0, web: 0, estimate: 0 };
+  for (const line of lines) counts[line.provenance.source] += 1;
+
+  const dead = lines.filter((l) => l.link?.status === 'dead').length;
+  const parts: string[] = [];
+  if (counts.api) parts.push(`${counts.api} came from a live price API`);
+  if (counts.web) parts.push(`${counts.web} from a web search`);
+  if (counts.estimate) parts.push(`${counts.estimate} ${counts.estimate === 1 ? 'is an estimate' : 'are estimates'}`);
+
+  return (
+    <Panel tone={counts.api > 0 ? 'good' : 'plain'} className={counts.api > 0 ? '' : 'border-line'}>
+      <p className="type-body">
+        <span className="font-medium">
+          Of {lines.length} costed {lines.length === 1 ? 'line' : 'lines'}, {parts.join(', ')}.
+        </span>{' '}
+        <span className="text-muted">
+          {counts.api > 0
+            ? 'A live line was priced by a real request for your dates and group size.'
+            : 'Nothing here was priced against a live booking source, so treat every figure as a starting point.'}
+        </span>
+      </p>
+      {dead > 0 ? (
+        <p className="type-meta mt-1.5 text-warn">
+          {dead} {dead === 1 ? 'link' : 'links'} in this plan no longer{' '}
+          {dead === 1 ? 'resolves' : 'resolve'}.
+        </p>
+      ) : null}
+    </Panel>
   );
 }
 

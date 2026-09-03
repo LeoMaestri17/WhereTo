@@ -11,6 +11,7 @@ import {
   CostHeadline,
   ItineraryTimeline,
   PlanOptionCard,
+  PriceSourceSummary,
   ProvenanceBanner,
   ResearchProgress,
   SourcesList,
@@ -251,6 +252,8 @@ export default function IdeaPlannerPage() {
             </div>
             <CostHeadline plan={plan} />
           </section>
+
+          <PriceSourceSummary plan={plan} />
 
           <ConstraintsPanel constraints={plan.constraints} />
 

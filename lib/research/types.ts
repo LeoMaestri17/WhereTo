@@ -1,4 +1,7 @@
 import type { BudgetBand, IdeaShape, InterestTag } from '@/lib/domain/types';
+import type { PriceProvenance } from '@/lib/pricing/types';
+
+export type { PriceOrigin, PriceProvenance } from '@/lib/pricing/types';
 
 /** What the planner form collects. Every field changes what comes back. */
 export interface ResearchRequest {
@@ -18,14 +21,23 @@ export interface ResearchRequest {
   moods: InterestTag[];
 }
 
-/** Where the plan on screen came from. Never hidden from the user. */
-export type PlanProvenance = 'live' | 'cached' | 'cached-fallback';
+/**
+ * Where the plan on screen came from. Never hidden from the user.
+ *
+ * `partial` means the research run failed part-way and what you are seeing was assembled from
+ * the price lookups that did complete. Better than an error wall, but it must say so.
+ */
+export type PlanProvenance = 'live' | 'cached' | 'cached-fallback' | 'partial';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
 /**
  * A single costed row. `perPersonMin`/`perPersonMax` are always per person and always a
  * range — a point estimate is the thing this product exists to stop people from trusting.
+ *
+ * `provenance` is required on purpose. Every producer of a costed line — the live path, the
+ * cached fixtures, a partial assembly — has to state where its number came from, so there is no
+ * way to add a price to this app without saying whether anybody checked it.
  */
 export interface LineItem {
   label: string;
@@ -38,6 +50,18 @@ export interface LineItem {
   perPersonMax: number;
   /** The assumption the number rests on, e.g. '4 sharing one room, 2 nights'. */
   basis: string;
+  provenance: PriceProvenance;
+  /** Result of requesting `url` before the plan was rendered. */
+  link?: LinkCheckResult;
+}
+
+/** Mirrors lib/pricing/links.ts, redeclared here so the domain types do not import the server. */
+export type LinkStatus = 'ok' | 'blocked' | 'dead' | 'timeout' | 'unchecked';
+
+export interface LinkCheckResult {
+  status: LinkStatus;
+  checkedAt: string;
+  httpStatus?: number;
 }
 
 export interface PlanOption {

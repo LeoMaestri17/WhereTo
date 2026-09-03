@@ -288,15 +288,34 @@ export class LiveResearchService implements TripResearchService {
       blocks: day.blocks,
     }));
 
+    const researchedAt = new Date().toISOString();
+
+    // This path prices everything by web search, so every line says so. Nothing here may claim
+    // `api` — that label is reserved for figures a real pricing call returned, and is stamped by
+    // the tool loop in agent.ts, which verifies each claim against its ledger entry.
+    const webProvenance = {
+      source: 'web' as const,
+      sourceLabel: 'Web search',
+      checkedAt: researchedAt,
+    };
+    const stamp = (items: (typeof data.options)[number]['transport']) =>
+      items.map((item) => ({ ...item, provenance: webProvenance }));
+    const options = data.options.map((option) => ({
+      ...option,
+      transport: stamp(option.transport),
+      accommodation: stamp(option.accommodation),
+      otherCosts: stamp(option.otherCosts),
+    }));
+
     const plan: ResearchPlan = {
       ideaSlug: request.ideaSlug,
       destination: request.region,
-      researchedAt: new Date().toISOString(),
+      researchedAt,
       provenance: 'live',
       confidence: data.confidence,
       confidenceNote: data.confidenceNote,
       summary: data.summary,
-      options: data.options,
+      options,
       totalRangeMin: Math.min(...data.options.map((o) => o.perPersonMin)),
       totalRangeMax: Math.max(...data.options.map((o) => o.perPersonMax)),
       assumptions: data.assumptions,
