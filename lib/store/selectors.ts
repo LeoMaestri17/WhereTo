@@ -42,6 +42,16 @@ export interface QuestView {
   signal: AttendanceSignal;
 }
 
+/**
+ * The tense has to match what happened. Saying people are "going" to a trip that was called off
+ * contradicts the panel next to it, which says nobody is.
+ */
+function attendanceVerb(quest: Quest): string {
+  if (quest.lifecycle === 'completed') return 'went';
+  if (quest.lifecycle === 'cancelled') return 'were going';
+  return 'going';
+}
+
 export function questView(state: AppState, quest: Quest): QuestView {
   const byId = usersById(state);
   return {
@@ -54,7 +64,7 @@ export function questView(state: AppState, quest: Quest): QuestView {
       byId,
       friendIds(state),
       state.currentUserId,
-      quest.lifecycle === 'completed' ? 'went' : 'going',
+      attendanceVerb(quest),
     ),
   };
 }
