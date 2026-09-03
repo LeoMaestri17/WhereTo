@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local price-lookup cache, so development does not spend API quota
+.pricing-cache
