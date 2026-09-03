@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { AppShell } from '@/components/AppShell';
+import { StoreProvider } from '@/lib/store/StoreProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,7 +22,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <StoreProvider>
+          <AppShell>{children}</AppShell>
+        </StoreProvider>
+      </body>
     </html>
   );
 }

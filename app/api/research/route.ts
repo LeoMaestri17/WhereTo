@@ -15,10 +15,10 @@ const requestSchema = z.object({
   shape: z.enum(['day', 'weekend', 'break']),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  groupSize: z.number().int().min(1).max(20),
-  hasCar: z.boolean(),
-  isOver21: z.boolean(),
-  hasUsCreditCard: z.boolean(),
+  groupSize: z.coerce.number().int().min(1).max(20),
+  hasCar: z.coerce.boolean(),
+  isOver21: z.coerce.boolean(),
+  hasUsCreditCard: z.coerce.boolean(),
   budgetBand: z.enum(['shoestring', 'moderate', 'comfortable']),
   moods: z.array(z.enum(INTEREST_TAGS)),
 });
@@ -29,24 +29,35 @@ type Frame =
   | { type: 'plan'; plan: unknown; fallbackReason?: string }
   | { type: 'error'; message: string; recoverable: boolean };
 
-function line(frame: Frame): Uint8Array {
-  return new TextEncoder().encode(`${JSON.stringify(frame)}\n`);
-}
-
 /**
- * Newline-delimited JSON rather than a single response, so the client can name what is happening
- * while it happens. A live call takes 30 to 90 seconds and a spinner for that long is not a
- * loading state, it is an absence of one.
+ * Server-sent events rather than a hand-rolled stream.
+ *
+ * A live research call takes thirty to ninety seconds, and a spinner for that long is not a
+ * loading state — it is the absence of one. SSE lets the server name each stage as it reaches
+ * it, and unlike reading `response.body` by hand it is a first-class browser primitive, so the
+ * request is recorded as a normal completed request rather than a cancelled one.
+ *
+ * GET because EventSource cannot send a body. The parameters are a dozen scalars and nothing
+ * here is sensitive.
  */
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'That request body was not JSON.' }, { status: 400 });
-  }
+export async function GET(request: Request) {
+  const params = new URL(request.url).searchParams;
 
-  const parsed = requestSchema.safeParse(body);
+  const parsed = requestSchema.safeParse({
+    ideaSlug: params.get('ideaSlug'),
+    ideaTitle: params.get('ideaTitle'),
+    region: params.get('region'),
+    shape: params.get('shape'),
+    startDate: params.get('startDate'),
+    endDate: params.get('endDate'),
+    groupSize: params.get('groupSize'),
+    hasCar: params.get('hasCar') === 'true',
+    isOver21: params.get('isOver21') === 'true',
+    hasUsCreditCard: params.get('hasUsCreditCard') === 'true',
+    budgetBand: params.get('budgetBand'),
+    moods: params.getAll('mood'),
+  });
+
   if (!parsed.success) {
     return NextResponse.json(
       {
@@ -59,39 +70,37 @@ export async function POST(request: Request) {
 
   const researchRequest = parsed.data;
   const { mode, reason } = describeMode();
+  const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       let closed = false;
       const send = (frame: Frame) => {
-        if (!closed) controller.enqueue(line(frame));
+        if (closed) return;
+        controller.enqueue(encoder.encode(`event: ${frame.type}\ndata: ${JSON.stringify(frame)}\n\n`));
       };
 
       send({ type: 'mode', mode, reason });
 
-      // The stages are a genuine description of the work, paced to the path being taken:
-      // a cached compose is near-instant, a live call is not.
+      // The stages describe the work honestly, paced to the path being taken: composing a saved
+      // plan is near-instant, a live call with web search is not.
       const pace = mode === 'live' ? 6500 : 550;
       let stageIndex = 0;
       send({ type: 'stage', ...RESEARCH_STAGES[0] });
       const ticker = setInterval(() => {
         stageIndex += 1;
-        if (stageIndex < RESEARCH_STAGES.length) {
-          send({ type: 'stage', ...RESEARCH_STAGES[stageIndex] });
-        }
+        if (stageIndex < RESEARCH_STAGES.length) send({ type: 'stage', ...RESEARCH_STAGES[stageIndex] });
       }, pace);
 
       try {
         const outcome = await runResearch(researchRequest);
-        clearInterval(ticker);
         send({ type: 'plan', plan: outcome.plan, fallbackReason: outcome.fallbackReason });
       } catch (err) {
-        clearInterval(ticker);
         if (err instanceof NoCachedPlanError) {
           send({
             type: 'error',
             message:
-              'There is no saved plan for this destination, and without an API key there is nothing to research it with. Add a key to .env.local, or pick one of the destinations that has a saved plan.',
+              'There is no saved plan for this destination, and without an API key there is nothing to research it with. Add a key to .env.local, or pick one of the destinations marked “Plan ready”.',
             recoverable: false,
           });
         } else {
@@ -111,8 +120,9 @@ export async function POST(request: Request) {
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'application/x-ndjson; charset=utf-8',
+      'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-store, no-transform',
+      Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
     },
   });

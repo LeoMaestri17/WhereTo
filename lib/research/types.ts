@@ -140,3 +140,22 @@ export const RESEARCH_STAGES = [
 ] as const;
 
 export type ResearchStageId = (typeof RESEARCH_STAGES)[number]['id'];
+
+/** Builds the EventSource URL for a research run. Kept next to the schema it has to satisfy. */
+export function researchQuery(request: ResearchRequest): string {
+  const params = new URLSearchParams({
+    ideaSlug: request.ideaSlug,
+    ideaTitle: request.ideaTitle,
+    region: request.region,
+    shape: request.shape,
+    startDate: request.startDate,
+    endDate: request.endDate,
+    groupSize: String(request.groupSize),
+    hasCar: String(request.hasCar),
+    isOver21: String(request.isOver21),
+    hasUsCreditCard: String(request.hasUsCreditCard),
+    budgetBand: request.budgetBand,
+  });
+  for (const mood of request.moods) params.append('mood', mood);
+  return `/api/research?${params.toString()}`;
+}
