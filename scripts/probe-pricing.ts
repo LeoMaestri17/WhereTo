@@ -161,11 +161,16 @@ async function main() {
   if (want('campgrounds')) await probeCampgrounds();
   if (want('links')) await probeLinks();
 
-  const quota = M.quotaStatus();
+  const quota = await M.quotaStatus();
   heading('QUOTA');
-  console.log(
-    `  spent this run: ${budget.spent} · spent this month: ${quota.spentThisMonth}/${quota.monthlyBudget} · per-run cap: ${quota.perRunCap}`,
-  );
+  console.log(`  spent this run: ${budget.spent} · per-run cap: ${quota.perRunCap}`);
+  if (quota.account) {
+    console.log(
+      `  SerpApi account: ${quota.account.totalSearchesLeft} of ${quota.account.searchesPerMonth} left · ` +
+        `${quota.account.thisMonthUsage} used this month · ${quota.account.thisHourSearches} this hour`,
+    );
+    console.log(`  reserve floor: ${quota.reserveFloor} searches are held back and will not be spent.`);
+  }
   console.log('  Re-running should cost 0 — the disk cache answers identical queries for free.');
 }
 

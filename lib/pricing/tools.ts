@@ -57,7 +57,8 @@ export const PRICING_TOOLS = [
       'Real flight prices from Google Flights for a specific route and date. Returns named ' +
       'airlines, flight numbers, times, stops and the total price for the party. Use this ' +
       'rather than recalling or searching for fares — it is the only way to get a figure tied ' +
-      'to these exact dates.',
+      'to these exact dates. Each result carries both totalPriceUsd for the whole party and ' +
+      'perPersonUsd; costed lines are per person, so use perPersonUsd.',
     input_schema: toJsonSchema(flightArgs),
   },
   {
@@ -166,11 +167,15 @@ async function runFlights(
     };
   }
 
-  const quotes: LedgerQuote[] = result.flights.map((f) => ({
-    label: `${f.legs[0]?.airline ?? ''} ${f.legs[0]?.flightNumber ?? ''}`.trim(),
-    priceUsd: f.totalPriceUsd,
-    url: f.bookingLink,
-  }));
+  // Both figures go in the ledger: the model may legitimately quote either the party total or
+  // the per-person share, and neither should have to survive on a split heuristic.
+  const quotes: LedgerQuote[] = result.flights.flatMap((f) => {
+    const name = `${f.legs[0]?.airline ?? ''} ${f.legs[0]?.flightNumber ?? ''}`.trim();
+    return [
+      { label: `${name} (party of ${result.adults})`, priceUsd: f.totalPriceUsd, url: f.bookingLink },
+      { label: `${name} (per person)`, priceUsd: f.perPersonUsd, url: f.bookingLink },
+    ];
+  });
   ledger.record({
     resultId: result.resultId,
     tool: 'search_flights',
@@ -180,11 +185,11 @@ async function runFlights(
     quotes,
   });
 
-  const cheapest = Math.min(...result.flights.map((f) => f.totalPriceUsd));
+  const cheapest = Math.min(...result.flights.map((f) => f.perPersonUsd));
   return {
     result,
     isError: false,
-    label: `Google Flights · ${route} · ${result.flights.length} fares, cheapest $${cheapest}`,
+    label: `Google Flights · ${route} · ${result.flights.length} fares, cheapest ${Math.round(cheapest)} each`,
     ok: true,
     cached: false,
   };

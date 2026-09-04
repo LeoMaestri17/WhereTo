@@ -46,7 +46,10 @@ export interface FlightLeg {
 export interface FlightQuote {
   legs: FlightLeg[];
   stops: number;
+  /** What Google charges for the WHOLE party. Not per person — that trap is why both exist. */
   totalPriceUsd: number;
+  /** totalPriceUsd divided by the party size actually searched for. */
+  perPersonUsd: number;
   /** Google's own booking link for this itinerary, when it gives one. */
   bookingLink?: string;
   carbonKg?: number;

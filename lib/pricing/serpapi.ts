@@ -57,7 +57,7 @@ export async function serpApiSearch(
     return { data: hit.value, checkedAt: hit.storedAt, cachedAt: hit.storedAt };
   }
 
-  const verdict = reserve(options.budget);
+  const verdict = await reserve(options.budget);
   if (!verdict.ok) {
     return unavailable(
       verdict.reason,

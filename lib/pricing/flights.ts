@@ -55,7 +55,7 @@ interface RawItinerary {
   layovers?: unknown[];
 }
 
-function toQuote(raw: RawItinerary): FlightQuote | null {
+function toQuote(raw: RawItinerary, adults: number): FlightQuote | null {
   const rawLegs = raw.flights ?? [];
   if (rawLegs.length === 0 || typeof raw.price !== 'number') return null;
 
@@ -73,6 +73,7 @@ function toQuote(raw: RawItinerary): FlightQuote | null {
     legs,
     stops: Math.max(0, legs.length - 1),
     totalPriceUsd: raw.price,
+    perPersonUsd: Math.round((raw.price / Math.max(1, adults)) * 100) / 100,
     // Google's booking flow needs the token; the deep link is the honest thing to hand a user.
     bookingLink: raw.booking_token
       ? `https://www.google.com/travel/flights?tfs=${encodeURIComponent(raw.booking_token)}`
@@ -127,7 +128,7 @@ export async function searchFlights(
   const other = Array.isArray(data.other_flights) ? (data.other_flights as RawItinerary[]) : [];
 
   const flights = [...best, ...other]
-    .map(toQuote)
+    .map((raw) => toQuote(raw, args.adults))
     .filter((q): q is FlightQuote => q !== null)
     .sort((a, b) => a.totalPriceUsd - b.totalPriceUsd)
     .slice(0, MAX_FLIGHTS);
