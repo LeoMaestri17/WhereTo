@@ -1,11 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { INTEREST_LABELS, INTEREST_TAGS, type InterestTag } from '@/lib/domain/types';
+import { useState } from 'react';
 import { useStore } from '@/lib/store/StoreProvider';
 import { currentUser } from '@/lib/store/selectors';
 import { Avatar } from './people';
-import { Button, Chip, Panel } from './ui';
+import { Button } from './ui';
 
 /**
  * Identity without a password. Pick somebody from the cohort or add yourself, then answer the
@@ -182,12 +181,9 @@ function Field({
 function AboutYou({ onBack }: { onBack: () => void }) {
   const { state, dispatch } = useStore();
   const me = currentUser(state);
-  const [interests, setInterests] = useState<InterestTag[]>(me?.interests ?? []);
   const [isOver21, setIsOver21] = useState((me?.age ?? 20) >= 21);
   const [hasCar, setHasCar] = useState(me?.hasCar ?? false);
   const [hasUsCreditCard, setHasUsCreditCard] = useState(me?.hasUsCreditCard ?? false);
-
-  const enough = useMemo(() => interests.length >= 2, [interests]);
 
   if (!me) return null;
 
@@ -205,28 +201,13 @@ function AboutYou({ onBack }: { onBack: () => void }) {
         </div>
       </section>
 
-      <section>
-        <h2 className="type-heading">What would get you out of your flat?</h2>
-        <p className="type-meta mt-1 text-muted">
-          Pick at least two. This orders your feed — it never hides anything from you.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {INTEREST_TAGS.map((tag) => (
-            <Chip
-              key={tag}
-              active={interests.includes(tag)}
-              onClick={() =>
-                setInterests((prev) =>
-                  prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-                )
-              }
-            >
-              {INTEREST_LABELS[tag]}
-            </Chip>
-          ))}
-        </div>
-      </section>
-
+      {/*
+        There used to be a "pick at least two interests" step here. It went because it was the
+        wrong question at the wrong moment: it asks somebody who has just arrived to declare a
+        taste before they have anything to apply it to, and then holds the app hostage until they
+        do. The picker on /plan asks what you are doing *this* trip, which is both easier to
+        answer and more useful, since it changes a price rather than an ordering.
+      */}
       <section>
         <h2 className="type-heading">The three that change the money</h2>
         <p className="type-meta mt-1 text-muted">
@@ -254,19 +235,12 @@ function AboutYou({ onBack }: { onBack: () => void }) {
         </div>
       </section>
 
-      {!enough ? (
-        <Panel tone="warn">
-          <p className="type-meta">Pick two things you are interested in and you are done.</p>
-        </Panel>
-      ) : null}
-
       <Button
         size="lg"
-        disabled={!enough}
         onClick={() =>
           dispatch({
             type: 'completeOnboarding',
-            interests,
+            interests: me.interests,
             constraints: { isOver21, hasCar, hasUsCreditCard },
           })
         }

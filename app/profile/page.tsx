@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { Toggle } from '@/components/Onboarding';
 import { QuestCard } from '@/components/cards';
 import { Avatar } from '@/components/people';
-import { Button, Chip, EmptyState, LinkButton, Panel, SectionHeader } from '@/components/ui';
-import { INTEREST_LABELS, INTEREST_TAGS, type InterestTag } from '@/lib/domain/types';
+import { Button, EmptyState, LinkButton, Panel, SectionHeader } from '@/components/ui';
 import { useStore } from '@/lib/store/StoreProvider';
 import {
   currentUser,
@@ -119,7 +118,7 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <InterestsSection me={me} />
+      <ConstraintsSection me={me} />
 
       <section>
         <SectionHeader
@@ -142,16 +141,22 @@ export default function ProfilePage() {
   );
 }
 
-function InterestsSection({ me }: { me: NonNullable<ReturnType<typeof currentUser>> }) {
+/**
+ * The three constraints, and nothing else.
+ *
+ * A list of interest chips used to live here too. It came out because a standing declaration of
+ * taste is the wrong instrument: it goes stale, nobody maintains it, and it only ever reordered a
+ * feed. What you are in the mood for is asked per trip on /plan, where it changes a price. These
+ * three do not go stale, and every estimate in the app depends on them.
+ */
+function ConstraintsSection({ me }: { me: NonNullable<ReturnType<typeof currentUser>> }) {
   const { dispatch } = useStore();
-  const [interests, setInterests] = useState<InterestTag[]>(me.interests);
   const [isOver21, setIsOver21] = useState(me.age >= 21);
   const [hasCar, setHasCar] = useState(me.hasCar);
   const [hasUsCreditCard, setHasUsCreditCard] = useState(me.hasUsCreditCard);
   const [saved, setSaved] = useState(false);
 
   const dirty =
-    JSON.stringify(interests) !== JSON.stringify(me.interests) ||
     isOver21 !== me.age >= 21 ||
     hasCar !== me.hasCar ||
     hasUsCreditCard !== me.hasUsCreditCard;
@@ -159,28 +164,11 @@ function InterestsSection({ me }: { me: NonNullable<ReturnType<typeof currentUse
   return (
     <section>
       <SectionHeader
-        title="What you are into, and what constrains you"
-        detail="Interests order your feed. The three toggles change every cost estimate the planner produces."
+        title="The three that change every price"
+        detail="Nobody else asks these, which is why the numbers you see elsewhere are wrong for you. Change one and every estimate moves."
       />
 
-      <div className="flex flex-wrap gap-2">
-        {INTEREST_TAGS.map((tag) => (
-          <Chip
-            key={tag}
-            active={interests.includes(tag)}
-            onClick={() => {
-              setSaved(false);
-              setInterests((prev) =>
-                prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-              );
-            }}
-          >
-            {INTEREST_LABELS[tag]}
-          </Chip>
-        ))}
-      </div>
-
-      <div className="mt-4 space-y-2">
+      <div className="space-y-2">
         <Toggle
           label="I am 21 or over"
           detail="Under 21 rules out car hire entirely, plus bars, clubs and casino floors."
@@ -216,7 +204,7 @@ function InterestsSection({ me }: { me: NonNullable<ReturnType<typeof currentUse
           onClick={() => {
             dispatch({
               type: 'updateProfile',
-              interests,
+              interests: me.interests,
               constraints: { isOver21, hasCar, hasUsCreditCard },
             });
             setSaved(true);
