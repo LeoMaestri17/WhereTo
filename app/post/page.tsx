@@ -12,6 +12,7 @@ import {
   type InterestTag,
   type Quest,
   type QuestKind,
+  type QuestVisibility,
 } from '@/lib/domain/types';
 import { IDEAS_BY_SLUG } from '@/lib/seed/ideas';
 import { PHOTOS } from '@/lib/seed/images';
@@ -71,7 +72,9 @@ function PostForm() {
   const idea = ideaSlug ? IDEAS_BY_SLUG[ideaSlug] : undefined;
   const plan = ideaSlug ? state.planCache[ideaSlug] : undefined;
 
-  const [kind, setKind] = useState<QuestKind>(idea ? (idea.nights > 0 ? 'trip' : 'plan') : 'plan');
+  const [kind, setKind] = useState<QuestKind>(
+    idea ? (idea.nights > 0 ? 'trip' : 'activity') : 'activity',
+  );
   const [title, setTitle] = useState(idea ? idea.title : '');
   const [destination, setDestination] = useState(idea ? idea.region.split(',')[0] : '');
   const [cover, setCover] = useState(idea ? idea.image : COVER_CHOICES[0]);
@@ -88,6 +91,8 @@ function PostForm() {
   const [meetingPoint, setMeetingPoint] = useState('');
   const [tags, setTags] = useState<InterestTag[]>(idea?.tags.slice(0, 4) ?? []);
   const [attachPlan, setAttachPlan] = useState(Boolean(plan));
+  const [visibility, setVisibility] = useState<QuestVisibility>('public');
+  const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [errors, setErrors] = useState<Errors>({});
 
   const costEstimate = useMemo(() => {
@@ -109,7 +114,7 @@ function PostForm() {
       next.description =
         'Write a few sentences. What the plan is, what it costs, what people need to bring. This is the whole difference between a post people join and one they scroll past.';
     if (kind === 'trip' && daysBetween(startDate, endDate) < 1)
-      next.dates = 'A trip needs at least one night. Post it as a plan if it is a single day.';
+      next.dates = 'A trip needs at least one night. Post it as an activity if it is a single day.';
     if (new Date(`${deadline}T23:59`).getTime() <= Date.now())
       next.deadline = 'The deadline has to be in the future or nobody can join.';
     if (daysBetween(deadline, startDate) < 0)
@@ -130,9 +135,13 @@ function PostForm() {
       title: title.trim(),
       destination: destination.trim(),
       cover,
+      visibility,
+      invitedUserIds: visibility === 'private' ? invitedUserIds : [],
+      inviteCode:
+        visibility === 'private' ? `inv-${Math.random().toString(36).slice(2, 9)}` : undefined,
       startDate,
       endDate: kind === 'trip' ? endDate : undefined,
-      timeLabel: kind === 'plan' && timeLabel.trim() ? timeLabel.trim() : undefined,
+      timeLabel: kind === 'activity' && timeLabel.trim() ? timeLabel.trim() : undefined,
       capacity,
       hostId: me.id,
       description: description.trim(),
@@ -181,10 +190,49 @@ function PostForm() {
         </Panel>
       ) : null}
 
-      <Field label="Is this a trip or a plan?">
+      <Field
+        label="Who sees this?"
+        hint="The whole point is going with people you like. A private post never appears in the feed — you send the link to whoever you actually want there."
+      >
+        <div className="flex flex-wrap gap-2">
+          <Chip active={visibility === 'public'} onClick={() => setVisibility('public')}>
+            Anyone in the cohort
+          </Chip>
+          <Chip active={visibility === 'private'} onClick={() => setVisibility('private')}>
+            Only people I invite
+          </Chip>
+        </div>
+        {visibility === 'private' ? (
+          <div className="mt-3 rounded-xl border border-line bg-surface-2 p-3">
+            <p className="type-meta text-muted">
+              Pick who to invite. You will get a link you can send to anyone else.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {state.users
+                .filter((u) => u.id !== me?.id)
+                .slice(0, 12)
+                .map((u) => (
+                  <Chip
+                    key={u.id}
+                    active={invitedUserIds.includes(u.id)}
+                    onClick={() =>
+                      setInvitedUserIds((prev) =>
+                        prev.includes(u.id) ? prev.filter((id) => id !== u.id) : [...prev, u.id],
+                      )
+                    }
+                  >
+                    {u.name.split(' ')[0]}
+                  </Chip>
+                ))}
+            </div>
+          </div>
+        ) : null}
+      </Field>
+
+      <Field label="Is this a trip or an activity?">
         <div className="flex gap-2">
-          <Chip active={kind === 'plan'} onClick={() => setKind('plan')}>
-            Plan — one day, local
+          <Chip active={kind === 'activity'} onClick={() => setKind('activity')}>
+            Activity — a few hours
           </Chip>
           <Chip active={kind === 'trip'} onClick={() => setKind('trip')}>
             Trip — overnight

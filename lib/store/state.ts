@@ -32,7 +32,9 @@ export interface AppState {
   planCache: Record<string, ResearchPlan>;
 }
 
-export const STATE_VERSION = 1;
+// Bumped when the persisted shape changes: readPersisted returns null on a mismatch and the
+// seed is rebuilt. Version 2 added quest visibility, invitedUserIds and the trip/activity rename.
+export const STATE_VERSION = 2;
 
 export function buildSeedState(): AppState {
   return {

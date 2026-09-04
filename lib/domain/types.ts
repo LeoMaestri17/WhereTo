@@ -72,7 +72,7 @@ export interface CohortUser {
 
 /* ------------------------------------------------------------------ quests */
 
-export type QuestKind = 'trip' | 'plan';
+export type QuestKind = 'trip' | 'activity';
 
 /** Stored lifecycle. Everything else about status is derived — see deriveQuestStatus. */
 export type QuestLifecycle = 'active' | 'cancelled' | 'completed';
@@ -113,17 +113,30 @@ export interface TripActuals {
   reportedAt: string;
 }
 
+/**
+ * Who can see a post at all.
+ *
+ * The insight this exists to serve: people want to travel with people they like, not with
+ * whoever answers an advert. A private post never appears in the feed — you send the link.
+ */
+export type QuestVisibility = 'public' | 'private';
+
 export interface Quest {
   id: ID;
   kind: QuestKind;
   title: string;
   destination: string;
   cover: string;
-  /** ISO date. For plans this is the single date. */
+  visibility: QuestVisibility;
+  /** Private posts only. The people the host actually asked. */
+  invitedUserIds: ID[];
+  /** Private posts only. Anyone holding this can open the post. */
+  inviteCode?: string;
+  /** ISO date. For an activity this is the single date. */
   startDate: string;
   /** ISO date. Trips only. */
   endDate?: string;
-  /** Human time for plans, e.g. '7:10pm tip-off'. */
+  /** Human time for an activity, e.g. '7:10pm tip-off'. */
   timeLabel?: string;
   capacity: number;
   hostId: ID;

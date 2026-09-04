@@ -39,7 +39,7 @@ export function Onboarding() {
       )}
 
       <p className="type-meta mt-10 text-faint">
-        Seeded with {state.users.length} exchange students, {state.quests.length} trips and plans,
+        Seeded with {state.users.length} exchange students, {state.quests.length} trips and activities,
         and events from four sources. Nothing here leaves your browser.
       </p>
     </div>

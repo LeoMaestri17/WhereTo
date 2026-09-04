@@ -91,7 +91,7 @@ export default function ProfilePage() {
           <EmptyState
             title="You have not posted anything"
             body="Somebody has to go first, and it is a lower bar than it sounds — a date, a place and a number of spots is a post."
-            action={<LinkButton href="/post">Post a plan</LinkButton>}
+            action={<LinkButton href="/post">Post an activity</LinkButton>}
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

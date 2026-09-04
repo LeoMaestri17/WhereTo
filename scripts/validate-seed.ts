@@ -160,6 +160,26 @@ async function main() {
     check(statuses.has(required), `No seeded quest derives the "${required}" status`);
   }
 
+  /* ------------------------------------------------ visibility */
+
+  const privateQuests = quests.filter((q) => q.visibility === 'private');
+  check(privateQuests.length >= 1, 'No seeded quest is private, so that state is unreachable');
+  for (const q of privateQuests) {
+    check(
+      q.invitedUserIds.length >= 1,
+      `${q.id} is private but nobody is invited, so only the host can ever see it`,
+    );
+    check(Boolean(q.inviteCode), `${q.id} is private but has no invite code to share`);
+    for (const id of q.invitedUserIds) {
+      check(userIds.has(id), `${q.id} invites unknown user ${id}`);
+      check(id !== q.hostId, `${q.id} invites its own host`);
+    }
+  }
+  check(
+    quests.some((q) => q.visibility === 'public'),
+    'Every quest is private, so the public feed would be empty',
+  );
+
   const completed = quests.filter((q) => q.lifecycle === 'completed');
   check(completed.length >= 3, `Expected at least 3 completed trips with actuals, found ${completed.length}`);
   for (const q of completed) {
@@ -267,8 +287,8 @@ async function main() {
   notes.push(`${users.length} cohort members, ${Object.keys(friendships).length} in the graph`);
   notes.push(
     `${quests.length} quests (${quests.filter((q) => q.kind === 'trip').length} trips, ${
-      quests.filter((q) => q.kind === 'plan').length
-    } plans), statuses seen: ${[...statuses].sort().join(', ')}`,
+      quests.filter((q) => q.kind === 'activity').length
+    } activities), statuses seen: ${[...statuses].sort().join(', ')}`,
   );
   notes.push(
     `${memberships.filter((m) => m.state === 'approved').length} approved memberships, ${

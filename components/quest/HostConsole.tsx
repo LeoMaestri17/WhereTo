@@ -107,6 +107,8 @@ export function HostConsole({ quest }: { quest: Quest }) {
         </div>
       ) : null}
 
+      {quest.visibility === 'private' ? <InviteLink quest={quest} /> : null}
+
       {quest.lifecycle === 'active' ? <CancelControl quest={quest} /> : null}
     </section>
   );
@@ -151,6 +153,44 @@ function RequestRow({
         ) : null}
       </div>
     </li>
+  );
+}
+
+/** A private post is only reachable by link, so the host needs one they can actually send. */
+function InviteLink({ quest }: { quest: Quest }) {
+  const [copied, setCopied] = useState(false);
+  const url =
+    typeof window === 'undefined'
+      ? ''
+      : `${window.location.origin}/quests/${quest.id}?invite=${quest.inviteCode ?? ''}`;
+
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <p className="type-meta font-medium">This one is invite only</p>
+      <p className="type-meta mt-0.5 text-muted">
+        It never appears in the feed. Anyone with this link can open it and ask to join.
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-surface px-3 py-2 type-meta text-muted">
+          {url}
+        </code>
+        <Button
+          size="sm"
+          tone="quiet"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch {
+              // Clipboard blocked; the link is on screen to copy by hand.
+            }
+          }}
+        >
+          {copied ? 'Copied' : 'Copy link'}
+        </Button>
+      </div>
+    </div>
   );
 }
 

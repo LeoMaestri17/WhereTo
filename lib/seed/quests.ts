@@ -15,7 +15,8 @@ import { COHORT_USERS } from './users';
  * Dates are relative to the moment the demo data is generated, so deadlines are always live.
  */
 
-interface SeedQuest extends Omit<Quest, 'createdAt'> {
+// visibility and invite fields are applied in buildQuests rather than written onto every literal.
+interface SeedQuest extends Omit<Quest, 'createdAt' | 'visibility' | 'invitedUserIds' | 'inviteCode'> {
   /** Approved joiners, excluding the host, who always occupies one seat. */
   approved: string[];
   createdDaysAgo: number;
@@ -239,7 +240,7 @@ const trips: SeedQuest[] = [
 const plans: SeedQuest[] = [
   {
     id: 'p-lakers',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Lakers, upper bowl, whoever they are playing',
     destination: 'Crypto.com Arena',
     cover: PHOTOS.basketballArena,
@@ -259,7 +260,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-dodgers',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Dodgers day game, top deck',
     destination: 'Dodger Stadium',
     cover: PHOTOS.baseballStadium,
@@ -279,7 +280,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-santa-monica',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Santa Monica beach day and the pier at sunset',
     destination: 'Santa Monica',
     cover: PHOTOS.santaMonicaPier,
@@ -299,7 +300,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-griffith',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Griffith Observatory when it gets dark',
     destination: 'Griffith Observatory',
     cover: PHOTOS.griffithObservatory,
@@ -319,7 +320,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-runyon',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Runyon Canyon before class',
     destination: 'Runyon Canyon, Hollywood',
     cover: PHOTOS.hikingTrail,
@@ -339,7 +340,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-broad',
-    kind: 'plan',
+    kind: 'activity',
     title: 'The Broad, then Grand Central Market',
     destination: 'Bunker Hill, Downtown',
     cover: PHOTOS.artGallery,
@@ -359,7 +360,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-kbbq',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Korean barbecue in Koreatown, done properly',
     destination: 'Koreatown',
     cover: PHOTOS.koreanBbq,
@@ -379,7 +380,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-smorgasburg',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Smorgasburg at ROW DTLA',
     destination: 'ROW DTLA, Arts District',
     cover: PHOTOS.nightMarket,
@@ -399,7 +400,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-surf-lesson',
-    kind: 'plan',
+    kind: 'activity',
     title: 'First surf lesson at Manhattan Beach',
     destination: 'Manhattan Beach',
     cover: PHOTOS.surfBeach,
@@ -419,7 +420,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-melrose',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Thrifting the length of Melrose',
     destination: 'Melrose Avenue',
     cover: PHOTOS.thriftStore,
@@ -439,7 +440,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-lafc',
-    kind: 'plan',
+    kind: 'activity',
     title: 'LAFC at BMO Stadium — we can walk there',
     destination: 'BMO Stadium, Exposition Park',
     cover: PHOTOS.concertCrowd,
@@ -459,7 +460,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-malibu',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Malibu drive to El Matador',
     destination: 'El Matador State Beach',
     cover: PHOTOS.malibuRoad,
@@ -479,7 +480,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-huntington',
-    kind: 'plan',
+    kind: 'activity',
     title: 'The Huntington gardens, all sixteen of them',
     destination: 'San Marino',
     cover: PHOTOS.huntingtonGarden,
@@ -499,7 +500,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-disneyland',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Disneyland, the one we keep not doing',
     destination: 'Anaheim',
     cover: PHOTOS.disneylandCastle,
@@ -519,7 +520,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-vista',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Double bill at the Vista, Los Feliz',
     destination: 'Vista Theatre, Los Feliz',
     cover: PHOTOS.cinema,
@@ -539,7 +540,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-dockweiler',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Bonfire at Dockweiler',
     destination: 'Dockweiler State Beach',
     cover: PHOTOS.beachCleanup,
@@ -559,7 +560,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-angeles-crest',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Stargazing drive up Angeles Crest',
     destination: 'Angeles National Forest',
     cover: PHOTOS.desertCamp,
@@ -579,7 +580,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-five-a-side',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Five-a-side at Exposition Park',
     destination: 'Exposition Park',
     cover: PHOTOS.campusLawn,
@@ -599,7 +600,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-vasquez',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Sunrise at Vasquez Rocks',
     destination: 'Agua Dulce',
     cover: PHOTOS.hikingHills,
@@ -625,7 +626,7 @@ const plans: SeedQuest[] = [
    */
   {
     id: 'p-melrose-flea',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Melrose Trading Post on a Sunday',
     destination: 'Fairfax High School',
     cover: PHOTOS.vintageRack,
@@ -645,7 +646,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-friendship-bell',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Sunset at the Korean Friendship Bell, San Pedro',
     destination: 'Angels Gate Park, San Pedro',
     cover: PHOTOS.sanDiegoCliffs,
@@ -665,7 +666,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-echo-allages',
-    kind: 'plan',
+    kind: 'activity',
     title: 'All-ages show at the Echo, Echo Park',
     destination: 'The Echo, Echo Park',
     cover: PHOTOS.smallVenue,
@@ -685,7 +686,7 @@ const plans: SeedQuest[] = [
   },
   {
     id: 'p-sturtevant',
-    kind: 'plan',
+    kind: 'activity',
     title: 'Sturtevant Falls, Chantry Flat',
     destination: 'Angeles National Forest',
     cover: PHOTOS.hikingTrail,
@@ -757,12 +758,29 @@ const ACTUALS: Record<string, TripActuals> = {
 
 const ALL_SEED: SeedQuest[] = [...trips, ...plans];
 
+/**
+ * A handful of seeded posts are private, so the "only people I invite" state is reachable in the
+ * demo rather than only in theory. Defaults are applied here rather than written onto all
+ * thirty-three literals.
+ */
+const PRIVATE_SEED: Record<string, string[]> = {
+  'q-zion': ['u-nils', 'u-felix', 'u-marta', 'u-lukas'],
+  'p-angeles-crest': ['u-lukas', 'u-freya', 'u-nils', 'u-jonas'],
+  'p-friendship-bell': ['u-priya', 'u-marta', 'u-yuki'],
+};
+
 export function buildQuests(): Quest[] {
-  return ALL_SEED.map(({ approved: _approved, createdDaysAgo, ...quest }) => ({
-    ...quest,
-    createdAt: isoAt(-createdDaysAgo, 14, 0),
-    actuals: ACTUALS[quest.id],
-  }));
+  return ALL_SEED.map(({ approved: _approved, createdDaysAgo, ...quest }) => {
+    const invited = PRIVATE_SEED[quest.id];
+    return {
+      ...quest,
+      visibility: invited ? ('private' as const) : ('public' as const),
+      invitedUserIds: invited ?? [],
+      inviteCode: invited ? `inv-${quest.id.replace(/^[qp]-/, '')}` : undefined,
+      createdAt: isoAt(-createdDaysAgo, 14, 0),
+      actuals: ACTUALS[quest.id],
+    };
+  });
 }
 
 /**
@@ -824,14 +842,14 @@ export function buildMemberships(): Membership[] {
       ],
     },
     {
-      fits: (q) => q.kind === 'plan' && q.tags.includes('sports'),
+      fits: (q) => q.kind === 'activity' && q.tags.includes('sports'),
       notes: [
         'Never seen a game here. Happy to pay you back the same day.',
         'I finish class at two — is that early enough?',
       ],
     },
     {
-      fits: (q) => q.kind === 'plan',
+      fits: (q) => q.kind === 'activity',
       notes: [
         'Free that whole day.',
         'Is it walkable from campus or should I get the Metro?',

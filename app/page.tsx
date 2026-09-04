@@ -39,7 +39,7 @@ export default function HappeningPage() {
 
   const closingIds = new Set(closingSoon.map((q) => q.id));
   const trips = quests.filter((q) => q.kind === 'trip' && !closingIds.has(q.id)).slice(0, 6);
-  const plans = quests.filter((q) => q.kind === 'plan' && !closingIds.has(q.id)).slice(0, 6);
+  const activities = quests.filter((q) => q.kind === 'activity' && !closingIds.has(q.id)).slice(0, 6);
   const done = useMemo(() => completedQuests(state).slice(0, 3), [state]);
 
   const forYou = useMemo(
@@ -72,7 +72,7 @@ export default function HappeningPage() {
         {closingSoon.length === 0 ? (
           <EmptyState
             title="Nothing is taking sign-ups right now"
-            body="Every trip and plan in the cohort has either filled up or passed its deadline. That is usually the moment to post one of your own."
+            body="Every trip and activity in the cohort has either filled up or passed its deadline. That is usually the moment to post one of your own."
             action={<LinkButton href="/ideas">Look through the ideas</LinkButton>}
           />
         ) : (
@@ -105,16 +105,19 @@ export default function HappeningPage() {
       </section>
 
       <section>
-        <SectionHeader title="Plans" detail="Local, cheap, and mostly happening this week." />
-        {plans.length === 0 ? (
+        <SectionHeader
+          title="Activities"
+          detail="A few hours, local, and mostly happening this week."
+        />
+        {activities.length === 0 ? (
           <EmptyState
-            title="No local plans yet"
-            body="A plan is a low-stakes thing: a date, a place and a number of spots. It takes about a minute to post one."
-            action={<LinkButton href="/post">Post a plan</LinkButton>}
+            title="No activities yet"
+            body="An activity is a low-stakes thing: a date, a place and a number of spots. It takes about a minute to post one."
+            action={<LinkButton href="/post">Post an activity</LinkButton>}
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {plans.map((q) => (
+            {activities.map((q) => (
               <QuestCard key={q.id} view={questView(state, q)} />
             ))}
           </div>
@@ -141,7 +144,7 @@ export default function HappeningPage() {
         ) : forYou.length === 0 ? (
           <EmptyState
             title="Nothing upcoming from the four sources"
-            body="Everything the adapters returned has already happened. The trips and plans above are posted by people rather than pulled in, so they are unaffected."
+            body="Everything the adapters returned has already happened. The trips and activities above are posted by people rather than pulled in, so they are unaffected."
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,7 +188,7 @@ export default function HappeningPage() {
 
       <footer className="border-t border-line pt-6">
         <p className="type-meta text-faint">
-          {quests.length} trips and plans open across the cohort · next deadline{' '}
+          {quests.length} trips and activities open across the cohort · next deadline{' '}
           {closingSoon[0] ? relativeDay(closingSoon[0].signupDeadline) : 'none set'} ·{' '}
           <Link href="/profile" className="underline">
             manage your demo data

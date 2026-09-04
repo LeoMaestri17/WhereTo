@@ -29,7 +29,7 @@ import type { ResearchPlan, ResearchRequest } from './types';
  */
 
 const MODEL = 'claude-opus-5';
-const MAX_ITERATIONS = 10;
+const MAX_ITERATIONS = 6;
 /** The pricing APIs do the heavy lifting now, so far fewer searches are needed than before. */
 const WEB_SEARCH_TOOL = {
   type: 'web_search_20260209' as const,
@@ -184,6 +184,12 @@ The pricing lookups are metered and the budget is small. Be economical: one flig
 best airport rather than one for each, and one or two hotel searches for the areas you would
 actually recommend, not a survey of every neighbourhood. Two or three lookups is a good run.
 
+Web search is NOT metered, and you are currently under-using it. Everything the pricing APIs do
+not cover still has to be checked, not recalled: local transit fares, airport transfers, park and
+venue entry, rental rates and the under-25 surcharge, and the age policy of anywhere you send
+them. A figure you looked up can be labelled "web" and kept; a figure you merely remember becomes
+an unverified estimate and is worth much less to the reader. Search for the ones that matter.
+
 These travellers are 19 and 20 year olds on foreign licences with no US credit history. The
 things that turn a $300 weekend into a $700 one are the under-25 young-driver surcharge, deposit
 and incidental holds, resort fees, park entry, and 21+ door policies. Find them.
@@ -324,9 +330,12 @@ export async function runResearchAgent(
     try {
       message = await client.create({
         model: MODEL,
-        max_tokens: 16000,
+        // The research phase only decides what to look up and jots findings; it does not write
+        // prose. Low effort and a small ceiling here is most of the difference between a
+        // five-minute run and a one-minute one.
+        max_tokens: 8000,
         thinking: { type: 'adaptive' },
-        output_config: { effort: 'medium' },
+        output_config: { effort: 'low' },
         // The tool list and system prompt are byte-identical every iteration, so caching the
         // prefix means only the growing tail is billed as fresh input after the first pass.
         system: [

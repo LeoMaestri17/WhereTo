@@ -73,10 +73,29 @@ export function questById(state: AppState, id: string): Quest | null {
   return state.quests.find((q) => q.id === id) ?? null;
 }
 
+/**
+ * Whether this viewer may see a post at all.
+ *
+ * Applied to the feed selectors only — deliberately not to `hostedBy` or `questsJoinedBy`, which
+ * are already scoped to the viewer. Filtering there would hide your own private post from your
+ * own profile, which is the one place it must always appear.
+ */
+export function canSee(state: AppState, quest: Quest, inviteCode?: string | null): boolean {
+  if (quest.visibility === 'public') return true;
+
+  const me = state.currentUserId;
+  if (!me) return false;
+  if (quest.hostId === me) return true;
+  if (quest.invitedUserIds.includes(me)) return true;
+  if (state.memberships.some((m) => m.questId === quest.id && m.userId === me)) return true;
+  return Boolean(inviteCode && quest.inviteCode && inviteCode === quest.inviteCode);
+}
+
 /** Quests still ahead of us, soonest first. Never ordered by how many people are going. */
 export function upcomingQuests(state: AppState): Quest[] {
   const today = new Date().setHours(0, 0, 0, 0);
   return state.quests
+    .filter((q) => canSee(state, q))
     .filter((q) => q.lifecycle !== 'completed')
     .filter((q) => new Date(q.endDate ?? q.startDate).getTime() >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
@@ -84,6 +103,7 @@ export function upcomingQuests(state: AppState): Quest[] {
 
 export function completedQuests(state: AppState): Quest[] {
   return state.quests
+    .filter((q) => canSee(state, q))
     .filter((q) => q.lifecycle === 'completed')
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }

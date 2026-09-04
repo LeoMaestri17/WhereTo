@@ -38,7 +38,7 @@ export function QuestCard({ view }: { view: QuestView }) {
           <StatusPill status={status} />
         </div>
         <span className="absolute right-3 top-3 rounded-full bg-surface/95 px-2.5 py-1 type-micro text-muted backdrop-blur-sm">
-          {quest.kind === 'trip' ? 'Trip' : 'Plan'}
+          {quest.kind === 'trip' ? 'Trip' : 'Activity'}
         </span>
       </div>
 

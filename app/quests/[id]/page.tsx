@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { SmartImage } from '@/components/SmartImage';
 import { CapacityMeter, DeadlineCountdown } from '@/components/commitment';
@@ -12,11 +12,12 @@ import { Button, LinkButton, MetaRow, Panel, StatusPill } from '@/components/ui'
 import { formatRange, goingToQuest, joinAffordance, viewerRelation } from '@/lib/domain/logic';
 import { IDEAS_BY_SLUG } from '@/lib/seed/ideas';
 import { useStore } from '@/lib/store/StoreProvider';
-import { currentUser, questById, questView, usersById } from '@/lib/store/selectors';
+import { canSee, currentUser, questById, questView, usersById } from '@/lib/store/selectors';
 import { formatDateRange, formatDayWithWeekday, relativeDay } from '@/lib/util/dates';
 
 export default function QuestPage() {
   const params = useParams<{ id: string }>();
+  const search = useSearchParams();
   const { state, dispatch } = useStore();
   const me = currentUser(state);
   const quest = questById(state, params.id);
@@ -25,6 +26,23 @@ export default function QuestPage() {
   const [composing, setComposing] = useState(false);
 
   if (!quest) notFound();
+
+  // A private post is not a 404 — the link is real, you are just not on the list. Saying so is
+  // friendlier and more honest than pretending it does not exist.
+  if (!canSee(state, quest, search.get('invite'))) {
+    return (
+      <div className="mx-auto max-w-lg py-16 text-center">
+        <h1 className="type-title">This one is private</h1>
+        <p className="type-body mt-2 text-muted">
+          {usersById(state)[quest.hostId]?.name.split(' ')[0] ?? 'The host'} is keeping this to
+          people they invited. If you should be on it, ask them for the link.
+        </p>
+        <LinkButton href="/" tone="quiet" className="mt-5">
+          Back to what is on
+        </LinkButton>
+      </div>
+    );
+  }
 
   const view = questView(state, quest);
   const { status, capacity, host, signal } = view;
@@ -59,8 +77,13 @@ export default function QuestPage() {
           <div className="absolute left-4 top-4 flex gap-2">
             <StatusPill status={status} />
             <span className="rounded-full bg-surface/95 px-2.5 py-1 type-micro text-muted backdrop-blur-sm">
-              {quest.kind === 'trip' ? 'Trip' : 'Plan'}
+              {quest.kind === 'trip' ? 'Trip' : 'Activity'}
             </span>
+            {quest.visibility === 'private' ? (
+              <span className="rounded-full bg-surface/95 px-2.5 py-1 type-micro text-accent backdrop-blur-sm">
+                Invite only
+              </span>
+            ) : null}
           </div>
         </div>
 
