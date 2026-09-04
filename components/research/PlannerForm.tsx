@@ -141,7 +141,7 @@ export function PlannerForm({
       <fieldset>
         <legend className="type-heading">Your situation</legend>
         <p className="type-meta mt-1 text-muted">
-          Prefilled from your profile. Change them here to see what a different answer costs.
+          Change them here to see what a different answer costs.
         </p>
         <div className="mt-2 space-y-2">
           <Toggle

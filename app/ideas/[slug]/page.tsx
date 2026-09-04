@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { notFound, useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SmartImage } from '@/components/SmartImage';
 import { PlannerForm, toResearchRequest, type PlannerValues } from '@/components/research/PlannerForm';
 import {
@@ -18,7 +18,10 @@ import {
   type ToolLogEntry,
 } from '@/components/research/PlanView';
 import { Button, EmptyState, ErrorState, LinkButton, Panel } from '@/components/ui';
-import { INTEREST_LABELS, type Idea } from '@/lib/domain/types';
+import { INTEREST_LABELS, type Idea, type InterestTag } from '@/lib/domain/types';
+import { datesFor, decodeBrief } from '@/lib/intake/brief';
+import { VIBE_TAGS } from '@/lib/intake/match';
+import { deriveOccupancy, type TripBrief } from '@/lib/intake/types';
 import { researchQuery, type ResearchPlan, type ResearchStageId } from '@/lib/research/types';
 import { IDEAS_BY_SLUG } from '@/lib/seed/ideas';
 import { useStore } from '@/lib/store/StoreProvider';
@@ -54,15 +57,28 @@ function defaultDates(nights: number, shape: string): { startDate: string; endDa
 }
 
 export default function IdeaPlannerPage() {
+  return (
+    <Suspense fallback={<p className="type-body text-muted">Opening the planner.</p>}>
+      <IdeaPlanner />
+    </Suspense>
+  );
+}
+
+function IdeaPlanner() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const search = useSearchParams();
   const { state, dispatch } = useStore();
   const me = currentUser(state);
   const idea = IDEAS_BY_SLUG[params.slug];
 
   const cached = idea ? state.planCache[idea.slug] : undefined;
 
+  /** Non-null when you arrived from the guided picker rather than straight off the idea bank. */
+  const brief = useMemo(() => decodeBrief(search), [search]);
+
   const [values, setValues] = useState<PlannerValues>(() => {
+    if (brief) return valuesFromBrief(brief, idea);
     const dates = defaultDates(idea?.nights ?? 0, idea?.shape ?? 'day');
     return {
       ...dates,
@@ -216,8 +232,22 @@ export default function IdeaPlannerPage() {
       <section>
         <h2 className="type-title">Plan it for your group</h2>
         <p className="type-meta mt-1 text-muted">
-          Everything here changes the answer. The defaults come from your profile.
+          {brief
+            ? 'Filled in from what you answered. Change anything that has moved since.'
+            : 'Everything here changes the answer. The defaults come from your profile.'}
         </p>
+        {brief ? (
+          <p className="type-meta mt-2 text-muted">
+            Accommodation will be priced as{' '}
+            <span className="text-ink">
+              {deriveOccupancy(brief.companions, brief.partySize).note.toLowerCase()}
+            </span>
+            .{' '}
+            <Link href="/plan" className="underline hover:text-ink">
+              Answer the questions again
+            </Link>
+          </p>
+        ) : null}
         <div className="mt-4 rounded-xl border border-line bg-surface p-5">
           <PlannerForm
             idea={idea}
@@ -352,6 +382,31 @@ function sameLookup(a: string, b: string): boolean {
 
 function researchUrl(idea: Idea, values: PlannerValues): string {
   return researchQuery(toResearchRequest(idea, values));
+}
+
+/**
+ * The picker's answers become the planner's starting values, so arriving here from the picker
+ * means the form is already filled in with what you just said rather than with defaults you have
+ * to correct. The trip's own length wins over the one you asked for — a "weekend" answer on a
+ * five-night idea should not silently truncate the trip to two nights.
+ */
+function valuesFromBrief(brief: TripBrief, idea: Idea | undefined): PlannerValues {
+  const dates = datesFor(brief.when, brief.length);
+  const nights = idea?.nights ?? 0;
+  const moods = Array.from(
+    new Set(brief.vibes.flatMap((v) => VIBE_TAGS[v])),
+  ).filter((t): t is InterestTag => (idea ? idea.tags.includes(t) : true));
+
+  return {
+    startDate: dates.startDate,
+    endDate: nights > 0 ? addDays(dates.startDate, nights) : dates.endDate,
+    groupSize: brief.partySize,
+    hasCar: brief.hasCar,
+    isOver21: brief.isOver21,
+    hasUsCreditCard: brief.hasUsCreditCard,
+    budgetBand: brief.budget,
+    moods: moods.slice(0, 3),
+  };
 }
 
 function valuesFromPlan(plan: ResearchPlan): PlannerValues {

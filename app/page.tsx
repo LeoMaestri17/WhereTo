@@ -1,33 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { EventCard, QuestCard } from '@/components/cards';
-import { EmptyState, LinkButton, LoadingState, Panel, SectionHeader } from '@/components/ui';
+import { useMemo, useState } from 'react';
+import { IdeaCard, QuestCard } from '@/components/cards';
+import { RotatingWord } from '@/components/RotatingWord';
+import { Chip, EmptyState, LinkButton, SectionHeader } from '@/components/ui';
 import { deriveQuestStatus, isJoinable } from '@/lib/domain/logic';
+import { IDEA_SHAPE_LABELS, type IdeaShape } from '@/lib/domain/types';
+import { cachedPlanSlugs } from '@/lib/research/cached';
+import { IDEAS } from '@/lib/seed/ideas';
 import { useStore } from '@/lib/store/StoreProvider';
-import {
-  completedQuests,
-  currentUser,
-  eventSignal,
-  myAttendance,
-  personaliseEvents,
-  questView,
-  upcomingQuests,
-} from '@/lib/store/selectors';
-import { relativeDay } from '@/lib/util/dates';
+import { completedQuests, currentUser, questView, upcomingQuests } from '@/lib/store/selectors';
 
-export default function HappeningPage() {
-  const { state, dispatch, events } = useStore();
+const CACHED = new Set(cachedPlanSlugs());
+
+/**
+ * The home screen is the planning screen.
+ *
+ * The core loop is deliberately unchanged and sits near the top: browse ideas, click one, and it
+ * goes and finds the real price. The guided picker above it is the way in for people who do not
+ * know where they want to go — a door, not the main road.
+ *
+ * What the cohort is already doing comes after that, because it is context rather than the task.
+ */
+export default function HomePage() {
+  const { state } = useStore();
   const me = currentUser(state);
+  const [shape, setShape] = useState<IdeaShape | 'all'>('all');
 
   const quests = useMemo(() => upcomingQuests(state), [state]);
 
-  /**
-   * Ordered by how soon the deadline is, because that is the useful order — the thing you have
-   * two days left to join should not be below the thing you have three weeks to join. Nothing
-   * here is ever ordered by how many people are going.
-   */
+  /** Soonest deadline first — the useful order. Never by how many people are going. */
   const closingSoon = useMemo(
     () =>
       quests
@@ -37,127 +40,89 @@ export default function HappeningPage() {
     [quests, state.memberships],
   );
 
-  const closingIds = new Set(closingSoon.map((q) => q.id));
-  const trips = quests.filter((q) => q.kind === 'trip' && !closingIds.has(q.id)).slice(0, 6);
-  const activities = quests.filter((q) => q.kind === 'activity' && !closingIds.has(q.id)).slice(0, 6);
   const done = useMemo(() => completedQuests(state).slice(0, 3), [state]);
-
-  const forYou = useMemo(
-    () =>
-      personaliseEvents(events.events, me?.interests ?? [])
-        .filter((e) => new Date(e.startsAt).getTime() > Date.now())
-        .slice(0, 3),
-    [events.events, me?.interests],
-  );
+  const ideas = shape === 'all' ? IDEAS : IDEAS.filter((i) => i.shape === shape);
 
   return (
-    <div className="space-y-12">
-      <header>
-        <p className="type-micro text-accent">Happening</p>
-        <h1 className="type-display mt-2 max-w-2xl">
-          {me ? `${me.name.split(' ')[0]}, here is what has a deadline on it.` : 'What is on'}
+    <div className="space-y-14">
+      <header className="pt-2">
+        <p className="type-micro text-accent">USC SideQuest</p>
+        <h1 className="type-display mt-3 max-w-3xl">
+          {me ? `${me.name.split(' ')[0]}, what` : 'What'} should we plan for{' '}
+          <RotatingWord words={['tonight', 'this weekend', 'next month', 'the winter break']} />?
         </h1>
-        <p className="type-body mt-2 max-w-xl text-muted">
-          Everything below was posted by somebody in the cohort who committed first. Join before
-          the deadline they set, or post your own.
+        <p className="type-body mt-3 max-w-xl text-muted">
+          Pick something below and it will go and find what it actually costs — real flights, a
+          real hotel, and the surcharges nobody quotes a nineteen-year-old.
         </p>
       </header>
+
+      {/* The way in for people with no destination in mind. */}
+      <Link
+        href="/plan"
+        className="group flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-accent sm:p-6"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="type-title block">Not sure yet — help me pick</span>
+          <span className="type-body mt-1 block text-muted">
+            A few questions about who you are going with, how long and what you can spend, then
+            two or three places that actually fit.
+          </span>
+        </span>
+        <span className="type-body shrink-0 font-medium text-accent transition-transform group-hover:translate-x-0.5">
+          Start →
+        </span>
+      </Link>
+
+      <section>
+        <SectionHeader
+          title="Where people go"
+          detail="Costed for a student with no car who cannot hire one, not for a tourist with a credit card."
+        />
+        <div className="sq-rail -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+          <Chip active={shape === 'all'} onClick={() => setShape('all')}>
+            Everything
+          </Chip>
+          {(['day', 'weekend', 'break'] as IdeaShape[]).map((s) => (
+            <Chip key={s} active={shape === s} onClick={() => setShape(s)}>
+              {IDEA_SHAPE_LABELS[s]}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {ideas.slice(0, 9).map((idea) => (
+            <IdeaCard key={idea.slug} idea={idea} hasCached={CACHED.has(idea.slug)} />
+          ))}
+        </div>
+        {ideas.length > 9 ? (
+          <div className="mt-4">
+            <LinkButton href="/ideas" tone="quiet">
+              See all {ideas.length}
+            </LinkButton>
+          </div>
+        ) : null}
+      </section>
 
       <section>
         <SectionHeader
           title="Closing soonest"
-          detail="The ones where waiting until next week means not going."
-          action={<LinkButton href="/post" tone="quiet">Post something</LinkButton>}
+          detail="Posted by people in the cohort. Waiting until next week means not going."
+          action={
+            <LinkButton href="/post" tone="quiet">
+              Post your own
+            </LinkButton>
+          }
         />
         {closingSoon.length === 0 ? (
           <EmptyState
             title="Nothing is taking sign-ups right now"
-            body="Every trip and activity in the cohort has either filled up or passed its deadline. That is usually the moment to post one of your own."
-            action={<LinkButton href="/ideas">Look through the ideas</LinkButton>}
+            body="Everything the cohort has posted has either filled up or passed its deadline. That is usually the moment to post one of your own."
+            action={<LinkButton href="/post">Post a trip or activity</LinkButton>}
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {closingSoon.map((q) => (
               <QuestCard key={q.id} view={questView(state, q)} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <SectionHeader
-          title="Trips"
-          detail="Multi-day, and they need booking further ahead than anyone expects."
-        />
-        {trips.length === 0 ? (
-          <EmptyState
-            title="No trips on the board"
-            body="Nobody has posted a multi-day trip that is still open. The idea bank has costed plans for eight destinations if you want to be the one who does."
-            action={<LinkButton href="/ideas">Open the idea bank</LinkButton>}
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {trips.map((q) => (
-              <QuestCard key={q.id} view={questView(state, q)} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <SectionHeader
-          title="Activities"
-          detail="A few hours, local, and mostly happening this week."
-        />
-        {activities.length === 0 ? (
-          <EmptyState
-            title="No activities yet"
-            body="An activity is a low-stakes thing: a date, a place and a number of spots. It takes about a minute to post one."
-            action={<LinkButton href="/post">Post an activity</LinkButton>}
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {activities.map((q) => (
-              <QuestCard key={q.id} view={questView(state, q)} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <SectionHeader
-          title="Events for you"
-          detail={
-            me?.interests.length
-              ? 'Pulled from EngageSC, Luma, Partiful and Handshake, ordered by what you said you were into.'
-              : 'Pulled from EngageSC, Luma, Partiful and Handshake.'
-          }
-          action={<LinkButton href="/events" tone="quiet">All events</LinkButton>}
-        />
-        {events.loading ? (
-          <LoadingState label="Checking four sources for what is on." rows={3} />
-        ) : events.error ? (
-          <Panel tone="danger">
-            <p className="type-heading text-danger">The event sources are not responding</p>
-            <p className="type-body mt-1.5 text-ink/80">{events.error}</p>
-          </Panel>
-        ) : forYou.length === 0 ? (
-          <EmptyState
-            title="Nothing upcoming from the four sources"
-            body="Everything the adapters returned has already happened. The trips and activities above are posted by people rather than pulled in, so they are unaffected."
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {forYou.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                signal={eventSignal(state, event)}
-                attending={myAttendance(state, event.id)}
-                onAttend={(next) =>
-                  dispatch({ type: 'setAttendance', eventId: event.id, state: next })
-                }
-              />
             ))}
           </div>
         )}
@@ -177,19 +142,9 @@ export default function HappeningPage() {
         </section>
       ) : null}
 
-      {events.failed.length > 0 ? (
-        <Panel tone="warn">
-          <p className="type-meta">
-            {events.failed.map((f) => f.label).join(' and ')} did not respond, so this feed is
-            missing whatever they had. Everything else is here.
-          </p>
-        </Panel>
-      ) : null}
-
       <footer className="border-t border-line pt-6">
         <p className="type-meta text-faint">
-          {quests.length} trips and activities open across the cohort · next deadline{' '}
-          {closingSoon[0] ? relativeDay(closingSoon[0].signupDeadline) : 'none set'} ·{' '}
+          {quests.length} trips and activities open across the cohort ·{' '}
           <Link href="/profile" className="underline">
             manage your demo data
           </Link>
