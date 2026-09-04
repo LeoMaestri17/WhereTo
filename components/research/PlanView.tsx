@@ -71,10 +71,15 @@ export function ProvenanceBanner({
       <p className="type-meta font-medium">
         Showing a saved plan researched on {formatLongDate(plan.researchedAt)}
       </p>
+      {/*
+        Deliberately does not name a cause. This banner used to say "no API key is set", which is
+        one of three reasons the saved path runs — the others being RESEARCH_MODE=cached and a
+        live run that failed over — and stating the wrong one is exactly the kind of small
+        confident inaccuracy this app exists to avoid.
+      */}
       <p className="type-meta mt-1 text-muted">
-        No API key is set, so nothing was researched live. Every cost below has still been
-        recalculated for your group size and your constraints — but the underlying prices are
-        from that date.
+        Nothing here was researched live. Every cost below has still been recalculated for your
+        group size and your constraints — but the underlying prices are from that date.
       </p>
     </Panel>
   );
