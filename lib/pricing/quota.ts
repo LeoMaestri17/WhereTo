@@ -22,7 +22,7 @@ import path from 'node:path';
 const ACCOUNT_URL = 'https://serpapi.com/account';
 /** Searches deliberately left unspent, so an accounting slip cannot take the balance to zero. */
 const RESERVE_FLOOR = Number(process.env.SERPAPI_RESERVE ?? 15);
-const PER_RUN_CAP = Number(process.env.PRICING_MAX_CALLS_PER_RUN ?? 6);
+const PER_RUN_CAP = Number(process.env.PRICING_MAX_CALLS_PER_RUN ?? 4);
 const ACCOUNT_TTL_MS = 60_000;
 
 const COUNTER_FILE = process.env.PRICING_CACHE_DIR
@@ -125,6 +125,10 @@ export class RunBudget {
   spend(): void {
     this.used += 1;
   }
+
+  refund(): void {
+    this.used = Math.max(0, this.used - 1);
+  }
 }
 
 export type QuotaVerdict = { ok: true } | { ok: false; reason: 'quota' | 'run_budget' };
@@ -136,26 +140,40 @@ export type QuotaVerdict = { ok: true } | { ok: false; reason: 'quota' | 'run_bu
 export async function reserve(budget: RunBudget | null): Promise<QuotaVerdict> {
   if (counter.month !== currentMonth()) counter = { month: currentMonth(), spent: 0 };
 
-  if (budget && budget.remaining <= 0) {
-    return { ok: false, reason: 'run_budget' };
+  /*
+   * The slot is claimed synchronously, before any `await`.
+   *
+   * This matters more than it looks. The model issues tool calls in parallel batches, and they
+   * are executed with Promise.all. An earlier version checked the budget, then awaited the
+   * account endpoint, then incremented — so five concurrent callers all passed a check that only
+   * one of them should have. A single run spent eight searches against a cap of six, which on a
+   * 250-a-month budget is not a rounding error.
+   */
+  if (budget) {
+    if (budget.remaining <= 0) return { ok: false, reason: 'run_budget' };
+    budget.spend();
   }
+  counter = { month: counter.month, spent: counter.spent + 1 };
+  if (cachedAccount) cachedAccount.value.totalSearchesLeft -= 1;
+
+  const release = () => {
+    budget?.refund();
+    counter = { month: counter.month, spent: Math.max(0, counter.spent - 1) };
+    if (cachedAccount) cachedAccount.value.totalSearchesLeft += 1;
+  };
 
   const account = await fetchAccountStatus();
   if (account && account.totalSearchesLeft <= RESERVE_FLOOR) {
+    release();
     return { ok: false, reason: 'quota' };
   }
   // If the account endpoint is unreachable, fall back to the local count so we still stop.
   if (!account && counter.spent >= 250 - RESERVE_FLOOR) {
+    release();
     return { ok: false, reason: 'quota' };
   }
 
-  counter = { month: counter.month, spent: counter.spent + 1 };
   writeCounter(counter);
-  budget?.spend();
-
-  // The next reserve() re-reads the account rather than trusting a stale balance.
-  if (cachedAccount) cachedAccount.value.totalSearchesLeft -= 1;
-
   return { ok: true };
 }
 

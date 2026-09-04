@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { daysBetween } from '@/lib/util/dates';
 import { BUDGET_BAND_LABELS, INTEREST_LABELS } from '@/lib/domain/types';
 import { ensureBaselineConstraints } from './constraints';
+import { extractJson as extractJsonShared, JsonExtractionError } from './json';
 import type { ResearchPlan, ResearchRequest, TripResearchService } from './types';
 
 /**
@@ -181,43 +182,12 @@ a well-informed friend would. No marketing language.`;
  * balanced object rather than trusting the whole response to parse.
  */
 export function extractJson(text: string): unknown {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const candidate = fenced ? fenced[1] : text;
-
-  const start = candidate.indexOf('{');
-  if (start === -1) throw new LiveResearchError('The model did not return any JSON.', 'parse');
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = start; i < candidate.length; i += 1) {
-    const ch = candidate[i];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (ch === '\\') {
-      escaped = true;
-      continue;
-    }
-    if (ch === '"') inString = !inString;
-    if (inString) continue;
-    if (ch === '{') depth += 1;
-    if (ch === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        try {
-          return JSON.parse(candidate.slice(start, i + 1));
-        } catch (err) {
-          throw new LiveResearchError(
-            `The JSON the model returned would not parse: ${(err as Error).message}`,
-            'parse',
-          );
-        }
-      }
-    }
+  try {
+    return extractJsonShared(text);
+  } catch (err) {
+    if (err instanceof JsonExtractionError) throw new LiveResearchError(err.message, 'parse');
+    throw err;
   }
-  throw new LiveResearchError('The model’s JSON was cut off before it closed.', 'parse');
 }
 
 function collectText(content: Anthropic.Messages.ContentBlock[]): string {

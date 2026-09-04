@@ -1,6 +1,6 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
-import { runResearchAgent, type OnAgentEvent } from './agent';
+import { messageClient, runResearchAgent, type OnAgentEvent } from './agent';
 import { CachedResearchService, NoCachedPlanError, hasCachedPlan } from './cached';
 import { LiveResearchService } from './live';
 import type { ResearchPlan, ResearchRequest, TripResearchService } from './types';
@@ -57,7 +57,7 @@ export async function runResearch(
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY as string });
 
   try {
-    const result = await runResearchAgent(client.messages, request, onEvent);
+    const result = await runResearchAgent(messageClient(client), request, onEvent);
     return { plan: result.plan };
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'The live research call failed.';

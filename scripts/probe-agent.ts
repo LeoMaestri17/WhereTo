@@ -85,8 +85,9 @@ function planJson(opts: { sourceRef?: string; price: number; source: string }): 
         bestFor: 'Groups with no driver',
         perPersonMin: 300,
         perPersonMax: 400,
-        transport: [
+        lines: [
           {
+            category: 'transport',
             label: 'Coach to St George',
             provider: 'FlixBus',
             detail: 'Union Station to St George.',
@@ -96,9 +97,8 @@ function planJson(opts: { sourceRef?: string; price: number; source: string }): 
             basis: 'Return, per person',
             provenance: { source: 'web', sourceLabel: 'Web search' },
           },
-        ],
-        accommodation: [
           {
+            category: 'accommodation',
             label: 'Zion Park Motel',
             provider: 'Google Hotels',
             detail: 'Walking distance to the shuttle stop.',
@@ -113,7 +113,6 @@ function planJson(opts: { sourceRef?: string; price: number; source: string }): 
             },
           },
         ],
-        otherCosts: [],
       },
     ],
     assumptions: [{ label: 'Occupancy', detail: 'Two rooms with two sharing each.' }],
@@ -229,17 +228,19 @@ async function main() {
     totalRangeMin: 300,
     totalRangeMax: 400,
     request: REQUEST,
-    options: draft.options.map((o: Any) => ({
-      ...o,
-      transport: (o.transport as Any[]).map((l) => ({
+    options: draft.options.map((o: Any) => {
+      const stamp = (l: Any): Any => ({
         ...l,
         provenance: { ...(l.provenance as Any), checkedAt: new Date().toISOString() },
-      })),
-      accommodation: (o.accommodation as Any[]).map((l) => ({
-        ...l,
-        provenance: { ...(l.provenance as Any), checkedAt: new Date().toISOString() },
-      })),
-    })),
+      });
+      const lines: Any[] = (o.lines as Any[]).map(stamp);
+      return {
+        ...o,
+        transport: lines.filter((l) => l.category === 'transport'),
+        accommodation: lines.filter((l) => l.category === 'accommodation'),
+        otherCosts: lines.filter((l) => l.category === 'other'),
+      };
+    }),
   };
 
   const reconciled = reconcileProvenance(plan as never, ledger, true);

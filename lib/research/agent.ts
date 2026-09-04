@@ -8,6 +8,7 @@ import { RunBudget } from '@/lib/pricing/quota';
 import { pricingCapability } from '@/lib/pricing/index';
 import { verifyLinks } from '@/lib/pricing/links';
 import { ensureBaselineConstraints } from './constraints';
+import { extractJson } from './json';
 import type { ResearchPlan, ResearchRequest } from './types';
 
 /**
@@ -55,9 +56,20 @@ export type OnAgentEvent = (event: AgentEvent) => void;
  * The slice of the Anthropic client this module needs. Narrowing it to one method is what lets
  * the whole loop — including the ledger and reconciliation — be driven offline from recorded
  * responses, so none of this has to be developed against a paid API.
+ *
+ * Note that the real implementation must stream underneath: the SDK refuses a non-streaming
+ * request whose `max_tokens` implies it could run past ten minutes, and the assembly call is
+ * exactly that size. `messageClient()` below wraps `.stream().finalMessage()` for that reason.
  */
 export interface MessageClient {
   create(params: Anthropic.Messages.MessageCreateParamsNonStreaming): Promise<Anthropic.Messages.Message>;
+}
+
+/** Adapts a real Anthropic client into the narrow interface above, streaming underneath. */
+export function messageClient(client: Anthropic): MessageClient {
+  return {
+    create: (params) => client.messages.stream(params).finalMessage(),
+  };
 }
 
 export class AgentError extends Error {
@@ -81,7 +93,15 @@ const provenanceSchema = z.object({
     .describe('The resultId of the tool call this price came from. Required when source is api.'),
 });
 
+/**
+ * One flat array of lines with a category, rather than three parallel arrays per option.
+ *
+ * The nested version was rejected outright: "the compiled grammar is too large". Flattening cuts
+ * the biggest repeated structure to a third of its size, and the server sorts the lines back into
+ * transport / accommodation / other on the way out, so nothing downstream changes.
+ */
 const lineItemSchema = z.object({
+  category: z.enum(['transport', 'accommodation', 'other']),
   label: z.string(),
   provider: z.string(),
   detail: z.string(),
@@ -103,9 +123,7 @@ const planSchema = z.object({
         bestFor: z.string(),
         perPersonMin: z.number(),
         perPersonMax: z.number(),
-        transport: z.array(lineItemSchema),
-        accommodation: z.array(lineItemSchema),
-        otherCosts: z.array(lineItemSchema),
+        lines: z.array(lineItemSchema),
       }),
     )
     .min(1),
@@ -162,6 +180,10 @@ Call the pricing tools before you reason about cost. If a tool returns "unavaila
 retry it — fall back to web_search for that figure and remember that it is now a web-sourced
 number, not an API-sourced one.
 
+The pricing lookups are metered and the budget is small. Be economical: one flight search for the
+best airport rather than one for each, and one or two hotel searches for the areas you would
+actually recommend, not a survey of every neighbourhood. Two or three lookups is a good run.
+
 These travellers are 19 and 20 year olds on foreign licences with no US credit history. The
 things that turn a $300 weekend into a $700 one are the under-25 young-driver surcharge, deposit
 and incidental holds, resort fees, park entry, and 21+ door policies. Find them.
@@ -186,7 +208,40 @@ Rules that are checked by the server after you answer, so breaking them only was
 - The itinerary names real places with realistic timings. Never "explore the local area".
 - If this trip is a bad idea for this group at these dates, say so in the summary.
 
-Write in British English, plainly, as a well-informed friend would. No marketing language.`;
+Write in British English, plainly, as a well-informed friend would. No marketing language.
+
+Return ONLY a JSON object, no prose around it and no markdown fence, in this shape:
+
+{
+  "summary": string,
+  "confidenceNote": string,
+  "options": [{
+    "id": string, "name": string, "bestFor": string,
+    "perPersonMin": number, "perPersonMax": number,
+    "lines": [{
+      "category": "transport" | "accommodation" | "other",
+      "label": string, "provider": string, "detail": string, "url": string,
+      "perPersonMin": number, "perPersonMax": number, "basis": string,
+      "provenance": {
+        "source": "api" | "web" | "estimate",
+        "sourceLabel": string,
+        "sourceRef": string
+      }
+    }]
+  }],
+  "assumptions": [{ "label": string, "detail": string }],
+  "exclusions": [string],
+  "constraints": [{
+    "trigger": "under-21"|"no-car"|"no-us-credit-card"|"budget"|"group-size"|"season"|"foreign-licence",
+    "severity": "blocker"|"warning"|"info",
+    "title": string, "body": string, "workaround": string
+  }],
+  "itinerary": [{ "dayNumber": number, "label": string,
+    "blocks": [{ "time": string, "title": string, "detail": string, "place": string }] }],
+  "sources": [{ "title": string, "url": string }]
+}
+
+All money is US dollars as plain numbers, no symbols.`;
 
 function buildResearchPrompt(request: ResearchRequest): string {
   const tripDays = Math.max(1, daysBetween(request.startDate, request.endDate) + 1);
@@ -252,6 +307,15 @@ export async function runResearchAgent(
   let toolCalls = 0;
   let stagedFlights = false;
   let stagedStays = false;
+  /** What the model wrote in prose while researching — the qualitative half of its findings. */
+  const researchNotes: string[] = [];
+  /**
+   * `web_search_20260209` does its dynamic filtering with code execution, which allocates a
+   * container. Once that has happened the transcript contains tool uses belonging to it, and
+   * every later request in the same conversation must name it — otherwise the API rejects the
+   * call with "container_id is required when there are pending tool uses".
+   */
+  let containerId: string | undefined;
 
   /* -------------------------------------------------- phase A: research */
 
@@ -270,6 +334,7 @@ export async function runResearchAgent(
         ],
         tools: [...PRICING_TOOLS, WEB_SEARCH_TOOL],
         messages,
+        ...(containerId ? { container: containerId } : {}),
       });
     } catch (err) {
       throw new AgentError(
@@ -281,6 +346,15 @@ export async function runResearchAgent(
     if (message.stop_reason === 'refusal') {
       throw new AgentError('The model declined to research this trip.', 'api');
     }
+
+    if (message.container?.id) containerId = message.container.id;
+
+    const noteText = message.content
+      .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('\n')
+      .trim();
+    if (noteText) researchNotes.push(noteText);
 
     messages.push({ role: 'assistant', content: message.content });
 
@@ -333,7 +407,17 @@ export async function runResearchAgent(
 
   onEvent({ type: 'stage', stage: 'assemble', label: 'Adding up the range' });
 
-  messages.push({ role: 'user', content: ASSEMBLE_SYSTEM });
+  /*
+   * Assembly starts a fresh conversation rather than replaying the research transcript.
+   *
+   * Two reasons. The practical one: web_search_20260209 runs code execution internally, so its
+   * results are bound to a container, and replaying that history into another call fails with
+   * "container_id is required when there are pending tool uses". The better one: the transcript
+   * is mostly raw API payloads the model has already read, and re-sending it costs a great deal
+   * of input for no gain. The ledger already holds the part that matters — every quote, with the
+   * resultId the model has to cite — so we hand it that, compactly.
+   */
+  const digest = buildDigest(ledger, researchNotes.join('\n\n'), request);
 
   let assembled: z.infer<typeof planSchema>;
   try {
@@ -341,14 +425,13 @@ export async function runResearchAgent(
       model: MODEL,
       max_tokens: 32000,
       thinking: { type: 'adaptive' },
-      output_config: {
-        effort: 'medium',
-        format: {
-          type: 'json_schema',
-          schema: z.toJSONSchema(planSchema, { target: 'draft-7' }) as Record<string, unknown>,
-        },
-      },
-      messages,
+      // Deliberately not using structured outputs. A schema this shape compiles to a grammar the
+      // API rejects as too large, and slimming it far enough would mean giving up fields the plan
+      // actually needs. Prompted JSON plus defensive extraction and zod validation gets the same
+      // guarantee without the ceiling.
+      output_config: { effort: 'medium' },
+      system: [{ type: 'text', text: ASSEMBLE_SYSTEM }],
+      messages: [{ role: 'user', content: digest }],
     });
 
     if (message.stop_reason === 'refusal') {
@@ -359,7 +442,7 @@ export async function runResearchAgent(
       .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('');
-    assembled = planSchema.parse(JSON.parse(text));
+    assembled = planSchema.parse(extractJson(text));
   } catch (err) {
     if (err instanceof AgentError) throw err;
     throw new AgentError(
@@ -380,11 +463,14 @@ export async function runResearchAgent(
     confidence: 'medium',
     confidenceNote: assembled.confidenceNote,
     summary: assembled.summary,
-    options: assembled.options.map((option) => ({
+    options: assembled.options.map(({ lines, ...option }) => ({
       ...option,
-      transport: option.transport.map((l) => withCheckedAt(l, researchedAt)),
-      accommodation: option.accommodation.map((l) => withCheckedAt(l, researchedAt)),
-      otherCosts: option.otherCosts.map((l) => withCheckedAt(l, researchedAt)),
+      // The flat array is sorted back into the three groups the UI renders.
+      transport: lines.filter((l) => l.category === 'transport').map((l) => withCheckedAt(l, researchedAt)),
+      accommodation: lines
+        .filter((l) => l.category === 'accommodation')
+        .map((l) => withCheckedAt(l, researchedAt)),
+      otherCosts: lines.filter((l) => l.category === 'other').map((l) => withCheckedAt(l, researchedAt)),
     })),
     totalRangeMin: Math.min(...assembled.options.map((o) => o.perPersonMin)),
     totalRangeMax: Math.max(...assembled.options.map((o) => o.perPersonMax)),
@@ -426,11 +512,53 @@ export async function runResearchAgent(
 
 /* ------------------------------------------------------------------ helpers */
 
+/**
+ * Everything the assembly call needs and nothing it does not: the brief, the real quotes with the
+ * ids that have to be cited, and the model's own prose findings.
+ */
+function buildDigest(ledger: PriceLedger, notes: string, request: ResearchRequest): string {
+  const entries = ledger.all();
+
+  const priced = entries.length
+    ? entries
+        .map((entry) => {
+          const quotes = entry.quotes
+            .slice(0, 10)
+            .map((q) => `    - ${q.label}: $${q.priceUsd}${q.url ? ` — ${q.url}` : ''}`)
+            .join('\n');
+          return [
+            `resultId: ${entry.resultId}  (${entry.tool}, checked ${entry.checkedAt})`,
+            `  looked up: ${JSON.stringify(entry.args)}`,
+            `  quotes returned:`,
+            quotes,
+          ].join('\n');
+        })
+        .join('\n\n')
+    : '(no pricing lookup succeeded on this run)';
+
+  return [
+    'Write the costed plan for this trip.',
+    '',
+    'THE BRIEF',
+    buildResearchPrompt(request),
+    '',
+    'VERIFIED PRICE LOOKUPS',
+    'These are the only figures you may label "api". Cite the resultId in provenance.sourceRef,',
+    'and use the URL shown against that quote rather than composing one.',
+    '',
+    priced,
+    '',
+    'WHAT YOU FOUND WHILE RESEARCHING',
+    notes || '(no notes)',
+  ].join('\n');
+}
+
 function withCheckedAt(
   line: z.infer<typeof lineItemSchema>,
   checkedAt: string,
 ): ResearchPlan['options'][number]['transport'][number] {
-  return { ...line, provenance: { ...line.provenance, checkedAt } };
+  const { category: _category, ...rest } = line;
+  return { ...rest, provenance: { ...rest.provenance, checkedAt } };
 }
 
 async function attachLinkChecks(plan: ResearchPlan): Promise<ResearchPlan> {
