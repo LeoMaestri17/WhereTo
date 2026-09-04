@@ -21,6 +21,8 @@ const requestSchema = z.object({
   hasUsCreditCard: z.coerce.boolean(),
   budgetBand: z.enum(['shoestring', 'moderate', 'comfortable']),
   moods: z.array(z.enum(INTEREST_TAGS)),
+  companions: z.enum(['solo', 'partner', 'friends', 'family']).optional(),
+  note: z.string().max(200).optional(),
 });
 
 type Frame =
@@ -58,6 +60,8 @@ export async function GET(request: Request) {
     hasUsCreditCard: params.get('hasUsCreditCard') === 'true',
     budgetBand: params.get('budgetBand'),
     moods: params.getAll('mood'),
+    companions: params.get('companions') ?? undefined,
+    note: params.get('note') ?? undefined,
   });
 
   if (!parsed.success) {

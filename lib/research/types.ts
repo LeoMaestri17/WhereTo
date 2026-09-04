@@ -1,4 +1,5 @@
 import type { BudgetBand, IdeaShape, InterestTag } from '@/lib/domain/types';
+import type { Companions } from '@/lib/intake/types';
 import type { PriceProvenance } from '@/lib/pricing/types';
 
 export type { PriceOrigin, PriceProvenance } from '@/lib/pricing/types';
@@ -19,6 +20,14 @@ export interface ResearchRequest {
   hasUsCreditCard: boolean;
   budgetBand: BudgetBand;
   moods: InterestTag[];
+  /**
+   * Who the group is to each other, when we know. It is the difference between quoting one
+   * double room and quoting two twins, so it goes to the hotel lookup rather than staying a
+   * UI detail. Absent when the planner was opened cold rather than through the picker.
+   */
+  companions?: Companions;
+  /** The picker's one free-text box. Verbatim, capped, and never load-bearing. */
+  note?: string;
 }
 
 /**
@@ -181,5 +190,7 @@ export function researchQuery(request: ResearchRequest): string {
     budgetBand: request.budgetBand,
   });
   for (const mood of request.moods) params.append('mood', mood);
+  if (request.companions) params.set('companions', request.companions);
+  if (request.note?.trim()) params.set('note', request.note.trim().slice(0, 200));
   return `/api/research?${params.toString()}`;
 }

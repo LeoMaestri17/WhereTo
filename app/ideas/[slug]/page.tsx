@@ -406,6 +406,8 @@ function valuesFromBrief(brief: TripBrief, idea: Idea | undefined): PlannerValue
     hasUsCreditCard: brief.hasUsCreditCard,
     budgetBand: brief.budget,
     moods: moods.slice(0, 3),
+    companions: brief.companions,
+    note: brief.anythingElse.trim() || undefined,
   };
 }
 
@@ -420,5 +422,7 @@ function valuesFromPlan(plan: ResearchPlan): PlannerValues {
     hasUsCreditCard: r.hasUsCreditCard,
     budgetBand: r.budgetBand,
     moods: r.moods,
+    companions: r.companions,
+    note: r.note,
   };
 }

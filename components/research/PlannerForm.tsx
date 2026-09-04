@@ -11,6 +11,7 @@ import {
   type InterestTag,
 } from '@/lib/domain/types';
 import type { Idea } from '@/lib/domain/types';
+import type { Companions } from '@/lib/intake/types';
 import type { ResearchRequest } from '@/lib/research/types';
 import { addDays, daysBetween } from '@/lib/util/dates';
 
@@ -23,6 +24,13 @@ export interface PlannerValues {
   hasUsCreditCard: boolean;
   budgetBand: BudgetBand;
   moods: InterestTag[];
+  /**
+   * Carried through from the guided picker, not editable here. Both change what the research
+   * asks for — companions decides the room configuration sent to the hotel lookup — but neither
+   * is a question worth re-asking on a form somebody is only here to adjust dates on.
+   */
+  companions?: Companions;
+  note?: string;
 }
 
 export function toResearchRequest(idea: Idea, values: PlannerValues): ResearchRequest {

@@ -7,6 +7,7 @@ import { PRICING_TOOLS, executeTool } from '@/lib/pricing/tools';
 import { RunBudget } from '@/lib/pricing/quota';
 import { pricingCapability } from '@/lib/pricing/index';
 import { verifyLinks } from '@/lib/pricing/links';
+import { deriveOccupancy } from '@/lib/intake/types';
 import { ensureBaselineConstraints } from './constraints';
 import { extractJson } from './json';
 import type { ResearchPlan, ResearchRequest } from './types';
@@ -249,7 +250,26 @@ Return ONLY a JSON object, no prose around it and no markdown fence, in this sha
 
 All money is US dollars as plain numbers, no symbols.`;
 
-function buildResearchPrompt(request: ResearchRequest): string {
+/**
+ * The room configuration, stated rather than implied.
+ *
+ * Left to itself the model prices four friends as two twin rooms about as often as one shared
+ * room, and the difference is most of the accommodation cost. When the picker has told us who
+ * these people are to each other we know the answer, so we say it — and tell it to pass the same
+ * numbers to the hotel tool, which is what makes the returned rate the rate for this group.
+ */
+function occupancyLine(request: ResearchRequest, nights: number): string {
+  if (nights === 0) return '';
+  if (!request.companions) {
+    return `- Rooms: work out a sensible configuration for ${request.groupSize} students sharing, and say which one you used`;
+  }
+  const o = deriveOccupancy(request.companions, request.groupSize);
+  return `- Rooms: ${o.rooms} room(s), ${o.adultsPerRoom} per room, ${o.bedding}${
+    o.allowDorms ? '; hostel dorm beds are acceptable' : '; no dorms'
+  } — ${o.note}`;
+}
+
+export function buildResearchPrompt(request: ResearchRequest): string {
   const tripDays = Math.max(1, daysBetween(request.startDate, request.endDate) + 1);
   const nights = Math.max(0, tripDays - 1);
   const interests = request.moods.length
@@ -268,6 +288,7 @@ THE GROUP
 - Budget: ${BUDGET_BAND_LABELS[request.budgetBand]}
 - Interested in: ${interests}
 - Starting from University Park Campus, Los Angeles (nearest airport LAX)
+${occupancyLine(request, nights)}${request.note?.trim() ? `\n- They added: "${request.note.trim()}"` : ''}
 
 PRICING AVAILABLE ON THIS RUN
 ${capability.note}
@@ -277,7 +298,7 @@ Two or three genuinely different options at different price points, each one thi
 actually book. If they cannot drive, do not offer a driving option unless it includes hiring a
 vehicle and somebody is old enough to hire it.
 
-Price the transport and the accommodation with the tools. ${nights === 0 ? 'This is a day trip, so do not search for hotels.' : `Search hotels for the area you would actually stay in, for ${nights} night(s), with the occupancy this group needs.`}
+Price the transport and the accommodation with the tools. ${nights === 0 ? 'This is a day trip, so do not search for hotels.' : `Search hotels for the area you would actually stay in, for ${nights} night(s), using exactly the room configuration above — pass it to search_hotels as adults per room and number of rooms, and repeat it in the basis of every accommodation line.`}
 
 Then research the rest with web_search: local transport and fares, park or venue entry, and the
 age and card rules that apply to this group.`;

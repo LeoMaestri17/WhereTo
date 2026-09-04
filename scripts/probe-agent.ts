@@ -145,8 +145,10 @@ const REQUEST = {
 };
 
 async function main() {
-  const { runResearchAgent } = await import('../lib/research/agent');
+  const { runResearchAgent, buildResearchPrompt } = await import('../lib/research/agent');
   const { PriceLedger, reconcileProvenance } = await import('../lib/pricing/ledger');
+
+  await checkOccupancyReachesThePrompt(buildResearchPrompt);
 
   /* ---------------------------------------------------------------- case 1 + 2 */
   // Both cases run the same loop; only the plan the "model" writes differs. The hotel tool has
@@ -264,6 +266,65 @@ async function main() {
     `   ${urlReplaced ? '✅ PASS' : '❌ FAIL'} — the model's invented URL was replaced with the provider's`,
   );
   console.log(`   confidence recomputed from evidence: ${reconciled.plan.confidence}`);
+}
+
+/**
+ * Who you are going with has to reach the hotel query, not stop at the UI.
+ *
+ * Two people and four people are different prices; two people in one double and two people in
+ * two singles are also different prices, and only the brief knows which. If the room
+ * configuration does not survive the trip into the prompt, the returned rate is a real rate for
+ * the wrong group — which is worse than an estimate, because it looks checked.
+ */
+async function checkOccupancyReachesThePrompt(
+  buildResearchPrompt: (r: never) => string,
+) {
+  heading('CASE 0 — the room configuration reaches the prompt');
+
+  const base = {
+    ideaSlug: 'zion-weekend',
+    ideaTitle: 'Zion National Park',
+    region: 'Zion National Park, Utah',
+    shape: 'weekend',
+    startDate: '2026-10-09',
+    endDate: '2026-10-11',
+    hasCar: false,
+    isOver21: true,
+    hasUsCreditCard: false,
+    budgetBand: 'moderate',
+    moods: [],
+  };
+
+  const partner = buildResearchPrompt({
+    ...base,
+    groupSize: 2,
+    companions: 'partner',
+  } as never);
+  const friends = buildResearchPrompt({
+    ...base,
+    groupSize: 4,
+    companions: 'friends',
+    note: 'One of us cannot walk far.',
+  } as never);
+  const cold = buildResearchPrompt({ ...base, groupSize: 4 } as never);
+
+  const results: Array<[string, boolean]> = [
+    ['a couple is one double, no dorms', /1 room\(s\), 2 per room, double.*no dorms/.test(partner)],
+    ['four friends share, dorms allowed', /1 room\(s\), 4 per room, shared.*dorm beds are acceptable/.test(friends)],
+    ['the two prompts differ', partner !== friends],
+    ['the free-text note is passed through', friends.includes('One of us cannot walk far.')],
+    ['no note means no note line', !partner.includes('They added:')],
+    ['arriving cold asks the model to decide and say so', /work out a sensible configuration/.test(cold)],
+    ['the tool is told to use those numbers', /pass it to search_hotels/.test(friends)],
+  ];
+
+  for (const [label, ok] of results) {
+    console.log(`   ${ok ? '✅ PASS' : '❌ FAIL'} — ${label}`);
+  }
+
+  const line = partner.split('\n').find((l) => l.startsWith('- Rooms:'));
+  console.log(`\n   partner: ${line}`);
+  console.log(`   friends: ${friends.split('\n').find((l) => l.startsWith('- Rooms:'))}`);
 }
 
 main().catch((e) => {
