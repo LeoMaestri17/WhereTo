@@ -1,23 +1,44 @@
 # USC SideQuest
 
-A social coordination app for exchange students at USC. Roughly 400 of them arrive in Los Angeles
-at the same time, know nobody, and have about 16 weeks.
+A trip planner for exchange students at USC. Roughly 400 of them arrive in Los Angeles at the same
+time, know nobody, and have about 16 weeks.
 
-Information about things to do is not scarce. What is scarce is people to do them with, and
-somebody willing to be the organiser. So the whole app rests on one primitive:
+Information about things to do is not scarce. What is scarce is people to do them with, somebody
+willing to be the organiser, and — the part this app is actually about — **a price you can trust**.
 
 > Someone commits first, states a date and a capacity, sets a deadline, and others join before
 > that deadline.
 
-**Trips** are the multi-day version, **Plans** are the cheap local version, and **Events** are
-things already happening that the app aggregates so you can see who else from the cohort is going.
-All three render in the same visual language and share the same join mechanics.
+**Trips** are multi-day, **activities** are a few hours. Both are hosted, both are joinable, both
+render in the same visual language. You can publish either publicly to the cohort or privately by
+link, because most people want to travel with people they already like.
 
-The thing that makes this more than a group chat is that cost estimates here are
-**constraints-aware for this specific user**: a 19 or 20 year old, on a foreign licence, with no US
-credit history, often without a car. A general estimate misses the under-25 rental surcharge, the
-deposit holds, the fact that six people are splitting two rooms, and the 21+ door policy. Those
-omissions are where a "$300 weekend" becomes a $700 weekend.
+## The claim is accuracy
+
+Anyone can generate a plausible itinerary with a language model. The numbers on it will be
+recollection dressed as research, and this cohort is exactly the group those numbers are wrong
+for: a 19 or 20 year old, on a foreign licence, with no US credit history, usually without a car.
+A general estimate misses the under-25 rental surcharge, the deposit hold, the six people
+splitting two rooms and the 21+ door policy. That is where a "$300 weekend" becomes a $700 one.
+
+So the planner does not guess. It calls real pricing APIs — Google Flights and Google Hotels via
+SerpApi, campgrounds via Recreation.gov — for the exact dates and the exact occupancy, and every
+costed line on screen says where its number came from:
+
+```
+Google Hotels · checked 2h ago     From a web search     Estimated, not checked
+```
+
+**And it is checkable.** The server keeps a ledger of every lookup it actually executed, and
+reconciles the finished plan against it. A line claiming a live API price with no matching ledger
+entry is downgraded to an estimate; a price more than 10% off every quote in its entry is
+downgraded; a URL the model invented is replaced with the one the provider returned; and with no
+API key present, no line may claim `api` at all. A tool loop on its own does not stop price
+invention — the model can call a tool, ignore the answer and still label the line `api` — which is
+why the ledger exists.
+
+Each plan then carries one summary line: *"9 of 12 costed lines came from a live price API."*
+That sentence is the product claim, made falsifiable.
 
 ---
 
@@ -28,38 +49,58 @@ npm install && npm run dev
 ```
 
 Open http://localhost:3000. That is the whole setup — no database, no API key, no seeding step.
-Every screen is populated on first load: 25 seeded cohort members, 33 trips and plans covering
-every lifecycle state, 20 events across four sources, 19 destinations in the idea bank and 8
-pre-researched, costed plans.
+Every screen is populated on first load: 25 seeded cohort members, 33 trips and activities
+covering every lifecycle state, 20 suggested activities across four sources, 19 destinations in
+the idea bank and 8 pre-researched, costed plans.
 
 On first load you pick who you are from the cohort (or add yourself) and answer three questions.
-Those three questions — are you 21, do you have a car, do you have a US credit card — change every
-cost estimate in the app, which is the point.
+Those three — are you 21, do you have a car, do you have a US credit card — change every cost
+estimate in the app, which is the point.
 
-### Optional: the live research path
+### The two ways in
+
+**If you know where you want to go:** the idea bank is the home screen. Click a destination, set
+your dates and group, and it goes and prices it.
+
+**If you do not:** the bar above the idea bank opens `/plan`, a guided picker. Seven questions,
+all answered by clicking, each carrying one line on why it is being asked. It ends in two or three
+destinations that actually fit, with the catch on each stated on the card. Picking one drops you
+back into the normal loop with the form already filled in — the brief travels in the query string,
+so the resulting URL is also the thing you send the people you want to come.
+
+Who you are going with is the load-bearing question: it decides rooms and bedding, which is the
+difference between quoting a couple a double and quoting them a hostel dorm, and it is sent
+straight to the hotel lookup.
+
+### Optional: the live paths
 
 ```bash
 cp .env.example .env.local
-# then put a key in it
 ```
 
-With `ANTHROPIC_API_KEY` set, the planner runs live research against the Anthropic API with web
-search enabled, server-side. Without it, the planner composes a saved plan instead and says so on
-screen. Both paths are real; neither pretends to be the other.
+| Key | What it turns on | Cost |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Live research instead of a saved plan | Per run |
+| `SERPAPI_API_KEY` | Real Google Flights and Google Hotels prices | 250 searches/month, free tier |
+| `RIDB_API_KEY` | Campground catalogue (availability works without it) | Free |
 
-Set `RESEARCH_MODE=cached` to force the saved-plan path even with a key present, which is useful
-for demoing the offline experience.
+Without them the planner composes a saved plan and says so on screen. Both paths are real; neither
+pretends to be the other.
+
+`RESEARCH_MODE=cached` forces the saved-plan path even with a key present. **Keep it set during
+development** — see the budget note in `CLAUDE.md`.
 
 ### Other commands
 
 | Command | What it does |
 |---|---|
 | `npm run dev` | Dev server |
-| `npm run build` | Production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
+| `npm run check` | Typecheck, lint, seed validation, intake probe, build |
+| `npm run probe:intake` | The guided picker, offline. Free. |
 | `npm run validate:seed` | Asserts the seed-data invariants (see below) |
-| `npm run check` | All four, in order |
+| `npx tsx scripts/probe-agent.ts` | The research agent and ledger, against recorded responses. Free. |
+| `npx tsx scripts/probe-pricing.ts` | The pricing layer. Spends SerpApi quota. |
+| `npx tsx scripts/probe-plan.ts` | The whole thing, live. The expensive one. |
 
 ---
 
@@ -70,9 +111,14 @@ out — but several things that would be a network call in production are a fixt
 
 | Area | Status | Where the boundary is |
 |---|---|---|
-| **Trip research (live)** | **Real.** Anthropic API, `claude-opus-5`, web search enabled, server-side only. | `lib/research/live.ts` |
+| **Flight and hotel prices** | **Real.** Google Flights and Google Hotels through SerpApi, for the exact dates and occupancy. | `lib/pricing/flights.ts`, `lib/pricing/hotels.ts` |
+| **Campground availability** | **Real.** Recreation.gov's availability endpoint, which needs no key at all. | `lib/pricing/campgrounds.ts` |
+| **Provenance** | **Real.** Every executed lookup is ledgered and the finished plan is reconciled against it. | `lib/pricing/ledger.ts` |
+| **Trip research (live)** | **Real.** Anthropic API, `claude-opus-5`, tool loop plus web search, server-side only. | `lib/research/agent.ts` |
 | **Trip research (cached)** | Fixture. 8 hand-written costed plans, recomposed against your inputs. | `lib/research/cached.ts`, `lib/research/fixtures/` |
-| **Event sources** | Fixture. Four adapters behind one interface. | `lib/events/adapters/*.ts` |
+| **Ground transport** | Mixed, and labelled. Rental and coach fares from web search; Uber estimated from distance, because no public price API exists. | `lib/research/agent.ts` |
+| **Destination matching** | Real, and deliberately not a model call. Deterministic, runs in the browser. | `lib/intake/match.ts` |
+| **Suggested activity sources** | Fixture. Four adapters behind one interface. | `lib/events/adapters/*.ts` |
 | **Persistence** | Fixture. `localStorage`, one key. | `lib/store/StoreProvider.tsx` |
 | **Identity / auth** | Fixture. Pick a profile, no password. | `components/Onboarding.tsx` |
 | **Images** | Real. Unsplash CDN, with a locally drawn fallback. | `components/SmartImage.tsx` |
@@ -130,21 +176,24 @@ setup where the server route and the client app are the same process and the sam
 
 ```
 app/
-  page.tsx              / — the feed, ordered by which deadline is soonest
+  page.tsx              / — the planning home screen: idea bank, closing soonest
+  plan/                 the guided picker for people with no destination in mind
   ideas/                idea bank and the planner
   quests/[id]/          detail, join, host console, estimate vs actuals
-  post/                 create a trip or plan
-  events/               aggregated feed with filters
+  post/                 create a trip or activity
+  events/               suggested activities with filters
   profile/              identity, friends, host inbox, demo reset
   api/research/route.ts the only server code
 
 lib/
   domain/               types.ts and logic.ts — the model, and every derived rule
   store/                reducer, localStorage persistence, selectors
-  research/             service interface, live + cached implementations, fixtures
+  intake/               the brief: occupancy, URL round trip, destination matching
+  pricing/              SerpApi and Recreation.gov clients, quota, ledger, tools
+  research/             service interface, the agent, cached fixtures
   events/               EventSource interface and the four adapters
   seed/                 users, quests, ideas, images
-scripts/validate-seed.ts
+scripts/                probe-intake, probe-agent, probe-pricing, probe-plan, validate-seed
 ```
 
 A few decisions worth explaining:
@@ -235,8 +284,15 @@ This is a prototype, and these are deliberate rather than unfinished:
 - **Actuals are reported, not collected.** Completed trips show what participants said they paid,
   but there is no form for submitting them — that flow would need real accounts to be worth
   anything.
-- **The live research path could not be exercised end to end here**, because no API key was
-  available in the build environment. The path up to the API boundary and the fallback were both
-  tested against a deliberately invalid key: it attempts live, fails, falls back to the saved plan,
-  and shows the reason. The model id (`claude-opus-5`) and the web search tool version
-  (`web_search_20260209`) were taken from current Anthropic documentation rather than from memory.
+- **Both live budgets are small and enforced.** SerpApi's free tier is 250 searches a month, which
+  is roughly 40–80 research runs, so `lib/pricing/quota.ts` holds a per-run cap, a monthly budget
+  checked against SerpApi's own account endpoint, a reserve floor and a disk-backed cache. The
+  Anthropic budget is a few dollars, which is why development runs on the offline harnesses and
+  `RESEARCH_MODE=cached`.
+- **Ground transport is not live, and says so.** Uber and Lyft retired their public price APIs, and
+  correct transit timings would need a billing-enabled Directions key. Those lines are labelled
+  `Estimated, not checked` or `From a web search` rather than dressed up.
+- **Booking.com is not reachable.** Its Demand API is Managed Affiliate Partner only and closed to
+  new registrations; Google has no public flights API; Amadeus's free tier returns cached test
+  data. SerpApi is the one legitimate route to live Google travel pricing, so that is what this
+  uses rather than scraping anything.
