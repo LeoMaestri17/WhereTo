@@ -204,6 +204,75 @@ async function main() {
   }
 
   /* ---------------------------------------------------------------- case 4 */
+  /* ---------------------------------------------------------------- case 5 */
+  heading('CASE 5 — the model stops without searching, and gets sent back');
+
+  {
+    // The model prices a hotel, then declares itself finished having checked nothing else. On a
+    // real run this produced thirteen unverified estimates out of eighteen lines, so the loop is
+    // supposed to notice and ask again, naming the specific gaps.
+    const client = scriptedClient([
+      assistantToolUse('t1', 'search_hotels', {
+        query: 'Springdale, Utah',
+        check_in_date: '2026-10-16',
+        check_out_date: '2026-10-18',
+        adults: 4,
+        rooms: 1,
+      }),
+      assistantText('Priced. I have everything I need.'),
+      assistantText(planJson({ price: 145, source: 'estimate' })),
+    ]);
+
+    const stages: string[] = [];
+    const result = await runResearchAgent(client, REQUEST, (e) => {
+      if (e.type === 'stage') stages.push(e.label);
+    });
+
+    const nudged = stages.includes('Checking the figures nobody quotes');
+    console.log(`   stages: ${stages.join(' → ')}`);
+    console.log(
+      `\n   ${nudged ? '✅ PASS' : '❌ FAIL'} — a run with zero web searches is sent back to check the rest`,
+    );
+    console.log(
+      `   ${result.webSearches === 0 ? '✅ PASS' : '❌ FAIL'} — and the count of searches actually made is reported honestly`,
+    );
+  }
+
+  /* ---------------------------------------------------------------- case 6 */
+  heading('CASE 6 — a model that does search is left alone');
+
+  {
+    const searched = {
+      id: 'msg_search',
+      type: 'message',
+      role: 'assistant',
+      model: 'claude-opus-5',
+      stop_reason: 'end_turn',
+      content: [
+        { type: 'server_tool_use', id: 'srv1', name: 'web_search', input: { query: 'Zion entry fee' } },
+        { type: 'text', text: 'Checked the entry fee.' },
+      ],
+      usage: { input_tokens: 100, output_tokens: 50 },
+    };
+
+    const client = scriptedClient([searched, assistantText(planJson({ price: 145, source: 'estimate' }))]);
+
+    const stages: string[] = [];
+    const result = await runResearchAgent(client, REQUEST, (e) => {
+      if (e.type === 'stage') stages.push(e.label);
+    });
+
+    const nudged = stages.includes('Checking the figures nobody quotes');
+    console.log(`   stages: ${stages.join(' → ')}`);
+    console.log(
+      `\n   ${!nudged ? '✅ PASS' : '❌ FAIL'} — no second round when it already searched`,
+    );
+    console.log(
+      `   ${result.webSearches === 1 ? '✅ PASS' : '❌ FAIL'} — the search it made was counted`,
+    );
+  }
+
+  /* ---------------------------------------------------------------- case 4 */
   heading('CASE 4 — a genuine ledger entry, price matching, survives as api');
 
   const ledger = new PriceLedger();

@@ -265,12 +265,40 @@ the picker. Both are free and both are assertions rather than output to eyeball.
 | Zero dead links in a generated plan | Pass |
 | Guided picker walked end to end in the browser, handing off to a prefilled planner | Pass |
 
+### Second live run, 3 September 2026
+
+Same brief as the first: four under-21 students, New York, 24–28 November, no car, no US credit card.
+
+| | First run | Second run |
+|---|---|---|
+| Wall clock | 298s | 254s |
+| Lines from a live price API | 5 | 5 |
+| Lines from a web search | 0 | 0 |
+| Unverified estimates | 14 of 19 | 13 of 18 |
+| Dead links | 0 | 0 |
+| Hotel occupancy searched | 2 rooms (guessed) | **1 room, 4 adults (from the brief)** |
+
+The occupancy fix worked: the second run searched Google Hotels for exactly the configuration the
+picker specified, honoured the free-text note ("we would rather share one room"), and returned two
+named Manhattan properties priced for four sharing — Holiday Inn Manhattan 6th Ave–Chelsea at
+$379–440 each and Motto by Hilton Chelsea at $481–555, alongside a named American Airlines LAX–JFK
+fare at $494. Five lines carry live API provenance and no link is dead.
+
+**The web search problem did not fix itself.** Asking for it more firmly in the system prompt
+changed nothing: the model still stopped as soon as it had prices, because prices are the part it
+has tools for. So the loop now *checks* — if the research phase ends having made zero searches, it
+sends one more turn naming the specific figures this trip needs and lets the model go round again.
+Cases 5 and 6 in `probe-agent` prove the mechanism fires when it should and stays quiet when it
+should not. **Whether the model then complies is unverified**, because the Anthropic credit ran out
+on the run that would have shown it.
+
 ### Known gaps
 
-- **The live run took 298 seconds** against a 60–90 second target. The prompt and iteration caps
-  have since been tuned; the improvement is not yet re-measured.
-- **The model under-used web search** on that run, leaving 14 of 19 lines as estimates rather than
-  web-sourced. The system prompt now says so explicitly; also not yet re-measured.
+- **A live run takes about four minutes** against a 60–90 second target. Per-phase timings are now
+  reported by `probe-plan` so the next run says where the time actually goes rather than leaving it
+  to guesswork.
+- **The web-search nudge is implemented but not proven live.** It fires correctly offline; whether
+  the model obeys it needs one more run and one more dollar of Anthropic credit.
 - **Ground transport has no live source** and does not pretend to. Uber and Lyft retired their
   public price APIs; correct transit timings need a billing-enabled Directions key.
 - **Camping gear hire** — where to get a tent near campus and what it costs — is noted as genuinely

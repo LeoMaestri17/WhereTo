@@ -269,6 +269,40 @@ function occupancyLine(request: ResearchRequest, nights: number): string {
   } — ${o.note}`;
 }
 
+/**
+ * The follow-up sent when the research phase finished without a single web search.
+ *
+ * It is deliberately a list of the specific figures this trip needs rather than another round of
+ * "please search more". A general instruction is what the system prompt already contains, and it
+ * did not work; naming the four things and saying what the reader loses when they are unchecked
+ * does.
+ */
+function buildSearchNudge(request: ResearchRequest): string {
+  const gaps = [
+    'the fare from the arrival airport or station into the centre, and the local transit pass',
+    'entry or ticket prices for whatever you are about to recommend',
+    request.isOver21
+      ? 'the deposit and ID rules at the kind of place you are sending them, given no US credit card'
+      : 'the age policy of anywhere you are sending them — they are all UNDER 21',
+  ];
+  if (!request.hasCar) {
+    gaps.push(
+      'if any option involves driving: the current rental rate AND the under-25 young-driver surcharge',
+    );
+  }
+
+  return `Before you write anything: you have priced transport and accommodation with the tools, but you have not looked up a single one of the other figures.
+
+Use web_search now for these:
+${gaps.map((g) => `- ${g}`).join('\n')}
+
+Each one you check becomes a line the reader can trust, labelled as coming from a search. Each one
+you skip becomes an unverified estimate, which is worth very little to somebody deciding whether
+they can afford this. Search is not metered — the only cost of checking is a few seconds.
+
+Do the three or four that matter most for this trip, then stop.`;
+}
+
 export function buildResearchPrompt(request: ResearchRequest): string {
   const tripDays = Math.max(1, daysBetween(request.startDate, request.endDate) + 1);
   const nights = Math.max(0, tripDays - 1);
@@ -310,7 +344,11 @@ export interface AgentResult {
   plan: ResearchPlan;
   ledgerSize: number;
   toolCalls: number;
+  /** Server-side searches the model actually made. Zero is a problem, not a style choice. */
+  webSearches: number;
   downgrades: string[];
+  /** Where the wall clock went. Reported so a slow run can be diagnosed rather than guessed at. */
+  timings: { researchMs: number; assembleMs: number; linksMs: number };
 }
 
 export async function runResearchAgent(
@@ -334,6 +372,13 @@ export async function runResearchAgent(
   let toolCalls = 0;
   let stagedFlights = false;
   let stagedStays = false;
+  /**
+   * Web search is free and the model kept declining to use it, which left two thirds of a plan
+   * as unverified estimates. Counting it lets us notice and say so — see the nudge below.
+   */
+  let webSearches = 0;
+  let nudged = false;
+  const researchStarted = Date.now();
   /** What the model wrote in prose while researching — the qualitative half of its findings. */
   const researchNotes: string[] = [];
   /**
@@ -379,6 +424,16 @@ export async function runResearchAgent(
 
     if (message.container?.id) containerId = message.container.id;
 
+    // Server-side searches never reach the tool loop below — they are executed and answered
+    // inside the same turn — so this is the only place they can be counted.
+    for (const block of message.content) {
+      if (block.type === 'server_tool_use' && block.name === 'web_search') {
+        webSearches += 1;
+        const query = (block.input as { query?: string })?.query;
+        onEvent({ type: 'tool', label: `Web search · ${query ?? 'checking a figure'}`, status: 'ok' });
+      }
+    }
+
     const noteText = message.content
       .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
       .map((b) => b.text)
@@ -391,7 +446,25 @@ export async function runResearchAgent(
     // A paused turn is the server saying "I am not finished"; it must be continued, not treated
     // as an answer. This is the case the SDK's tool runner does not handle for you.
     if (message.stop_reason === 'pause_turn') continue;
-    if (message.stop_reason !== 'tool_use') break;
+
+    if (message.stop_reason !== 'tool_use') {
+      /*
+       * The model stops as soon as it has prices, and prices are the part it has tools for.
+       * Everything else — the airport transfer, the transit pass, the entry fee, the door policy
+       * — it will happily recall, and a recalled figure is an unverified estimate no matter how
+       * confident it sounds. On the run that prompted this, thirteen of eighteen lines came back
+       * as estimates and not one web search had been made, despite the system prompt asking for
+       * them. Asking again in the system prompt is not a fix; noticing is. So we check, and if
+       * nothing was looked up we say so explicitly and let it go round once more.
+       */
+      if (!nudged && webSearches === 0 && i < MAX_ITERATIONS - 1) {
+        nudged = true;
+        onEvent({ type: 'stage', stage: 'extras', label: 'Checking the figures nobody quotes' });
+        messages.push({ role: 'user', content: buildSearchNudge(request) });
+        continue;
+      }
+      break;
+    }
 
     const uses = message.content.filter(
       (b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use',
@@ -435,6 +508,8 @@ export async function runResearchAgent(
 
   /* -------------------------------------------------- phase B: assembly */
 
+  const researchMs = Date.now() - researchStarted;
+  const assembleStarted = Date.now();
   onEvent({ type: 'stage', stage: 'assemble', label: 'Adding up the range' });
 
   /*
@@ -526,6 +601,8 @@ export async function runResearchAgent(
     });
   }
 
+  const assembleMs = Date.now() - assembleStarted;
+  const linksStarted = Date.now();
   onEvent({ type: 'stage', stage: 'verify-links', label: 'Checking every link resolves' });
   const withLinks = await attachLinkChecks(reconciled.plan);
 
@@ -536,7 +613,9 @@ export async function runResearchAgent(
     },
     ledgerSize: ledger.size,
     toolCalls,
+    webSearches,
     downgrades: reconciled.downgrades,
+    timings: { researchMs, assembleMs, linksMs: Date.now() - linksStarted },
   };
 }
 

@@ -39,6 +39,8 @@ const PRESETS: Record<string, Record<string, unknown>> = {
     hasUsCreditCard: false,
     budgetBand: 'moderate',
     moods: [],
+    companions: 'friends',
+    note: 'We would rather share one room than take two.',
   },
   'zion-weekend': {
     ideaSlug: 'zion-weekend',
@@ -69,6 +71,13 @@ async function main() {
   const { quotaStatus } = await import('../lib/pricing/quota');
 
   const before = await quotaStatus();
+  /*
+   * Copy the number out now, not later. `quotaStatus()` hands back the cached account object,
+   * and `reserve()` decrements that object in place — so holding the reference and subtracting
+   * at the end compares the value against itself and always reports zero spent, which is exactly
+   * the wrong direction for a mistake about quota to fail in.
+   */
+  const leftBefore = before.account?.totalSearchesLeft ?? 0;
   console.log(
     `SerpApi before: ${before.account?.totalSearchesLeft ?? '?'} left of ${before.account?.searchesPerMonth ?? '?'}\n`,
   );
@@ -118,7 +127,13 @@ async function main() {
   console.log(
     `${lines.length} costed lines — ${counts.api} api · ${counts.web} web · ${counts.estimate} estimate`,
   );
-  console.log(`confidence: ${plan.confidence} · tool calls: ${result.toolCalls} · ledger: ${result.ledgerSize}`);
+  console.log(
+    `confidence: ${plan.confidence} · tool calls: ${result.toolCalls} · web searches: ${result.webSearches} · ledger: ${result.ledgerSize}`,
+  );
+  const t = result.timings;
+  console.log(
+    `time: research ${(t.researchMs / 1000).toFixed(0)}s · assembly ${(t.assembleMs / 1000).toFixed(0)}s · links ${(t.linksMs / 1000).toFixed(0)}s`,
+  );
   if (result.downgrades.length) {
     console.log(`\ndowngraded by the ledger:`);
     for (const d of result.downgrades) console.log(`  - ${d}`);
@@ -129,7 +144,7 @@ async function main() {
   const after = await quotaStatus();
   console.log(
     `\nSerpApi after: ${after.account?.totalSearchesLeft ?? '?'} left · ${
-      (before.account?.totalSearchesLeft ?? 0) - (after.account?.totalSearchesLeft ?? 0)
+      leftBefore - (after.account?.totalSearchesLeft ?? 0)
     } spent on this run`,
   );
 }
