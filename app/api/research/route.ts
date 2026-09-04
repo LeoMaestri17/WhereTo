@@ -25,6 +25,8 @@ const requestSchema = z.object({
 
 type Frame =
   | { type: 'stage'; id: string; label: string }
+  | { type: 'tool'; label: string; status: 'started' | 'ok' | 'failed' }
+  | { type: 'note'; text: string }
   | { type: 'mode'; mode: 'live' | 'cached'; reason: string }
   | { type: 'plan'; plan: unknown; fallbackReason?: string }
   | { type: 'error'; message: string; recoverable: boolean };
@@ -82,18 +84,36 @@ export async function GET(request: Request) {
 
       send({ type: 'mode', mode, reason });
 
-      // The stages describe the work honestly, paced to the path being taken: composing a saved
-      // plan is near-instant, a live call with web search is not.
-      const pace = mode === 'live' ? 6500 : 550;
-      let stageIndex = 0;
-      send({ type: 'stage', ...RESEARCH_STAGES[0] });
-      const ticker = setInterval(() => {
-        stageIndex += 1;
-        if (stageIndex < RESEARCH_STAGES.length) send({ type: 'stage', ...RESEARCH_STAGES[stageIndex] });
-      }, pace);
+      /**
+       * Progress is now reported by the pipeline as it reaches each step, rather than by a timer
+       * pretending to. On the live path that means the user sees the actual lookups happening —
+       * "Google Hotels · Springdale · 8 properties" — which is what a ninety-second wait needs.
+       *
+       * The cached path composes in milliseconds and has nothing real to report, so it keeps a
+       * short scripted sequence purely so the transition is not a jarring flash.
+       */
+      let ticker: ReturnType<typeof setInterval> | undefined;
+      if (mode === 'cached') {
+        let stageIndex = 0;
+        send({ type: 'stage', ...RESEARCH_STAGES[0] });
+        ticker = setInterval(() => {
+          stageIndex += 1;
+          if (stageIndex < RESEARCH_STAGES.length) {
+            send({ type: 'stage', ...RESEARCH_STAGES[stageIndex] });
+          }
+        }, 550);
+      }
 
       try {
-        const outcome = await runResearch(researchRequest);
+        const outcome = await runResearch(researchRequest, (event) => {
+          if (event.type === 'stage') {
+            send({ type: 'stage', id: event.stage, label: event.label });
+          } else if (event.type === 'tool') {
+            send({ type: 'tool', label: event.label, status: event.status });
+          } else {
+            send({ type: 'note', text: event.text });
+          }
+        });
         send({ type: 'plan', plan: outcome.plan, fallbackReason: outcome.fallbackReason });
       } catch (err) {
         if (err instanceof NoCachedPlanError) {
@@ -111,7 +131,7 @@ export async function GET(request: Request) {
           });
         }
       } finally {
-        clearInterval(ticker);
+        if (ticker) clearInterval(ticker);
         closed = true;
         controller.close();
       }

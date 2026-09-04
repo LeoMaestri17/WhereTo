@@ -112,12 +112,22 @@ export function ConfidenceBadge({ plan }: { plan: ResearchPlan }) {
  * A real loading experience rather than a spinner. Each stage names the work actually being
  * done and stays on screen once it has passed, so a 60-second wait reads as progress.
  */
+export interface ToolLogEntry {
+  label: string;
+  status: 'started' | 'ok' | 'failed';
+}
+
 export function ResearchProgress({
   currentStage,
   mode,
+  toolLog = [],
+  notes = [],
 }: {
   currentStage: ResearchStageId | null;
   mode: 'live' | 'cached' | null;
+  /** Real lookups, as they happen. This is what makes a ninety-second wait legible. */
+  toolLog?: ToolLogEntry[];
+  notes?: string[];
 }) {
   const index = currentStage ? RESEARCH_STAGES.findIndex((s) => s.id === currentStage) : -1;
 
@@ -173,6 +183,45 @@ export function ResearchProgress({
           );
         })}
       </ol>
+
+      {toolLog.length > 0 ? (
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="type-micro text-faint">What it is looking up</p>
+          <ul className="mt-2 space-y-1">
+            {toolLog.map((entry, i) => (
+              <li key={i} className="flex items-baseline gap-2">
+                <span
+                  className={`type-meta shrink-0 ${
+                    entry.status === 'ok'
+                      ? 'text-good'
+                      : entry.status === 'failed'
+                        ? 'text-warn'
+                        : 'text-faint'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {entry.status === 'ok' ? '✓' : entry.status === 'failed' ? '·' : '⟳'}
+                </span>
+                <span
+                  className={`type-meta ${entry.status === 'started' ? 'text-ink' : 'text-muted'}`}
+                >
+                  {entry.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {notes.length > 0 ? (
+        <div className="mt-4 border-t border-line pt-3">
+          {notes.map((note, i) => (
+            <p key={i} className="type-meta text-warn">
+              {note}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

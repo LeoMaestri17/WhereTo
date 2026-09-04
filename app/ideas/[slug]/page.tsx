@@ -15,6 +15,7 @@ import {
   ProvenanceBanner,
   ResearchProgress,
   SourcesList,
+  type ToolLogEntry,
 } from '@/components/research/PlanView';
 import { Button, EmptyState, ErrorState, LinkButton, Panel } from '@/components/ui';
 import { INTEREST_LABELS, type Idea } from '@/lib/domain/types';
@@ -26,7 +27,13 @@ import { addDays, isoDate, nextThanksgiving, toIsoDate } from '@/lib/util/dates'
 
 type Phase =
   | { kind: 'idle' }
-  | { kind: 'running'; stage: ResearchStageId | null; mode: 'live' | 'cached' | null }
+  | {
+      kind: 'running';
+      stage: ResearchStageId | null;
+      mode: 'live' | 'cached' | null;
+      toolLog: ToolLogEntry[];
+      notes: string[];
+    }
   | { kind: 'done'; plan: ResearchPlan; fallbackReason?: string }
   | { kind: 'error'; message: string; recoverable: boolean };
 
@@ -85,7 +92,7 @@ export default function IdeaPlannerPage() {
     if (!idea) return;
     sourceRef.current?.close();
 
-    setPhase({ kind: 'running', stage: null, mode: null });
+    setPhase({ kind: 'running', stage: null, mode: null, toolLog: [], notes: [] });
     setSubmitted(values);
 
     const source = new EventSource(researchUrl(idea, values));
@@ -109,6 +116,24 @@ export default function IdeaPlannerPage() {
     source.addEventListener('stage', (e) => {
       const frame = JSON.parse((e as MessageEvent<string>).data) as { id: ResearchStageId };
       setPhase((p) => (p.kind === 'running' ? { ...p, stage: frame.id, mode } : p));
+    });
+
+    source.addEventListener('tool', (e) => {
+      const frame = JSON.parse((e as MessageEvent<string>).data) as ToolLogEntry;
+      setPhase((p) => {
+        if (p.kind !== 'running') return p;
+        // A finished lookup replaces its own 'started' line rather than adding a second one.
+        const next = [...p.toolLog];
+        const started = next.findIndex((t) => t.status === 'started' && sameLookup(t.label, frame.label));
+        if (frame.status !== 'started' && started !== -1) next[started] = frame;
+        else next.push(frame);
+        return { ...p, toolLog: next.slice(-8) };
+      });
+    });
+
+    source.addEventListener('note', (e) => {
+      const frame = JSON.parse((e as MessageEvent<string>).data) as { text: string };
+      setPhase((p) => (p.kind === 'running' ? { ...p, notes: [...p.notes, frame.text] } : p));
     });
 
     source.addEventListener('plan', (e) => {
@@ -207,7 +232,12 @@ export default function IdeaPlannerPage() {
       </section>
 
       {phase.kind === 'running' ? (
-        <ResearchProgress currentStage={phase.stage} mode={phase.mode} />
+        <ResearchProgress
+          currentStage={phase.stage}
+          mode={phase.mode}
+          toolLog={phase.toolLog}
+          notes={phase.notes}
+        />
       ) : null}
 
       {phase.kind === 'error' ? (
@@ -312,6 +342,12 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dd className="type-meta mt-0.5 font-medium">{value}</dd>
     </div>
   );
+}
+
+/** Tool labels change as a lookup completes, so match on the stable provider+target prefix. */
+function sameLookup(a: string, b: string): boolean {
+  const key = (s: string) => s.split(' · ').slice(0, 2).join(' · ');
+  return key(a) === key(b);
 }
 
 function researchUrl(idea: Idea, values: PlannerValues): string {

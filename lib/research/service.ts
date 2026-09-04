@@ -1,4 +1,6 @@
 import 'server-only';
+import Anthropic from '@anthropic-ai/sdk';
+import { runResearchAgent, type OnAgentEvent } from './agent';
 import { CachedResearchService, NoCachedPlanError, hasCachedPlan } from './cached';
 import { LiveResearchService } from './live';
 import type { ResearchPlan, ResearchRequest, TripResearchService } from './types';
@@ -44,18 +46,24 @@ export function selectService(): TripResearchService {
     : new CachedResearchService('cached');
 }
 
-export async function runResearch(request: ResearchRequest): Promise<ResearchOutcome> {
+export async function runResearch(
+  request: ResearchRequest,
+  onEvent: OnAgentEvent = () => {},
+): Promise<ResearchOutcome> {
   if (resolveMode() === 'cached') {
     return { plan: await new CachedResearchService('cached').research(request) };
   }
 
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY as string });
+
   try {
-    const plan = await new LiveResearchService(
-      process.env.ANTHROPIC_API_KEY as string,
-    ).research(request);
-    return { plan };
+    const result = await runResearchAgent(client.messages, request, onEvent);
+    return { plan: result.plan };
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'The live research call failed.';
+
+    // A free-form destination has no fixture to fall back on, so this is now the common case
+    // rather than the rare one. Failing to a written explanation beats failing to a stack trace.
     if (!hasCachedPlan(request.ideaSlug)) {
       throw new Error(
         `Live research failed and there is no saved plan for this destination to fall back on. ${reason}`,
