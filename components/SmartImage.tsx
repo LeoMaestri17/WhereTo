@@ -53,7 +53,10 @@ export function SmartImage({
       width={width}
       height={height}
       sizes={sizes}
-      loading={priority ? 'eager' : 'lazy'}
+      // Not lazy. In production Chrome never started the lazy trip-card photos, even scrolled
+      // into view, and the cards shipped black. No page carries more than eight of these at
+      // Unsplash-resized widths, so loading them up front costs little and cannot fail that way.
+      loading="eager"
       fetchPriority={priority ? 'high' : 'auto'}
       decoding="async"
       className={className}
