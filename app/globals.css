@@ -1,106 +1,133 @@
 @import 'tailwindcss';
 
 /*
-  USC SideQuest design tokens.
+  WhereTo — art direction "NOCTURNE".
 
-  Warm neutrals, one cardinal accent, quiet borders. USC-adjacent without being a branded
-  microsite. Images carry the layout, so the palette stays out of the way — the accent is
-  reserved for the two things that drive action: deadlines and remaining capacity.
+  Cinematic, editorial, quiet-luxury travel. Dark, moody, photographic. The system is full-bleed
+  imagery under layered gradient scrims with minimal typographic overlays — National Geographic
+  meets a boutique hotel brand. Restraint is the point: few elements, a great deal of negative
+  space, one hero image doing the emotional work on each screen.
+
+  Four rules:
+
+  1. EVERYTHING IS WARM. The palette is pulled toward a green-brown temperature. There is no pure
+     black and no pure white anywhere in the product — even the whites are warm (#F4F1E8, never
+     #FFF). A neutral grey or a pure black entering this system reads instantly as a mistake.
+  2. THE PHOTOGRAPH CARRIES THE SCREEN. One image per view, full-bleed, graded to the palette
+     before it is allowed on screen. Type is a thin layer over the top, anchored to the bottom
+     third.
+  3. SCRIMS ARE GRADIENTS, NEVER FLAT FILLS. A flat overlay kills the image; a gradient keeps the
+     top of the frame clean and makes the bottom legible.
+  4. GLOW, NOT DROP-SHADOW. Depth comes from blur and light, not from a hard offset shadow.
 */
 
 :root {
-  color-scheme: light;
+  /* Dark only. The whole direction is built on imagery under dark scrims, so a light mode would
+     contradict it rather than complement it. Declared on :root rather than in a media query
+     because there is nothing to switch to. */
+  color-scheme: dark;
 
-  --bg: #fbfaf8;
-  --surface: #ffffff;
-  --surface-2: #f4f2ef;
-  --surface-3: #ebe8e3;
+  /* ---------------------------------------------------------------- ground */
+  --ground: #16160f; /* near-black warm olive-charcoal */
+  --ground-2: #1c1b14; /* a half-step up, for sections that need separating */
+  --olive: #3a3829;
+  --olive-2: #4a4636;
 
-  --text: #1a1817;
-  --text-muted: #6c655e;
-  --text-faint: #9a938b;
+  /* ---------------------------------------------------------------- accent */
+  /* One accent, warm sand. Used for the primary action and for a live price, nothing else. */
+  --sand: #b49b74;
+  --sand-2: #c9ae87;
 
-  --line: #e6e2dc;
-  --line-strong: #d5cfc7;
+  /* ---------------------------------------------------------------- type */
+  --type: #f4f1e8; /* warm off-white. 14.9:1 on ground */
+  --type-muted: #a8a498; /* 6.9:1  — body copy */
+  --type-faint: #8a8778; /* 4.8:1  — eyebrows and captions; the quietest that clears AA */
 
-  --accent: #b32639;
-  --accent-hover: #971e2f;
-  --accent-soft: #fbeef0;
-  --accent-text: #ffffff;
+  /* ---------------------------------------------------------------- lines and glass */
+  --hairline: rgba(244, 241, 232, 0.12);
+  --hairline-strong: rgba(244, 241, 232, 0.24);
+  /* Strong enough to be a surface on its own. At 0.42 this was no darker than the scrim under
+     it, so a panel over a bright photo did nothing. Glass composites on top of the scrim, so on
+     the content band the two multiply to about 0.85. */
+  --glass: rgba(28, 27, 20, 0.80);
+  --glass-hairline: rgba(244, 241, 232, 0.14);
 
-  --warn: #9a5b12;
-  --warn-soft: #fdf3e5;
-  --danger: #a32620;
-  --danger-soft: #fceeed;
-  --good: #2f6b46;
-  --good-soft: #ecf5ef;
+  /* ---------------------------------------------------------------- scrims
 
-  --shadow-card: 0 1px 2px rgb(26 24 23 / 0.04), 0 6px 20px -12px rgb(26 24 23 / 0.16);
-}
+     Three, because three different jobs. The hero keeps the top two thirds clean; the card is
+     weighted lower because its type block is shorter; the veil is a whole-frame darkener for
+     imagery sitting behind a question. */
+  /* Weighted, not uniform. The photograph opens up through the upper third and the scrim only
+     gets heavy where the type actually sits — below 70%. A uniform ramp is what made the headline
+     measure 2.53:1 over a bright sky while still flattening the image. */
+  --scrim-hero: linear-gradient(
+    180deg,
+    rgba(12, 12, 8, 0.45) 0%,
+    rgba(12, 12, 8, 0.15) 20%,
+    rgba(12, 12, 8, 0.55) 50%,
+    rgba(12, 12, 8, 0.88) 72%,
+    rgba(12, 12, 8, 0.96) 100%
+  );
+  --scrim-card: linear-gradient(
+    180deg,
+    rgba(12, 12, 8, 0) 0%,
+    rgba(12, 12, 8, 0.18) 38%,
+    rgba(12, 12, 8, 0.72) 68%,
+    rgba(12, 12, 8, 0.94) 100%
+  );
+  /* The veil sits behind a question, and its stops are sized to where the type actually lands —
+     measured, not guessed. On the survey the heading sits at 31%, the body copy at 39-45%, and
+     the calendar panel takes everything from 49% down. So the veil is light only through the top
+     quarter and at 0.86 by 26%, which is where prose begins. */
+  --scrim-veil: linear-gradient(
+    180deg,
+    rgba(12, 12, 8, 0.34) 0%,
+    rgba(12, 12, 8, 0.4) 12%,
+    rgba(12, 12, 8, 0.86) 26%,
+    rgba(12, 12, 8, 0.94) 100%
+  );
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
+  /* A short strip for the chrome at the very top of a frame — the back link and the progress
+     dots. Small text over the brightest part of a photograph needs its own backing, and a strip
+     costs far less of the image than raising the whole veil would. */
+  --scrim-top: linear-gradient(
+    180deg,
+    rgba(12, 12, 8, 0.72) 0%,
+    rgba(12, 12, 8, 0.4) 55%,
+    rgba(12, 12, 8, 0) 100%
+  );
 
-    --bg: #121110;
-    --surface: #1a1918;
-    --surface-2: #232120;
-    --surface-3: #2d2a28;
-
-    --text: #f3f0ec;
-    --text-muted: #a7a098;
-    --text-faint: #7c756d;
-
-    --line: #302d2a;
-    --line-strong: #423e3a;
-
-    --accent: #ef5069;
-    --accent-hover: #f36c81;
-    --accent-soft: #2c1a1e;
-    --accent-text: #1a1010;
-
-    --warn: #e3a967;
-    --warn-soft: #2c2114;
-    --danger: #f0837b;
-    --danger-soft: #2e1a18;
-    --good: #7fc39b;
-    --good-soft: #16241c;
-
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -12px rgb(0 0 0 / 0.6);
-  }
+  /* ---------------------------------------------------------------- depth */
+  --glow-soft: 0 0 0 1px var(--hairline), 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+  --glow-lift: 0 0 0 1px var(--hairline-strong), 0 36px 80px -32px rgba(0, 0, 0, 0.95);
+  --glow-sand: 0 0 32px -8px rgba(180, 155, 116, 0.42);
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
+  --color-ground: var(--ground);
+  --color-ground-2: var(--ground-2);
+  --color-olive: var(--olive);
+  --color-olive-2: var(--olive-2);
+  --color-sand: var(--sand);
+  --color-sand-2: var(--sand-2);
+  --color-type: var(--type);
+  --color-type-muted: var(--type-muted);
+  --color-type-faint: var(--type-faint);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
 
-  --color-ink: var(--text);
-  --color-muted: var(--text-muted);
-  --color-faint: var(--text-faint);
+  /* One family. Plus Jakarta Sans is the closest free, self-hostable match to General Sans and
+     Satoshi, which are both Fontshare ITF FFL and cannot legally be redistributed with the app.
+     No mono: the brief's label voice is tracked-out caps in the same grotesque, and a terminal
+     face would fight the editorial tone. */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, 'Segoe UI', Arial, sans-serif;
 
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
+  --radius-card: 20px;
+  --radius-card-sm: 14px;
+  --radius-tile: 24px;
 
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-text: var(--accent-text);
-
-  --color-warn: var(--warn);
-  --color-warn-soft: var(--warn-soft);
-  --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
-  --color-good: var(--good);
-  --color-good-soft: var(--good-soft);
-
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-
-  --shadow-card: var(--shadow-card);
+  --shadow-soft: var(--glow-soft);
+  --shadow-lift: var(--glow-lift);
 }
 
 html {
@@ -108,71 +135,239 @@ html {
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--ground);
+  color: var(--type);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* A restrained type scale. Headings are tight; body text is not. */
-.type-display {
-  font-size: 1.75rem;
-  line-height: 1.15;
-  letter-spacing: -0.021em;
-  font-weight: 620;
+::selection {
+  background: var(--sand);
+  color: var(--ground);
 }
 
-.type-title {
-  font-size: 1.1875rem;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  font-weight: 600;
-}
-
-.type-heading {
-  font-size: 0.9375rem;
-  line-height: 1.35;
-  letter-spacing: -0.008em;
-  font-weight: 600;
-}
-
-.type-body {
-  font-size: 0.9375rem;
-  line-height: 1.55;
-}
-
-.type-meta {
-  font-size: 0.8125rem;
-  line-height: 1.45;
-}
-
-.type-micro {
-  font-size: 0.6875rem;
-  line-height: 1.3;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-@media (min-width: 768px) {
-  .type-display {
-    font-size: 2.125rem;
-  }
-}
-
-/* Focus is always visible. This gets used one-handed on a phone and on a laptop. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 1px solid var(--sand-2);
+  outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* Motion is functional: entrances for content that just arrived, nothing decorative. */
+/* ------------------------------------------------------------------ film grain
+
+   A single fixed noise layer over the whole surface. This is what stops a dark gradient reading
+   as a flat CSS panel and gives the analogue feel the direction depends on. feTurbulence rather
+   than a raster tile so it costs nothing to ship and never tiles visibly.
+
+   pointer-events: none is load-bearing — without it the layer eats every click on the page. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------------ type scale
+
+   In @layer components so a Tailwind text-[…] utility can still override a size at the call site.
+   Unlayered CSS outranks @layer utilities in v4, which silently beats every override — the sort
+   of bug that has you rewriting a component before noticing the stylesheet did it.
+
+   Three tiers, and the vertical rhythm on every screen is the same: eyebrow, headline, body, CTA,
+   anchored to the bottom third. */
+
+@layer components {
+  /* The signature move. Uppercase, very wide tracking, small, light, muted.
+   *
+   * --type-muted, not --type-faint. Faint measures 4.8:1 on the flat ground and is fine there,
+   * but it never clears 4.5 over a photograph at any scrim strength — which is why every eyebrow
+   * on an image was invisible. This one declaration fixes all of them. */
+  .type-eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--type-muted);
+  }
+
+  /* Headlines are statements and take a full stop. Medium weight, tight tracking. */
+  .type-hero {
+    font-size: clamp(2rem, 5.2vw, 3.25rem);
+    line-height: 1.04;
+    font-weight: 500;
+    letter-spacing: -0.028em;
+    text-wrap: balance;
+  }
+
+  .type-display {
+    font-size: clamp(1.75rem, 3.4vw, 2.125rem);
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: -0.024em;
+    text-wrap: balance;
+  }
+
+  .type-title {
+    font-size: 1.3125rem;
+    line-height: 1.14;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Small, muted, generous leading, three lines at most. */
+  .type-body {
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    font-weight: 400;
+    color: var(--type-muted);
+  }
+
+  .type-body-lg {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: var(--type-muted);
+  }
+
+  /* Prices. The same grotesque, not a mono, with tabular figures so columns still align. */
+  .type-figure {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+
+  .type-figure-lg {
+    font-size: 2rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+  }
+}
+
+/* ------------------------------------------------------------------ photography
+
+   Every photograph is graded on the way in, so a saturated stock image cannot arrive and break
+   the palette. Desaturate, warm slightly, lift contrast, pull the brightness down to sit under
+   the scrims. Applied by class rather than trusted to the source file. */
+.sq-graded {
+  filter: saturate(0.62) contrast(1.04) brightness(0.88) sepia(0.14);
+}
+
+.sq-scrim-hero {
+  background: var(--scrim-hero);
+}
+.sq-scrim-card {
+  background: var(--scrim-card);
+}
+.sq-scrim-veil {
+  background: var(--scrim-veil);
+}
+
+.sq-scrim-top {
+  background: var(--scrim-top);
+}
+
+/**
+ * The card's own gradient, behind its text block.
+ *
+ * Card-only, and named so. A general version of this used to exist for full-frame screens, and it
+ * was attached to the div carrying MEASURE — which is max-w-6xl and centred — so its ::before was
+ * 1152px wide with hard vertical edges on either side of the photograph. It read as a panel
+ * dropped on the image. Inside a card the text block spans the full card width, so the same
+ * gradient has no seam. The name says where it is safe.
+ */
+.sq-card-scrim {
+  position: relative;
+}
+
+.sq-card-scrim::before {
+  content: '';
+  position: absolute;
+  inset: -5rem 0 0 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 12, 8, 0) 0rem,
+    rgba(12, 12, 8, 0.6) 2.5rem,
+    rgba(12, 12, 8, 0.9) 5rem,
+    rgba(12, 12, 8, 0.94) 100%
+  );
+}
+
+.sq-card-scrim > * {
+  position: relative;
+}
+
+/**
+ * A glow behind the letters themselves, for type that floats on a photograph.
+ *
+ * This is the replacement for the full-frame block gradient, which drew a visible rectangle. A
+ * text-shadow has no edges and no shape — it darkens only the few pixels around each stroke — so
+ * the photograph stays whole and the letters get local backing wherever the image happens to be
+ * bright. The brief asks for glow over hard drop-shadow; this is that, applied to type.
+ *
+ * WCAG's contrast formula cannot score a text-shadow, so the audit still reports the unglowed
+ * worst case for these lines. The glow is what carries them perceptually.
+ */
+.sq-text-glow {
+  text-shadow:
+    0 0 18px rgba(12, 12, 8, 0.85),
+    0 0 6px rgba(12, 12, 8, 0.55),
+    0 1px 2px rgba(12, 12, 8, 0.6);
+}
+
+/* ------------------------------------------------------------------ glass
+
+   Floating UI only: the nav and the circular icon buttons. Low-opacity warm fill, a real blur,
+   and a hairline at 14% warm white. The fallback fill is opaque enough to stand on its own where
+   backdrop-filter is unsupported. */
+.sq-glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-hairline);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .sq-glass {
+    background: rgba(28, 27, 20, 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(1.1);
+    backdrop-filter: blur(20px) saturate(1.1);
+  }
+}
+
+/* ------------------------------------------------------------------ motion
+
+   Slow, heavy, cinematic, but short in distance. Nothing bounces. No scroll-triggered animation
+   anywhere — the imagery is doing the work and movement would cheapen it. */
+
+.sq-ease {
+  transition:
+    transform 420ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 420ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 240ms linear,
+    background-color 240ms linear,
+    border-color 240ms linear,
+    color 240ms linear;
+}
+
+.sq-zoom {
+  transition: transform 1200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sq-card:hover .sq-zoom {
+  transform: scale(1.05);
+}
+
 @keyframes sq-rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -181,52 +376,36 @@ body {
 }
 
 .sq-rise {
-  animation: sq-rise 260ms cubic-bezier(0.22, 0.68, 0.36, 1) both;
+  animation: sq-rise 520ms cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
-@keyframes sq-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
+/* Staggered entrances for the bottom-anchored block: eyebrow, then headline, then body, then CTA. */
+.sq-rise-1 {
+  animation-delay: 60ms;
 }
-
-.sq-pulse {
-  animation: sq-pulse 1.6s ease-in-out infinite;
+.sq-rise-2 {
+  animation-delay: 140ms;
 }
-
-@keyframes sq-shimmer {
-  from {
-    background-position: -200% 0;
-  }
-  to {
-    background-position: 200% 0;
-  }
+.sq-rise-3 {
+  animation-delay: 220ms;
 }
-
-.sq-shimmer {
-  background-image: linear-gradient(
-    90deg,
-    var(--surface-2) 0%,
-    var(--surface-3) 50%,
-    var(--surface-2) 100%
-  );
-  background-size: 200% 100%;
-  animation: sq-shimmer 1.5s linear infinite;
+.sq-rise-4 {
+  animation-delay: 300ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sq-rise,
-  .sq-pulse,
-  .sq-shimmer {
+  .sq-ease,
+  .sq-zoom {
+    transition: none;
+  }
+  .sq-rise {
     animation: none;
+  }
+  .sq-card:hover .sq-zoom {
+    transform: none;
   }
 }
 
-/* Horizontal filter rails scroll without a visible scrollbar on desktop. */
 .sq-rail {
   scrollbar-width: none;
 }

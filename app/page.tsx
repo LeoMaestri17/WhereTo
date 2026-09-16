@@ -1,87 +1,82 @@
-'use client';
-
-import Link from 'next/link';
-import { useState } from 'react';
-import { IdeaCard } from '@/components/cards';
-import { RotatingWord } from '@/components/RotatingWord';
-import { Chip, LinkButton, SectionHeader } from '@/components/ui';
-import { IDEA_SHAPE_LABELS, type IdeaShape } from '@/lib/domain/types';
-import { cachedPlanSlugs } from '@/lib/research/cached';
-import { IDEAS } from '@/lib/seed/ideas';
-
-const CACHED = new Set(cachedPlanSlugs());
+import { SmartImage } from '@/components/SmartImage';
+import {
+  ArrowIcon,
+  Eyebrow,
+  PhotoFrame,
+  PillLink,
+  RidgeMark,
+} from '@/components/nocturne/primitives';
+import { MEASURE } from '@/components/nocturne/measure';
+import { PHOTOS } from '@/lib/seed/images';
 
 /**
- * The home screen is the planning screen.
+ * The landing page.
  *
- * The core loop: browse trips, click one, and it goes and finds what it really costs. The guided
- * questions above it are the way in for people who do not yet know where they want to go.
+ * One screen, one photograph, one sentence, one way forward.
  *
- * Phase 2 replaces this with the intake flow proper — this is the interim landing while the
- * social layer comes out.
+ * It is deliberately not about California. The product happens to start from Los Angeles, but the
+ * thing it does — take a few answers and return what a trip really costs, split between the people
+ * going — is not regional, and a landing page that names one city sells the smaller idea. Nor does
+ * it mention how many destinations or weekends are loaded: that is a fact about this build, not
+ * about the product, and stating it invites the reader to judge the scaffolding.
  */
-export default function HomePage() {
-  const [shape, setShape] = useState<IdeaShape | 'all'>('all');
-  const ideas = shape === 'all' ? IDEAS : IDEAS.filter((i) => i.shape === shape);
-
+export default function LandingPage() {
   return (
-    <div className="space-y-14">
-      <header className="pt-2">
-        <p className="type-micro text-accent">SideQuest</p>
-        <h1 className="type-display mt-3 max-w-3xl">
-          Where should you go{' '}
-          <RotatingWord words={['this weekend', 'next month', 'over the break', 'before you fly home']} />?
-        </h1>
-        <p className="type-body mt-3 max-w-xl text-muted">
-          Pick something below and it will go and find what it actually costs — real flights, a
-          real hotel, and the surcharges nobody quotes a nineteen-year-old.
-        </p>
-      </header>
-
-      <Link
-        href="/plan"
-        className="group flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-accent sm:p-6"
+    <main className="min-h-dvh">
+      <PhotoFrame
+        scrim="hero"
+        className="flex min-h-dvh flex-col"
+        image={
+          <SmartImage
+            photoId={PHOTOS.zionCanyon}
+            alt=""
+            width={2000}
+            height={1400}
+            priority
+            sizes="100vw"
+            className="sq-graded h-full w-full object-cover"
+          />
+        }
       >
-        <span className="min-w-0 flex-1">
-          <span className="type-title block">Not sure yet — help me pick</span>
-          <span className="type-body mt-1 block text-muted">
-            A few questions about when you are free, who is going and what you can spend, then the
-            places that actually fit.
-          </span>
-        </span>
-        <span className="type-body shrink-0 font-medium text-accent transition-transform group-hover:translate-x-0.5">
-          Start →
-        </span>
-      </Link>
+        {/* The mark and the name together. The mark alone said nothing. */}
+        <header className={`${MEASURE} flex items-center gap-3 pt-8`}>
+          <RidgeMark className="text-type" size={26} />
+          <span className="type-title text-[1.0625rem] tracking-[-0.01em] text-type">WhereTo</span>
+        </header>
 
-      <section>
-        <SectionHeader
-          title="Where people go"
-          detail="Costed for a student with no car who cannot hire one, not for a tourist with a credit card."
-        />
-        <div className="sq-rail -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-          <Chip active={shape === 'all'} onClick={() => setShape('all')}>
-            Everything
-          </Chip>
-          {(['day', 'weekend', 'break'] as IdeaShape[]).map((s) => (
-            <Chip key={s} active={shape === s} onClick={() => setShape(s)}>
-              {IDEA_SHAPE_LABELS[s]}
-            </Chip>
-          ))}
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ideas.slice(0, 9).map((idea) => (
-            <IdeaCard key={idea.slug} idea={idea} hasCached={CACHED.has(idea.slug)} />
-          ))}
-        </div>
-        {ideas.length > 9 ? (
-          <div className="mt-4">
-            <LinkButton href="/ideas" tone="quiet">
-              See all {ideas.length}
-            </LinkButton>
+        {/* Bottom third. Everything lands here. */}
+        <div className={`${MEASURE} mt-auto pb-20 sm:pb-28`}>
+          <div className="max-w-2xl">
+            <Eyebrow className="sq-rise sq-rise-1 sq-text-glow font-medium text-type">
+              Trip planning, with the real numbers
+            </Eyebrow>
+
+            <h1 className="type-hero sq-rise sq-rise-2 sq-text-glow mt-6 text-type">
+              Plan a trip in two minutes. See every cost in one place.
+            </h1>
+
+            <p className="type-body-lg sq-rise sq-rise-3 sq-text-glow mt-6 max-w-lg text-type">
+              Flights, beds, transport, entry fees. Real prices, split between you, before you
+              commit. Not a headline rate for somebody else — the figure you actually pay, with the
+              surcharges that depend on your age and who is driving already in it.
+            </p>
+
+            <div className="sq-rise sq-rise-4 mt-10">
+              <PillLink href="/survey" variant="solid" size="lg">
+                Plan my trip
+                <ArrowIcon size={17} />
+              </PillLink>
+            </div>
+
+            {/* --type at weight 500, not the muted eyebrow tone. Small tracked caps over a
+                photograph fail perceptually before they fail numerically: the stems at 11px are
+                hairlines, and weight is what makes them survive the image behind. */}
+            <p className="type-eyebrow sq-rise sq-rise-4 mt-10 font-medium text-type">
+              Live Pricing · Made For Students · No sign up
+            </p>
           </div>
-        ) : null}
-      </section>
-    </div>
+        </div>
+      </PhotoFrame>
+    </main>
   );
 }

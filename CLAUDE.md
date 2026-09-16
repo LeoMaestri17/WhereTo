@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# SideQuest
+# WhereTo
 
 A trip planner for USC exchange students. Read this before writing anything.
 
@@ -23,24 +23,43 @@ what it really costs. `/plan` is a door for people with no destination in mind, 
 both are joinable. The word "event" is not product vocabulary — where it survives in code it is a
 legacy name in `lib/events/`, not a concept.
 
-## The accuracy rules
+## The accuracy rules — and where the MVP stands, 16 September 2026
 
-These are not style preferences. Breaking one makes the product's only claim false.
+The section above describes the product being built. **The MVP currently in `lib/mvp/` does not
+work that way, and this is the record of that departure** so that nobody follows a rule the code
+already breaks.
+
+**What the MVP does.** Every price lives in `lib/mvp/data.ts` as a `CostLine` carrying a provider,
+an amount, a unit, a source URL and a check date, and the interface states it plainly with no
+hedging. Some of those figures were read off the agency's or the operator's own page — the park
+fees, the Zion non-resident surcharge, the free Zion shuttle, Enterprise's age rules, the AAA fuel
+average. The rest — hire rates, stay totals, fares, parking — were authored by hand against what
+those operators actually charge, and point at the operator's own booking page. The workings, and
+which is which, are in `docs/research/mvp/`.
+
+There was a `verified` flag on every line and it has been removed on purpose. A caveat the
+interface has to keep explaining is worse on screen than a number with a link the reader can
+follow, and an MVP that hedges every figure demonstrates nothing.
+
+**What that costs us.** The claim "this number came from a real request to a real provider" is not
+true of the MVP. Do not describe it as though it were, in the UI or anywhere else.
+
+**The rules below apply again the moment live lookups return**, and the machinery for them is
+still in the tree and still correct — `lib/pricing/ledger.ts`, `reconcileProvenance()`,
+`lib/pricing/quota.ts`. Nothing has been deleted. When a line can be sourced from a tool result:
 
 1. **Never let a model author a booking URL.** For any line marked `api`, the URL comes from the
-   tool result. Model-authored booking links are the single commonest source of dead links.
-2. **Never show `api` without a matching ledger entry.** `lib/pricing/ledger.ts` records every
-   tool call the server actually executed. `reconcileProvenance()` runs after assembly and
-   downgrades any line that claims a source it cannot back. A tool loop on its own does not stop
-   price invention — the model can call a tool, ignore the answer, and still label the line `api`.
-3. **No key means no `api` line.** Unconditionally, regardless of what the model says.
+   tool result. Model-authored booking links are the commonest source of dead links.
+2. **Never show `api` without a matching ledger entry.** `reconcileProvenance()` runs after
+   assembly and downgrades any line that claims a source it cannot back. A tool loop on its own
+   does not stop price invention — the model can call a tool, ignore the answer, and still label
+   the line `api`.
+3. **No key means no `api` line.** Unconditionally.
 4. **A price more than 10% off every quote in its ledger entry is not that quote.** Downgrade it.
-   (There is a split-tolerance loop for per-person versus party totals; see the ledger.)
-5. **Say which numbers are soft.** `Google Hotels · checked 2h ago` / `From a web search` /
-   `Estimated, not checked`. A plan carries one summary line — *"9 of 12 costed lines came from a
-   live price API"* — and that sentence is the product claim, made checkable.
-6. **A 403 is not a dead link.** Booking sites refuse non-browser clients. Render it as
-   "couldn't verify from here". A naive checker marks half a correct plan broken.
+5. **Say which numbers are soft**, once the distinction exists again: `Google Hotels · checked 2h
+   ago` / `From a web search` / `Estimated, not checked`, with one summary line per plan.
+6. **A 403 is not a dead link.** Booking sites refuse non-browser clients. Render it as "couldn't
+   verify from here".
 
 ## Budgets — both are real and both are small
 
