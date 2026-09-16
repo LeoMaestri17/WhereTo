@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
-import { StoreProvider } from '@/lib/store/StoreProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'USC SideQuest',
+  title: 'SideQuest',
   description:
-    'Find the people to go with. Trips, plans and events for USC exchange students, with costs that account for being 19, carless and on a foreign licence.',
+    'Trips out of Los Angeles for exchange students, costed for being 19, carless and on a foreign licence.',
 };
 
 export const viewport: Viewport = {
@@ -23,9 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full">
-        <StoreProvider>
-          <AppShell>{children}</AppShell>
-        </StoreProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

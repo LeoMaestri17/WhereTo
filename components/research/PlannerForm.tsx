@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Toggle } from '@/components/Onboarding';
-import { Button, Chip } from '@/components/ui';
+import { Button, Chip, Toggle } from '@/components/ui';
 import {
   BUDGET_BAND_LABELS,
   INTEREST_LABELS,

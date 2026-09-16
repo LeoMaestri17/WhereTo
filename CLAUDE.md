@@ -109,9 +109,8 @@ chirpy.
 
 ```
 npm run dev            # http://localhost:3000
-npm run check          # typecheck + lint + seed validation + intake probe + build
+npm run check          # typecheck + lint + intake probe + build
 npm run probe:intake   # the guided picker, offline and free
-npm run validate:seed  # seed invariants — every profile can reach every state
 ```
 
 `npm run check` must be green before a commit.

@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { SmartImage } from '@/components/SmartImage';
-import { Toggle } from '@/components/Onboarding';
-import { Button } from '@/components/ui';
+import { Button, Toggle } from '@/components/ui';
 import { BUDGET_BAND_LABELS, type BudgetBand } from '@/lib/domain/types';
 import { datesFor, encodeBrief, EMPTY_BRIEF } from '@/lib/intake/brief';
 import { recommendDestinations, type Recommendation } from '@/lib/intake/match';
@@ -21,8 +20,6 @@ import {
   type Vibe,
   type WhenWindow,
 } from '@/lib/intake/types';
-import { useStore } from '@/lib/store/StoreProvider';
-import { currentUser } from '@/lib/store/selectors';
 import { formatDateRange } from '@/lib/util/dates';
 
 /**
@@ -41,14 +38,14 @@ import { formatDateRange } from '@/lib/util/dates';
 type StepId = 'who' | 'size' | 'length' | 'when' | 'budget' | 'vibes' | 'constraints';
 
 export default function PlanPage() {
-  const { state } = useStore();
-  const me = currentUser(state);
+
+
 
   const [brief, setBrief] = useState<TripBrief>(() => ({
     ...EMPTY_BRIEF,
-    isOver21: (me?.age ?? 20) >= 21,
-    hasCar: me?.hasCar ?? false,
-    hasUsCreditCard: me?.hasUsCreditCard ?? false,
+    isOver21: false,
+    hasCar: false,
+    hasUsCreditCard: false,
   }));
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);

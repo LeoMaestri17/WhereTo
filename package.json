@@ -8,9 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "validate:seed": "tsx scripts/validate-seed.ts",
     "probe:intake": "tsx scripts/probe-intake.ts",
-    "check": "npm run typecheck && npm run lint && npm run validate:seed && npm run probe:intake && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run probe:intake && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",

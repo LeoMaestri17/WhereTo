@@ -24,9 +24,14 @@ import { VIBE_TAGS } from '@/lib/intake/match';
 import { deriveOccupancy, type TripBrief } from '@/lib/intake/types';
 import { researchQuery, type ResearchPlan, type ResearchStageId } from '@/lib/research/types';
 import { IDEAS_BY_SLUG } from '@/lib/seed/ideas';
-import { useStore } from '@/lib/store/StoreProvider';
-import { currentUser } from '@/lib/store/selectors';
+
 import { addDays, isoDate, nextThanksgiving, toIsoDate } from '@/lib/util/dates';
+
+/**
+ * Research runs are slow and, live, cost money. Remembering the result for the life of the tab
+ * means going back to the idea bank and returning does not pay for the same plan twice.
+ */
+const PLAN_MEMO = new Map<string, ResearchPlan>();
 
 type Phase =
   | { kind: 'idle' }
@@ -68,11 +73,11 @@ function IdeaPlanner() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const search = useSearchParams();
-  const { state, dispatch } = useStore();
-  const me = currentUser(state);
+  // Plans are expensive to produce, so a run is remembered for as long as the tab is open.
+
   const idea = IDEAS_BY_SLUG[params.slug];
 
-  const cached = idea ? state.planCache[idea.slug] : undefined;
+  const cached = idea ? PLAN_MEMO.get(idea.slug) : undefined;
 
   /** Non-null when you arrived from the guided picker rather than straight off the idea bank. */
   const brief = useMemo(() => decodeBrief(search), [search]);
@@ -83,11 +88,11 @@ function IdeaPlanner() {
     return {
       ...dates,
       groupSize: 4,
-      hasCar: me?.hasCar ?? false,
-      isOver21: (me?.age ?? 20) >= 21,
-      hasUsCreditCard: me?.hasUsCreditCard ?? false,
+      hasCar: false,
+      isOver21: false,
+      hasUsCreditCard: false,
       budgetBand: 'moderate',
-      moods: (idea?.tags ?? []).filter((t) => me?.interests.includes(t)).slice(0, 3),
+      moods: (idea?.tags ?? []).slice(0, 3),
     };
   });
 
@@ -159,7 +164,7 @@ function IdeaPlanner() {
       };
       finish();
       setPhase({ kind: 'done', plan: frame.plan, fallbackReason: frame.fallbackReason });
-      dispatch({ type: 'cachePlan', key: idea.slug, plan: frame.plan });
+      PLAN_MEMO.set(idea.slug, frame.plan);
     });
 
     source.addEventListener('error', (e) => {
@@ -181,7 +186,7 @@ function IdeaPlanner() {
         recoverable: true,
       });
     });
-  }, [idea, values, dispatch]);
+  }, [idea, values, setPhase]);
 
   useEffect(() => () => sourceRef.current?.close(), []);
 

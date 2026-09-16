@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { formatMoney, formatRange } from '@/lib/domain/logic';
+import { formatMoney, formatRange } from '@/lib/util/money';
 import type {
   ConstraintFlag,
   ConstraintSeverity,

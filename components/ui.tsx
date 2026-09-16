@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import type { QuestStatus } from '@/lib/domain/types';
-import { STATUS_LABELS } from '@/lib/domain/logic';
 
 /* ------------------------------------------------------------------ buttons */
 
@@ -96,31 +94,6 @@ export function Chip({
     >
       {children}
     </button>
-  );
-}
-
-const STATUS_TONE: Record<QuestStatus, string> = {
-  open: 'bg-surface/95 text-ink',
-  filling: 'bg-accent text-[var(--accent-text)]',
-  full: 'bg-surface/95 text-muted',
-  closed: 'bg-surface/95 text-muted',
-  cancelled: 'bg-danger-soft text-danger',
-  completed: 'bg-surface/95 text-muted',
-};
-
-export function StatusPill({
-  status,
-  className = '',
-}: {
-  status: QuestStatus;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 type-micro backdrop-blur-sm ${STATUS_TONE[status]} ${className}`}
-    >
-      {STATUS_LABELS[status]}
-    </span>
   );
 }
 
@@ -262,5 +235,53 @@ export function OutboundLink({ href, children }: { href: string; children: React
     >
       {children}
     </a>
+  );
+}
+
+/* ------------------------------------------------------------------ toggle */
+
+/**
+ * A yes/no answer that reads as a statement rather than a checkbox.
+ *
+ * Every use of this is a question that changes a price — whether you are over 21, whether anyone
+ * can hire a car — so the label carries the fact and the detail carries the consequence.
+ */
+export function Toggle({
+  label,
+  detail,
+  value,
+  onChange,
+}: {
+  label: string;
+  detail?: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={value}
+      onClick={() => onChange(!value)}
+      className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
+        value ? 'border-accent bg-accent-soft' : 'border-line bg-surface hover:border-line-strong'
+      }`}
+    >
+      <span
+        className={`mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${
+          value ? 'bg-accent' : 'bg-surface-3'
+        }`}
+      >
+        <span
+          className={`h-4 w-4 rounded-full bg-[var(--surface)] shadow-sm transition-transform ${
+            value ? 'translate-x-4' : ''
+          }`}
+        />
+      </span>
+      <span>
+        <span className="type-body block font-medium">{label}</span>
+        {detail ? <span className="type-meta block text-muted">{detail}</span> : null}
+      </span>
+    </button>
   );
 }
