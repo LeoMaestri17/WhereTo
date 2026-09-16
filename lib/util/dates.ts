@@ -158,3 +158,61 @@ export function relativeDay(iso: string, now = new Date()): string {
   if (diff > -14) return 'last week';
   return `${Math.round(-diff / 7)} weeks ago`;
 }
+
+/* ------------------------------------------------------------------ month grids */
+
+export interface MonthGrid {
+  /** "October 2026". */
+  label: string;
+  year: number;
+  /** 0-indexed, as the Date constructor takes it. */
+  month: number;
+  /** Rows of seven. ISO date strings, or null for the leading and trailing blanks. */
+  weeks: (string | null)[][];
+}
+
+/** Sunday first, matching the US convention where this app is used. */
+export const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const;
+
+/**
+ * A calendar month laid out as rows of seven.
+ *
+ * Every date is anchored at noon, as `parseIsoDate` does, so that a timezone west of UTC cannot
+ * roll a cell back onto the previous day — the bug that makes a date picker show the 1st in the
+ * last row of the previous month.
+ */
+export function monthGrid(year: number, month: number): MonthGrid {
+  const first = new Date(year, month, 1, 12);
+  const daysInMonth = new Date(year, month + 1, 0, 12).getDate();
+
+  const cells: (string | null)[] = Array.from({ length: first.getDay() }, () => null);
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(toIsoDate(new Date(year, month, day, 12)));
+  }
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const weeks: (string | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  return {
+    label: first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+    year,
+    month,
+    weeks,
+  };
+}
+
+/** Step a year/month pair, wrapping the year. */
+export function shiftMonth(
+  year: number,
+  month: number,
+  delta: number,
+): { year: number; month: number } {
+  const d = new Date(year, month + delta, 1, 12);
+  return { year: d.getFullYear(), month: d.getMonth() };
+}
+
+/** The day number for a cell, for rendering. */
+export function dayOfMonth(iso: string): number {
+  return parseIsoDate(iso).getDate();
+}

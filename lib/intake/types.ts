@@ -135,3 +135,71 @@ export function deriveOccupancy(companions: Companions, partySize: number): Occu
         : `${n} across ${rooms} rooms, or ${n} hostel beds`,
   };
 }
+
+/* ------------------------------------------------------------------ the intake flow's brief */
+
+/**
+ * What the intake flow collects.
+ *
+ * Each field is here because it changes a number downstream, and the flow says so as it asks.
+ * `ageYears` replaces the old `isOver21` boolean because two separate lines matter and they are
+ * six years apart: 21 decides bars, casinos and whether a rental is possible at all, and 25
+ * decides whether every rental day carries roughly $25 of young-driver surcharge.
+ */
+export type CarSituation = 'none' | 'can-hire' | 'have-one';
+
+export const CAR_LABELS: Record<CarSituation, string> = {
+  none: 'Nobody has one',
+  'can-hire': 'Someone could hire one',
+  'have-one': 'We have a car',
+};
+
+export interface IntakeBrief {
+  /** ISO date. */
+  startDate: string;
+  /** ISO date. Equal to startDate for a day trip. */
+  endDate: string;
+  partySize: number;
+  /** Your age in years. 21 and 25 are the two lines that matter. */
+  ageYears: number;
+  car: CarSituation;
+  /** A foreign licence changes what a rental counter will accept. */
+  foreignLicence: boolean;
+  /** No US credit history is the other half of the same problem. */
+  hasUsCreditCard: boolean;
+  budget: BudgetBand;
+  vibes: Vibe[];
+}
+
+export const EMPTY_INTAKE: IntakeBrief = {
+  startDate: '',
+  endDate: '',
+  partySize: 4,
+  ageYears: 20,
+  car: 'none',
+  foreignLicence: true,
+  hasUsCreditCard: false,
+  budget: 'moderate',
+  vibes: [],
+};
+
+export function isOver21(brief: IntakeBrief): boolean {
+  return brief.ageYears >= 21;
+}
+
+/** Under 25 is where the young-driver surcharge bites, at roughly $25 a day on top. */
+export function paysYoungDriverFee(brief: IntakeBrief): boolean {
+  return brief.ageYears < 25;
+}
+
+/**
+ * Can this group realistically drive anywhere?
+ *
+ * Not a preference — a hard fact about the rental market. No major agency in California will rent
+ * to a 19-year-old, and only Hertz will rent to a 20-year-old. A group whose answer is "someone
+ * could hire one" and whose oldest member is 19 cannot, in fact, hire one.
+ */
+export function canDrive(brief: IntakeBrief): boolean {
+  if (brief.car === 'have-one') return true;
+  return brief.car === 'can-hire' && brief.ageYears >= 21;
+}

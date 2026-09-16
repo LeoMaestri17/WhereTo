@@ -170,3 +170,114 @@ function buildCatch(idea: Idea, brief: TripBrief, nights: number): string | unde
   }
   return undefined;
 }
+
+/* ------------------------------------------------------------------ the intake flow's matcher */
+
+import { canDrive, isOver21, type IntakeBrief } from './types';
+import { daysBetween } from '@/lib/util/dates';
+
+export interface Match {
+  idea: Idea;
+  /** One line naming the actual reason this fits. Never "it matches your preferences". */
+  why: string;
+  /** The honest problem, when there is one. */
+  snag?: string;
+  hasSavedPlan: boolean;
+}
+
+/**
+ * Turning the intake answers into an ordered list.
+ *
+ * Deterministic and in the browser. Asking a model to pick from a list of places we already know
+ * everything about would be slower, cost money and be no better at it — the interesting model
+ * work is the costing that happens after you choose.
+ *
+ * A group that cannot drive does not get shown places that need driving. That is a hard filter
+ * rather than a penalty, because recommending a trip they physically cannot take is worse than
+ * showing them nothing.
+ */
+export function matchIdeas(brief: IntakeBrief): Match[] {
+  const nights =
+    brief.startDate && brief.endDate ? Math.max(0, daysBetween(brief.startDate, brief.endDate)) : 2;
+  const wantedShape: Idea['shape'] = nights === 0 ? 'day' : nights <= 3 ? 'weekend' : 'break';
+  const ceiling = CEILING[brief.budget];
+  const driving = canDrive(brief);
+  const wantedTags = new Set(brief.vibes.flatMap((v) => VIBE_TAGS[v]));
+  const cheapestFirst = brief.vibes.includes('cheap-as-possible');
+
+  return IDEAS.filter((idea) => (idea.needsCar ? driving : true))
+    .map((idea) => {
+      let score = 0;
+      if (idea.shape === wantedShape) score += 40;
+      else if (Math.abs(nights - idea.nights) <= 2) score += 12;
+
+      const matched = idea.tags.filter((t) => wantedTags.has(t)).length;
+      score += matched * 14;
+
+      if (idea.costBandMin <= ceiling) score += 20;
+      if (idea.costBandMax <= ceiling) score += 10;
+      if (cheapestFirst) score += Math.max(0, 40 - idea.costBandMin / 5);
+      if (CACHED.has(idea.slug)) score += 8;
+      if (!idea.needsCar) score += 6;
+
+      return { idea, score, matched };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(({ idea, matched }) => ({
+      idea,
+      why: whyItFits(idea, brief, matched, nights, ceiling),
+      snag: snagFor(idea, brief, nights, ceiling),
+      hasSavedPlan: CACHED.has(idea.slug),
+    }));
+}
+
+/**
+ * Every clause is a fact off the brief, so when none of them hold the sentence gets shorter
+ * rather than vaguer. "It fits your preferences" is not a reason.
+ */
+function whyItFits(
+  idea: Idea,
+  brief: IntakeBrief,
+  matched: number,
+  nights: number,
+  ceiling: number,
+): string {
+  const clauses: string[] = [];
+  const wantedShape: Idea['shape'] = nights === 0 ? 'day' : nights <= 3 ? 'weekend' : 'break';
+
+  if (idea.shape === wantedShape) clauses.push('it is the right length for your dates');
+  if (matched > 0) clauses.push('it is the sort of thing you picked');
+  if (!idea.needsCar) clauses.push('you can get there without a car');
+  if (idea.costBandMin <= ceiling) clauses.push(`it starts at $${idea.costBandMin} each`);
+
+  if (clauses.length === 0) return idea.hook;
+  const joined =
+    clauses.length === 1
+      ? clauses[0]
+      : `${clauses.slice(0, -1).join(', ')} and ${clauses[clauses.length - 1]}`;
+  return `${idea.hook} ${joined.charAt(0).toUpperCase()}${joined.slice(1)}.`;
+}
+
+function snagFor(
+  idea: Idea,
+  brief: IntakeBrief,
+  nights: number,
+  ceiling: number,
+): string | undefined {
+  if (idea.needsCar && brief.car === 'can-hire' && brief.ageYears < 25) {
+    return `Somebody has to hire the car, and under 25 that adds roughly $25 a day on top of the headline rate — about $${25 * Math.max(1, nights)} across these dates.`;
+  }
+  if (idea.costBandMin > ceiling) {
+    return `The cheapest honest version is about $${idea.costBandMin} each, over the budget you picked.`;
+  }
+  if (idea.nights === 0 && nights > 0) {
+    return 'This is a day out rather than a trip away — you would be home the same night with the rest of the window still to fill.';
+  }
+  if (idea.nights > nights && nights > 0) {
+    return `It wants ${idea.nights} nights and you have ${nights}, so it only works if the dates stretch.`;
+  }
+  if (!isOver21(brief) && idea.tags.includes('nightlife')) {
+    return 'Most of what this place is known for after dark is 21 and over, so the evenings look different for you.';
+  }
+  return undefined;
+}
