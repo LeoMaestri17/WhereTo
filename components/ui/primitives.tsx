@@ -206,14 +206,37 @@ const SOURCE_MARK: Record<PriceSourceKind, string> = {
 export function SourceTag({
   source,
   detail,
+  interactive = true,
   className = '',
 }: {
   source: PriceSourceKind;
   /** "checked 3 days ago", "nps.gov". Shown only on hover or focus. */
   detail: string;
+  /**
+   * False when this sits inside something already clickable.
+   *
+   * A button inside a button is invalid HTML and fails hydration outright, which is exactly what
+   * happened on the board card and again on the focused option cards. In that position the mark
+   * is a plain span with a native tooltip: still readable, no nesting, and the card keeps the
+   * single accessible action it should have.
+   */
+  interactive?: boolean;
   className?: string;
 }) {
   const word = SOURCE_WORD[source];
+
+  if (!interactive) {
+    return (
+      <span
+        className={`inline-flex h-5 w-5 items-center justify-center ${className}`}
+        title={`${word}. ${detail}`}
+        role="img"
+        aria-label={`${word}. ${detail}`}
+      >
+        <span className={`h-2.5 w-2.5 rounded-full ${SOURCE_MARK[source]}`} aria-hidden />
+      </span>
+    );
+  }
 
   return (
     <span className={`group/src relative inline-flex ${className}`}>

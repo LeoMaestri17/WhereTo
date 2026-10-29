@@ -94,11 +94,15 @@ export function stayRow(
   dest: Destination,
   window: TripWindow,
   partySize: PartySize,
+  /** Which property, by index into the warmed list. Null picks the cheapest. */
+  stayIndex: number | null = null,
   now = new Date(),
 ): TripRow {
   const rooms = roomsFor(partySize);
   const cached = getQuote(dest.slug, window.id, 'stays');
-  const cheapest = cached?.stays.find((s) => s.totalRateUsd !== null) ?? null;
+  const priced = cached?.stays.filter((s) => s.totalRateUsd !== null) ?? [];
+  const cheapest =
+    stayIndex !== null && priced[stayIndex] ? priced[stayIndex] : (priced[0] ?? null);
 
   if (cached && cheapest && cheapest.totalRateUsd !== null) {
     const line: CostLine = {
@@ -293,6 +297,132 @@ export function carRow(
   };
 }
 
+/* ------------------------------------------------------------------ choosing */
+
+export interface TripChoices {
+  travel?: 'drive' | 'transit' | null;
+  /** Index into the warmed property list. Null means the cheapest. */
+  stayIndex?: number | null;
+}
+
+/**
+ * One comparable option on a row.
+ *
+ * `tradeoff` is the thing that actually decides it, and it differs by row: hours for travel, a
+ * rating and a property type for a bed, the hire terms for a car. Price alone never settles any
+ * of these, which is why the configurator shows both.
+ */
+export interface RowOption {
+  id: string;
+  title: string;
+  tradeoff: string[];
+  perPersonTotal: number;
+  source: PriceSource;
+  selected: boolean;
+  bookingLink?: string;
+}
+
+/**
+ * The real alternatives for one row.
+ *
+ * Returns what exists and nothing more. Where a row has one option it says so by returning one,
+ * and the interface shows an honest state rather than padding the row out to look like a choice.
+ */
+export function optionsFor(
+  kind: TripRow['kind'],
+  dest: Destination,
+  window: TripWindow,
+  partySize: PartySize,
+  driver: Driver,
+  choices: TripChoices = {},
+  now = new Date(),
+): RowOption[] {
+  const quote = quoteTrip(dest, window, partySize, driver, choices, now);
+
+  if (kind === 'travel') {
+    const chosen = quote.rows[0];
+    const options: RowOption[] = [];
+
+    /* Travel and car move together: taking the train means no hire, so the comparable figure is
+       the pair, not the fare on its own. */
+    options.push({
+      id: quote.alternative?.id === 'drive' ? 'transit' : 'drive',
+      title: chosen.title,
+      tradeoff: [
+        chosen.hoursEachWay ? `${formatHours(chosen.hoursEachWay)} each way` : '',
+        quote.rows[2].perPersonTotal > 0 ? 'Hire included' : 'No car needed',
+      ].filter(Boolean),
+      perPersonTotal: chosen.perPersonTotal + quote.rows[2].perPersonTotal,
+      source: chosen.source,
+      selected: true,
+      bookingLink: chosen.bookingLink,
+    });
+    if (quote.alternative) {
+      options.push({
+        id: quote.alternative.id,
+        title: quote.alternative.label,
+        tradeoff: [
+          `${formatHours(quote.alternative.hoursEachWay)} each way`,
+          quote.alternative.car.perPersonTotal > 0 ? 'Hire included' : 'No car needed',
+        ],
+        perPersonTotal: quote.alternative.perPersonTotal,
+        source: quote.alternative.travel.source,
+        selected: false,
+        bookingLink: quote.alternative.travel.bookingLink,
+      });
+    }
+    return options;
+  }
+
+  if (kind === 'stay') {
+    const cached = getQuote(dest.slug, window.id, 'stays');
+    const priced = cached?.stays.filter((s) => s.totalRateUsd !== null) ?? [];
+    const rooms = roomsFor(partySize);
+    const chosenIndex = choices.stayIndex ?? 0;
+
+    if (priced.length === 0) {
+      return [
+        {
+          id: 'seeded',
+          title: quote.rows[1].title,
+          tradeoff: quote.rows[1].detail.filter(Boolean),
+          perPersonTotal: quote.rows[1].perPersonTotal,
+          source: quote.rows[1].source,
+          selected: true,
+        },
+      ];
+    }
+
+    return priced.slice(0, 6).map((property, i) => ({
+      id: String(i),
+      title: property.name,
+      tradeoff: [
+        property.type,
+        property.rating ? `Rated ${property.rating}` : '',
+        `${rooms} ${rooms === 1 ? 'room' : 'rooms'}`,
+      ].filter(Boolean),
+      perPersonTotal: ((property.totalRateUsd as number) * rooms) / partySize,
+      source: 'api' as const,
+      selected: i === chosenIndex,
+      bookingLink: property.link,
+    }));
+  }
+
+  const car = quote.rows[2];
+  if (!car.available || car.lines.length === 0) return [];
+  return [
+    {
+      id: 'compact',
+      title: car.title,
+      tradeoff: car.detail.filter(Boolean),
+      perPersonTotal: car.perPersonTotal,
+      source: car.source,
+      selected: true,
+      bookingLink: car.lines[0]?.url,
+    },
+  ];
+}
+
 /* ------------------------------------------------------------------ the whole thing */
 
 /** A complete way of doing the trip: how you get there, and what the car costs under it. */
@@ -377,19 +507,20 @@ export function quoteTrip(
   partySize: PartySize,
   driver: Driver,
   /**
-   * Override the recommendation, when the person has used Change to pick the other way in.
+   * What the person has picked, where they have picked anything.
    *
-   * Their choice wins outright — if they have looked at both and decided, re-deciding for them
-   * on the next render is the opposite of what Change means. Ignored when the preferred option
-   * is not available to this group, because an unavailable option is not a choice.
+   * A choice wins outright: if they have looked at the alternatives and decided, re-deciding for
+   * them on the next render is the opposite of what choosing means. An unavailable option is
+   * ignored, because it was never a choice.
    */
-  prefer: 'drive' | 'transit' | null = null,
+  choices: TripChoices = {},
   now = new Date(),
 ): TripQuote {
+  const prefer = choices.travel ?? null;
   const rooms = roomsFor(partySize);
   const canHire = driver.hasLicence && driver.ageBand !== null && driver.ageBand !== 'under-21';
 
-  const stay = stayRow(dest, window, partySize, now);
+  const stay = stayRow(dest, window, partySize, choices.stayIndex ?? null, now);
   const feeLines = dest.fees.filter((f) => f.amount > 0);
   const fees = {
     lines: feeLines,

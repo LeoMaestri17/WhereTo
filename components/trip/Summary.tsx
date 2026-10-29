@@ -63,7 +63,7 @@ export function Summary({ slug }: { slug: string }) {
     WINDOWS[0];
 
   const quote = useMemo(
-    () => quoteTrip(dest, window, brief.partySize, brief.driver, shared.prefer),
+    () => quoteTrip(dest, window, brief.partySize, brief.driver, { travel: shared.prefer }),
     [dest, window, brief.partySize, brief.driver, shared.prefer],
   );
 

@@ -2,10 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useSyncExternalStore } from 'react';
-import { Check, MapPin, CalendarDays, Users, Wallet } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useSyncExternalStore } from 'react';
+import { Check, MapPin, CalendarDays, Search, Users, Wallet } from 'lucide-react';
 import { Chip, Eyebrow, MEASURE } from '@/components/ui/primitives';
-import { WINDOWS } from '@/lib/trip/catalogue';
+import { DESTINATIONS, WINDOWS } from '@/lib/trip/catalogue';
 import {
   DEFAULT_BRIEF,
   ORIGINS,
@@ -37,7 +38,7 @@ import { AGE_BAND_LABELS, PARTY_SIZES, type AgeBand, type PartySize } from '@/li
  * does is a control that needs redesigning, and these did not.
  */
 
-type PanelId = 'origin' | 'party' | 'dates' | 'budget';
+type PanelId = 'search' | 'origin' | 'party' | 'dates' | 'budget';
 
 const BUDGETS = [150, 200, 300, 400] as const;
 
@@ -50,8 +51,26 @@ export function useBrief(): [TripBrief, (patch: Partial<TripBrief>) => void] {
 export function ControlStrip() {
   const [brief, set] = useBrief();
   const [open, setOpen] = useState<PanelId | null>(null);
+  const [term, setTerm] = useState('');
+  const router = useRouter();
 
   const toggle = (id: PanelId) => setOpen(open === id ? null : id);
+
+  /* Not everyone is browsing. Someone who already knows where they are going should be able to
+     type it and land on the costed trip, without the board in between. */
+  const matches = useMemo(() => {
+    const q = term.trim().toLowerCase();
+    if (!q) return [];
+    return DESTINATIONS.filter(
+      (d) => d.name.toLowerCase().includes(q) || d.region.toLowerCase().includes(q),
+    ).slice(0, 5);
+  }, [term]);
+
+  const go = (slug: string) => {
+    setOpen(null);
+    setTerm('');
+    router.push(`/trip/${slug}`);
+  };
 
   return (
     <div className="sticky top-0 z-40 border-b border-hairline bg-ground/92 backdrop-blur">
@@ -70,6 +89,12 @@ export function ControlStrip() {
         {/* A rail rather than a wrap: four chips must stay on one line at phone width, and a
             second row would push the board below the fold on every screen. */}
         <div className="wt-rail flex flex-1 items-center gap-2 overflow-x-auto">
+          <StripChip
+            icon={<Search size={14} strokeWidth={2.4} />}
+            label="Search"
+            on={open === 'search'}
+            onClick={() => toggle('search')}
+          />
           <StripChip
             icon={<MapPin size={14} strokeWidth={2.4} />}
             label={ORIGINS.find((o) => o.id === brief.origin)?.name ?? 'Los Angeles'}
@@ -100,6 +125,48 @@ export function ControlStrip() {
       {open ? (
         <div className="border-t border-hairline bg-paper">
           <div className={`${MEASURE} py-4`}>
+            {open === 'search' ? (
+              <div>
+                <input
+                  type="search"
+                  value={term}
+                  autoFocus
+                  onChange={(e) => setTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && matches[0]) go(matches[0].slug);
+                    if (e.key === 'Escape') setOpen(null);
+                  }}
+                  placeholder="Where to?"
+                  aria-label="Search destinations"
+                  className="w-full rounded-full border border-hairline bg-ground px-4 py-2.5 text-[0.9375rem] font-medium outline-none placeholder:text-faint focus:border-peri-d"
+                />
+                {matches.length > 0 ? (
+                  <ul className="mt-3 flex flex-col gap-1">
+                    {matches.map((d) => (
+                      <li key={d.slug}>
+                        <button
+                          type="button"
+                          onClick={() => go(d.slug)}
+                          className="wt-ease flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2 text-left hover:bg-ground"
+                        >
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: `var(--${d.tone})` }}
+                            aria-hidden
+                          />
+                          <span className="text-[0.9375rem] font-semibold">{d.name}</span>
+                          <span className="type-body text-muted">{d.region}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {term.trim() && matches.length === 0 ? (
+                  <p className="mt-3 px-3 text-[0.9375rem] font-bold">No match</p>
+                ) : null}
+              </div>
+            ) : null}
+
             {open === 'origin' ? (
               <Row label="Starting from">
                 {ORIGINS.map((o) => (
