@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Figtree } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { ControlStrip } from '@/components/trip/ControlStrip';
 import './globals.css';
 
 /**
@@ -36,7 +37,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${figtree.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {/* Persistent, on every screen, never a modal. Changing a chip repopulates whatever is
+            below it in place. */}
+        <ControlStrip />
+        {children}
+      </body>
     </html>
   );
 }

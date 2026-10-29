@@ -5,10 +5,11 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ChevronDown, Check, TriangleAlert } from 'lucide-react';
 import { Photo } from '@/components/ui/Photo';
-import { Button, Card, Chip, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { useBrief } from '@/components/trip/ControlStrip';
+import { describeDriver } from '@/lib/trip/brief';
 import { DESTINATIONS_BY_SLUG, WINDOWS } from '@/lib/trip/catalogue';
 import { formatHours, money, perPerson, quoteTrip, type TripRow } from '@/lib/trip/quote';
-import { AGE_BAND_LABELS, PARTY_SIZES, type AgeBand, type Driver, type PartySize } from '@/lib/trip/types';
 
 /**
  * The build canvas.
@@ -22,9 +23,9 @@ import { AGE_BAND_LABELS, PARTY_SIZES, type AgeBand, type Driver, type PartySize
  * goes out. Each carries where its number came from, and Change opens the alternatives in place
  * rather than navigating, so nobody loses their scroll position to compare two options.
  *
- * The controls at the top are temporary. They belong in the persistent control strip, which is
- * the next thing built; they live here for now so the eligibility rules can actually be seen
- * firing rather than described.
+ * Who is going and when comes from the control strip in the layout, not from this screen. A
+ * surface that asks again for something already answered above it is the wizard this product
+ * exists to remove.
  */
 
 const ROW_ICON: Record<string, string> = {
@@ -39,13 +40,21 @@ const ROW_ICON: Record<string, string> = {
 export function BuildCanvas({ slug }: { slug: string }) {
   const dest = DESTINATIONS_BY_SLUG[slug];
 
-  const [partySize, setPartySize] = useState<PartySize>(4);
-  const [driver, setDriver] = useState<Driver>({ hasLicence: true, ageBand: '21-24' });
-  const [windowId, setWindowId] = useState(WINDOWS[0].id);
+  const [brief] = useBrief();
   const [prefer, setPrefer] = useState<'drive' | 'transit' | null>(null);
   const [openRow, setOpenRow] = useState<TripRow['kind'] | null>(null);
 
-  const window = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0];
+  const { partySize, driver } = brief;
+
+  /* With no weekend chosen in the strip, the canvas costs the cheapest warmed one and says so,
+     rather than defaulting to the first and quietly showing a worse number. */
+  const window = useMemo(() => {
+    if (brief.windowId) return WINDOWS.find((w) => w.id === brief.windowId) ?? WINDOWS[0];
+    const ranked = WINDOWS.map((w) => ({ w, q: quoteTrip(dest, w, partySize, driver) }))
+      .filter(({ q }) => q.perPersonTotal !== null)
+      .sort((a, b) => (a.q.perPersonTotal ?? 0) - (b.q.perPersonTotal ?? 0));
+    return ranked[0]?.w ?? WINDOWS[0];
+  }, [brief.windowId, dest, partySize, driver]);
 
   const quote = useMemo(
     () => quoteTrip(dest, window, partySize, driver, prefer),
@@ -62,17 +71,18 @@ export function BuildCanvas({ slug }: { slug: string }) {
 
   return (
     <main className="min-h-dvh pb-24">
-      {/* ---------------------------------------------------------- chrome */}
-      <header className={`${MEASURE} flex items-center justify-between gap-4 py-6`}>
-        <Link href="/" className="wt-ease inline-flex items-center gap-2 text-[0.875rem] font-semibold hover:text-peri-d">
+      <div className={`${MEASURE} pt-6`}>
+        <Link
+          href="/"
+          className="wt-ease inline-flex items-center gap-2 text-[0.875rem] font-semibold hover:text-peri-d"
+        >
           <ArrowLeft size={16} strokeWidth={2.5} />
           All trips
         </Link>
-        <Image src="/assets/logo.webp" alt="WhereTo" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
-      </header>
+      </div>
 
       {/* ---------------------------------------------------------- the place */}
-      <section className={MEASURE}>
+      <section className={`${MEASURE} pt-5`}>
         <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_280px] sm:items-end">
           <div>
             <Eyebrow>{dest.eyebrow}</Eyebrow>
@@ -89,47 +99,13 @@ export function BuildCanvas({ slug }: { slug: string }) {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------- what it is priced for */}
-      <section className={`${MEASURE} mt-9`}>
-        <Card className="p-4 sm:p-5">
-          <Eyebrow>Priced for</Eyebrow>
-          <div className="mt-3.5 flex flex-col gap-3">
-            <ControlRow label="Going">
-              {PARTY_SIZES.map((n) => (
-                <Chip key={n} on={partySize === n} onClick={() => setPartySize(n)}>
-                  {n}
-                </Chip>
-              ))}
-            </ControlRow>
-
-            <ControlRow label="Driver">
-              <Chip
-                on={!driver.hasLicence}
-                onClick={() => setDriver({ hasLicence: false, ageBand: null })}
-              >
-                No licence
-              </Chip>
-              {(Object.keys(AGE_BAND_LABELS) as AgeBand[]).map((band) => (
-                <Chip
-                  key={band}
-                  on={driver.hasLicence && driver.ageBand === band}
-                  onClick={() => setDriver({ hasLicence: true, ageBand: band })}
-                >
-                  {AGE_BAND_LABELS[band]}
-                </Chip>
-              ))}
-            </ControlRow>
-
-            {/* Other warmed windows, offered inline. */}
-            <ControlRow label="Weekend">
-              {WINDOWS.map((w) => (
-                <Chip key={w.id} on={w.id === windowId} onClick={() => setWindowId(w.id)}>
-                  {w.label}
-                </Chip>
-              ))}
-            </ControlRow>
-          </div>
-        </Card>
+      {/* What is being costed, stated rather than asked. The strip above is where it changes. */}
+      <section className={`${MEASURE} mt-7`}>
+        <p className="type-secondary">
+          {window.label} · {window.nights} nights · {partySize}{' '}
+          {partySize === 1 ? 'person' : 'people'} · {describeDriver(driver)}
+          {brief.windowId === null ? ' · cheapest of the warmed weekends' : ''}
+        </p>
       </section>
 
       {/* ---------------------------------------------------------- the conflict, before it happens */}
@@ -313,15 +289,6 @@ function hostOf(url: string): string {
   } catch {
     return 'source';
   }
-}
-
-function ControlRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-      <Eyebrow className="w-[4.5rem] shrink-0">{label}</Eyebrow>
-      <div className="wt-rail flex flex-wrap gap-2">{children}</div>
-    </div>
-  );
 }
 
 function Row({
