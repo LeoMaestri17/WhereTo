@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Photo } from '@/components/ui/Photo';
+import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
@@ -136,9 +136,10 @@ function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
    */
   return (
     <Card interactive className="relative h-full overflow-hidden">
-      <Photo
-        src={dest.image}
-        alt={dest.name}
+      <DestinationPhotoFrame
+        photo={dest.photo}
+        fallbackSrc={dest.image}
+        name={dest.name}
         ratio="square"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         rounded={false}

@@ -78,6 +78,27 @@ export const AGE_BAND_LABELS: Record<AgeBand, string> = {
 
 /* ------------------------------------------------------------------ destinations */
 
+/**
+ * A photograph from Unsplash, stored rather than fetched.
+ *
+ * Unsplash's terms require the photographer to be credited with a link back, and require those
+ * links to carry the referral parameters — so the author's profile URL is stored with them
+ * already attached rather than assembled at render time, where it would eventually get dropped
+ * by someone tidying up a component.
+ */
+export interface DestinationPhoto {
+  /** The CDN URL, already sized. Served by Unsplash, never by us. */
+  url: string;
+  /** Their photo id, so a picture can be replaced deliberately rather than by re-rolling a search. */
+  id: string;
+  author: string;
+  /** Profile link, referral parameters included, as their terms require. */
+  authorUrl: string;
+  /** The photographer's own description, used as alt text when there is one. */
+  alt: string;
+  fetchedAt: string;
+}
+
 export interface ItineraryItem {
   title: string;
   /** Tracked-out caps label. One to three words. */
@@ -136,8 +157,25 @@ export interface Destination {
   hook: string;
   /** What early winter is actually like there. */
   whySeason: string;
-  /** Path under /public. Missing file degrades to a palette gradient, never a grey box. */
-  image: string;
+  /**
+   * Local artwork under /public, where we have our own.
+   *
+   * Only the first four destinations have this, and a photograph outranks it wherever one
+   * exists. Missing file degrades to a palette gradient, never a grey box.
+   */
+  image: string | null;
+
+  /**
+   * The photograph, fetched once at catalogue build and committed.
+   *
+   * Null until `npm run fetch-photos` has run for this record. The running app never calls
+   * Unsplash: it stores the CDN URL and serves from there, which is both free and what their
+   * API terms ask for.
+   */
+  photo: DestinationPhoto | null;
+
+  /** What to search Unsplash for. Specific enough that the top result is actually the place. */
+  photoQuery: string;
   /** The area string sent to Google Hotels by the warm script. */
   hotelQuery: string;
   /** Null when the trip is a drive, which is why most of these cost no flight searches. */

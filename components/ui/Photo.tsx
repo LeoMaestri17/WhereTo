@@ -52,6 +52,74 @@ const RATIO = {
 
 export type PhotoRatio = keyof typeof RATIO;
 
+/**
+ * A destination photograph with the credit Unsplash's terms require.
+ *
+ * The credit is part of the component rather than something each surface remembers to add,
+ * because a requirement that depends on being remembered at four call sites is a requirement
+ * that will be missing at one of them.
+ */
+export function DestinationPhotoFrame({
+  photo,
+  fallbackSrc,
+  name,
+  ratio = 'square',
+  sizes = '100vw',
+  priority = false,
+  eager = false,
+  rounded = true,
+  className = '',
+}: {
+  photo: { url: string; author: string; authorUrl: string; alt: string } | null;
+  /** Local artwork, used only when there is no photograph yet. */
+  fallbackSrc: string | null;
+  name: string;
+  ratio?: PhotoRatio;
+  sizes?: string;
+  priority?: boolean;
+  eager?: boolean;
+  rounded?: boolean;
+  className?: string;
+}) {
+  if (!photo) {
+    return (
+      <Photo
+        src={fallbackSrc}
+        alt={name}
+        ratio={ratio}
+        sizes={sizes}
+        priority={priority}
+        eager={eager}
+        rounded={rounded}
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      <Photo
+        src={photo.url}
+        alt={photo.alt || name}
+        ratio={ratio}
+        sizes={sizes}
+        priority={priority}
+        eager={eager}
+        rounded={rounded}
+      />
+      <a
+        href={photo.authorUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="absolute bottom-2 right-2 z-10 rounded-full bg-[rgba(42,40,35,0.55)] px-2 py-0.5 text-[0.6875rem] font-medium text-paper backdrop-blur-sm transition-colors duration-200 hover:bg-[rgba(42,40,35,0.8)]"
+      >
+        {photo.author}
+      </a>
+    </div>
+  );
+}
+
 export function Photo({
   src,
   alt,

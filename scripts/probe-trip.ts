@@ -65,8 +65,22 @@ function main(): void {
     'a window in the past prices a trip nobody can take',
   );
   check(
-    'every destination has an image path',
-    DESTINATIONS.every((d) => d.image.startsWith('/assets/') && d.image.endsWith('.webp')),
+    'every destination has artwork or a photograph',
+    DESTINATIONS.every((d) => d.photo !== null || (d.image?.startsWith('/assets/') ?? false)),
+  );
+  check(
+    'every destination has a photo search term',
+    DESTINATIONS.every((d) => d.photoQuery.trim().length > 0),
+  );
+  /* Unsplash's terms are not optional: a stored photograph without a photographer and a link
+     back cannot ship, so it fails here rather than on their CDN. */
+  check(
+    'every stored photograph credits its photographer',
+    DESTINATIONS.every(
+      (d) =>
+        d.photo === null ||
+        (d.photo.author.length > 0 && d.photo.authorUrl.includes('utm_source')),
+    ),
   );
   check(
     'every destination has five seeded stay totals',

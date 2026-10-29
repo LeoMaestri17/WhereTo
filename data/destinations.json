@@ -100,7 +100,9 @@
         "catch": "The car park holds about a dozen cars and fills before dawn on an October weekend. The overflow is roadside on a blind bend in a tunnel approach, which is as bad an idea as it sounds."
       }
     ],
-    "content": null
+    "content": null,
+    "photo": null,
+    "photoQuery": "Zion National Park canyon Utah"
   },
   {
     "slug": "san-francisco",
@@ -217,7 +219,9 @@
         "catch": "This is the one corner of the city where the fog does not read the calendar. It can be clear downtown and completely socked in at Lands End, and the bridge you came to see will simply not be there."
       }
     ],
-    "content": null
+    "content": null,
+    "photo": null,
+    "photoQuery": "San Francisco Golden Gate Bridge"
   },
   {
     "slug": "joshua-tree",
@@ -310,7 +314,9 @@
         "catch": "Coarse granite takes skin off, going down is much harder than going up, and there is no phone signal to call anybody if you misjudge it. Stay within what you can reverse."
       }
     ],
-    "content": null
+    "content": null,
+    "photo": null,
+    "photoQuery": "Joshua Tree National Park desert"
   },
   {
     "slug": "san-diego",
@@ -427,6 +433,8 @@
         "catch": "After dark this is effectively a 21-and-over district — the bars card at the door and most of the venues will not admit you at all under 21. If that is the group, Little Italy two blocks north is restaurants rather than bars and stays open to everyone."
       }
     ],
-    "content": null
+    "content": null,
+    "photo": null,
+    "photoQuery": "San Diego California coast"
   }
 ]

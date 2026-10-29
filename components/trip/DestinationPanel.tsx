@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { X, ArrowRight } from 'lucide-react';
-import { Photo, GradientPlaceholder } from '@/components/ui/Photo';
+import { DestinationPhotoFrame, GradientPlaceholder } from '@/components/ui/Photo';
 import { Eyebrow, SourceTag } from '@/components/ui/primitives';
 import { money, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
@@ -105,9 +105,10 @@ export function DestinationPanel({
         </div>
 
         <div className="px-5 pb-8 pt-5">
-          <Photo
-            src={dest.image}
-            alt={dest.name}
+          <DestinationPhotoFrame
+            photo={dest.photo}
+            fallbackSrc={dest.image}
+            name={dest.name}
             ratio="wide"
             sizes="(max-width: 640px) 100vw, 576px"
             eager

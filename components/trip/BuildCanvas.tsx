@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, ChevronDown, Check, TriangleAlert } from 'lucide-react';
-import { Photo } from '@/components/ui/Photo';
+import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { describeDriver } from '@/lib/trip/brief';
@@ -89,9 +89,10 @@ export function BuildCanvas({ slug }: { slug: string }) {
             <h1 className="type-display mt-2.5">{dest.name}</h1>
             <p className="type-body mt-3 max-w-xl text-muted">{dest.hook}</p>
           </div>
-          <Photo
-            src={dest.image}
-            alt={dest.name}
+          <DestinationPhotoFrame
+            photo={dest.photo}
+            fallbackSrc={dest.image}
+            name={dest.name}
             ratio="wide"
             sizes="(max-width: 640px) 100vw, 280px"
             eager
