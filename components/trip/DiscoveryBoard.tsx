@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
 import { DESTINATIONS, WINDOWS, windowById } from '@/lib/trip/catalogue';
-import { money, quoteTrip, type TripQuote } from '@/lib/trip/quote';
+import { quoteTrip, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
 
 /**
@@ -135,20 +136,37 @@ function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
    * page change that never happens.
    */
   return (
-    <Card interactive className="relative h-full overflow-hidden">
-      <DestinationPhotoFrame
-        photo={dest.photo}
-        fallbackSrc={dest.image}
-        name={dest.name}
-        ratio="square"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        rounded={false}
-        eager
-      />
+    <Card
+      interactive
+      className="wt-card relative h-full overflow-hidden"
+      style={{ ['--tone' as string]: `var(--${dest.tone})` }}
+    >
+      <div className="relative overflow-hidden">
+        <div className="wt-media">
+          <DestinationPhotoFrame
+            photo={dest.photo}
+            fallbackSrc={dest.image}
+            name={dest.name}
+            ratio="square"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            rounded={false}
+            eager
+          />
+        </div>
+        {/* The destination's own colour, rising on hover. */}
+        <div className="wt-wash pointer-events-none absolute inset-0" aria-hidden />
+      </div>
 
       <div className="flex flex-col gap-2.5 p-4">
         <div>
-          <Eyebrow>{dest.eyebrow}</Eyebrow>
+          <span className="flex items-center gap-2">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ background: `var(--${dest.tone})` }}
+              aria-hidden
+            />
+            <Eyebrow>{dest.eyebrow}</Eyebrow>
+          </span>
           <h2 className="type-title mt-1.5">
             <button
               type="button"
@@ -168,7 +186,10 @@ function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
           ) : (
             <>
               <div className="flex items-baseline justify-between gap-2">
-                <span className="type-figure text-[1.375rem]">from {money(perPerson)}</span>
+                <span className="wt-price type-figure inline-flex items-baseline gap-1 text-[1.375rem]">
+                  <span className="text-[0.8125rem] font-semibold text-muted">from</span>
+                  <AnimatedMoney value={perPerson} />
+                </span>
                 <ArrowRight size={16} strokeWidth={2.5} className="shrink-0 text-muted" />
               </div>
               <p className="type-body mt-0.5 text-muted">each, {windowLabel}</p>

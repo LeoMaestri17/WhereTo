@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { DestinationPhotoFrame, GradientPlaceholder } from '@/components/ui/Photo';
 import { Eyebrow, SourceTag } from '@/components/ui/primitives';
@@ -42,6 +42,7 @@ export function DestinationPanel({
   onClose: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   /* Escape closes, and the board behind must not scroll while the panel is over it — otherwise
      closing returns you somewhere you never scrolled to. */
@@ -114,7 +115,14 @@ export function DestinationPanel({
             eager
           />
 
-          <h2 className="type-display mt-5">{dest.name}</h2>
+          <h2 className="type-display mt-5 flex items-center gap-2.5">
+            <span
+              className="h-3 w-3 shrink-0 rounded-full"
+              style={{ background: `var(--${dest.tone})` }}
+              aria-hidden
+            />
+            {dest.name}
+          </h2>
 
           {/* The vibe line. `content` is written at build time by generate-content; until it has
               run the researched season note says the same kind of thing and is sourced. */}
@@ -141,14 +149,27 @@ export function DestinationPanel({
               <p className="type-body mt-3">{quote.verdict}</p>
             ) : (
               <>
-                <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full">
-                  {parts.map((p) =>
-                    p.value <= 0 ? null : (
-                      <div
-                        key={p.key}
+                <div
+                  className="mt-3 flex h-3 w-full gap-0.5 overflow-hidden rounded-full"
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  {parts.map((part) =>
+                    part.value <= 0 ? null : (
+                      <button
+                        key={part.key}
+                        type="button"
+                        onMouseEnter={() => setHovered(part.key)}
+                        onFocus={() => setHovered(part.key)}
+                        onBlur={() => setHovered(null)}
+                        aria-label={`${SHARE.find((s) => s.key === part.key)!.label}, ${money(part.value)} per person`}
+                        className="wt-ease h-full"
                         style={{
-                          width: `${(p.value / total) * 100}%`,
-                          background: SHARE.find((s) => s.key === p.key)!.colour,
+                          width: `${(part.value / total) * 100}%`,
+                          background: SHARE.find((s) => s.key === part.key)!.colour,
+                          /* The hovered segment stays full strength and the rest step back, so
+                             the one being read is the one that stands out. */
+                          opacity: hovered === null || hovered === part.key ? 1 : 0.32,
+                          transform: hovered === part.key ? 'scaleY(1.35)' : 'scaleY(1)',
                         }}
                       />
                     ),
@@ -159,16 +180,26 @@ export function DestinationPanel({
                   {parts.map((p) => {
                     const meta = SHARE.find((s) => s.key === p.key)!;
                     return (
-                      <li key={p.key} className="flex items-center justify-between gap-3">
+                      <li
+                        key={p.key}
+                        onMouseEnter={() => setHovered(p.key)}
+                        onMouseLeave={() => setHovered(null)}
+                        className="wt-ease -mx-2 flex items-center justify-between gap-3 rounded-[8px] px-2 py-1"
+                        style={{
+                          background: hovered === p.key ? 'var(--ground)' : 'transparent',
+                          opacity: hovered === null || hovered === p.key ? 1 : 0.45,
+                        }}
+                      >
                         <span className="flex min-w-0 items-center gap-2">
                           <span
-                            className="h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{ background: meta.colour }}
+                            className="wt-ease h-2.5 w-2.5 shrink-0 rounded-full"
+                            style={{
+                              background: meta.colour,
+                              transform: hovered === p.key ? 'scale(1.4)' : 'scale(1)',
+                            }}
                             aria-hidden
                           />
-                          <span className="text-[0.875rem] font-semibold">
-                            {meta.label}
-                          </span>
+                          <span className="text-[0.875rem] font-semibold">{meta.label}</span>
                         </span>
                         <span className="type-figure shrink-0 text-[0.9375rem]">
                           {p.value <= 0 ? 'Included' : money(p.value)}

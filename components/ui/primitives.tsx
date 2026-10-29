@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, CSSProperties, ReactNode } from 'react';
 
 /**
  * The cream kit.
@@ -34,14 +34,18 @@ export function Card({
   children,
   className = '',
   interactive = false,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   /** Adds the hover lift. Only for cards that are actually a link or a button. */
   interactive?: boolean;
+  /** Used to set the per-destination --tone custom property. */
+  style?: CSSProperties;
 }) {
   return (
     <div
+      style={style}
       className={`rounded-[14px] border border-hairline bg-paper shadow-[var(--shadow-card)] ${
         interactive ? 'wt-ease wt-lift' : ''
       } ${className}`}
@@ -54,7 +58,7 @@ export function Card({
 /* ------------------------------------------------------------------ actions */
 
 const BUTTON_BASE =
-  'wt-ease inline-flex items-center justify-center gap-2 rounded-full font-semibold disabled:cursor-not-allowed disabled:opacity-40';
+  'wt-ease inline-flex items-center justify-center gap-2 rounded-full font-semibold active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40 disabled:active:translate-y-0';
 
 const BUTTON_SIZE = {
   sm: 'px-4 py-2 text-[0.8125rem]',
@@ -68,7 +72,7 @@ const BUTTON_SIZE = {
  * white-on-brand it would be in most systems. Hover goes to peri-d, where ink still clears 6:1.
  */
 const BUTTON_VARIANT = {
-  solid: 'bg-peri text-ink hover:bg-peri-d',
+  solid: 'bg-peri text-ink hover:bg-peri-d hover:shadow-[var(--shadow-card)]',
   outline: 'border border-hairline-strong bg-paper text-ink hover:border-peri-d hover:text-peri-d',
   quiet: 'text-ink hover:text-peri-d',
 } as const;
@@ -115,14 +119,19 @@ export function Chip({
   className = '',
   ...props
 }: ComponentProps<'button'> & { on: boolean }) {
+  /*
+   * Three states, not two. Selected sits down slightly with an inset shadow so it reads as
+   * pressed rather than merely coloured; unselected lifts on hover and both return to flat on
+   * :active, so a click is confirmed by the control moving under the finger.
+   */
   return (
     <button
       {...props}
       aria-pressed={on}
-      className={`wt-ease shrink-0 rounded-full px-4 py-2 text-[0.8125rem] font-semibold ${
+      className={`wt-ease shrink-0 rounded-full px-4 py-2 text-[0.8125rem] font-semibold active:translate-y-px ${
         on
-          ? 'bg-peri text-ink'
-          : 'border border-hairline bg-paper text-ink hover:border-peri-d hover:text-peri-d'
+          ? 'border border-peri-d bg-peri text-ink shadow-[inset_0_1px_3px_rgba(42,40,35,0.18)]'
+          : 'border border-hairline bg-paper text-ink hover:-translate-y-px hover:border-peri-d hover:shadow-[var(--shadow-card)]'
       } ${className}`}
     />
   );
@@ -141,8 +150,8 @@ export function Total({
   caption,
   className = '',
 }: {
-  /** Already formatted. "$291". */
-  amount: string;
+  /** Already formatted. A node rather than a string, so the figure can animate when it changes. */
+  amount: ReactNode;
   /** "a head, everything in" — the thing that stops a number being ambiguous. */
   caption?: string;
   className?: string;

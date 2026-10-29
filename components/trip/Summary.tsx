@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, Copy, ExternalLink } from 'lucide-react';
+import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { describeDriver } from '@/lib/trip/brief';
@@ -135,7 +136,7 @@ export function Summary({ slug }: { slug: string }) {
 
           <section className={`${MEASURE} mt-5`}>
             <Card className="p-5 sm:p-7">
-              <Total amount={money(quote.perPersonTotal)} caption="a head, everything in" />
+              <Total amount={<AnimatedMoney value={quote.perPersonTotal} />} caption="a head, everything in" />
               <p className="type-secondary mt-2">
                 {money(quote.partyTotal ?? 0)} for {brief.partySize} of you, in {quote.rooms}{' '}
                 {quote.rooms === 1 ? 'room' : 'rooms'}

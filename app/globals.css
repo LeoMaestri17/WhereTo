@@ -204,27 +204,103 @@ body {
 
 /* ------------------------------------------------------------------ motion
 
-   Short and quiet. Nothing bounces, nothing slides in on scroll. */
+   Motion confirms an action; it never decorates one. No parallax, no scroll
+   triggers, no entrance animation on every element. One easing curve, used
+   everywhere, so the whole product moves with the same hand. */
+
+:root {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 220ms;
+}
 
 .wt-ease {
   transition:
-    transform 200ms cubic-bezier(0.2, 0, 0, 1),
-    box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
-    background-color 160ms linear,
-    border-color 160ms linear,
-    color 160ms linear;
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    opacity var(--dur) var(--ease);
 }
 
 .wt-lift:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lift);
 }
 
+/* The card's photograph. Scale lives on the media, not the card, so the corners stay put and
+   only the image moves inside them. */
+.wt-media {
+  transition: transform 260ms var(--ease);
+  will-change: transform;
+}
+
+.wt-card:hover .wt-media,
+.wt-card:focus-within .wt-media {
+  transform: scale(1.035);
+}
+
+/* A wash in the destination's own colour, rising from the bottom of the image on hover. Each
+   card's tone is set inline from the record, so the board is coloured by its content rather
+   than by one accent repeated twenty times. */
+.wt-wash {
+  opacity: 0;
+  transition: opacity 240ms var(--ease);
+  background: linear-gradient(to top, var(--tone, transparent) 0%, transparent 62%);
+}
+
+.wt-card:hover .wt-wash,
+.wt-card:focus-within .wt-wash {
+  opacity: 0.55;
+}
+
+/* The price steps up as the wash comes in, so the number is what the eye lands on. */
+.wt-price {
+  transition: transform var(--dur) var(--ease);
+}
+
+.wt-card:hover .wt-price,
+.wt-card:focus-within .wt-price {
+  transform: translateY(-2px);
+}
+
+/*
+ * Height, animated honestly.
+ *
+ * grid-template-rows from 0fr to 1fr transitions to the content's real height without anyone
+ * having to measure it in JavaScript, and without the max-height guess that either clips long
+ * content or makes short content ease for the wrong duration.
+ */
+.wt-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms var(--ease);
+}
+
+.wt-expand[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+
+.wt-expand > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .wt-ease {
+  .wt-ease,
+  .wt-media,
+  .wt-wash,
+  .wt-price,
+  .wt-expand {
     transition: none;
   }
   .wt-lift:hover {
+    transform: none;
+  }
+  .wt-card:hover .wt-media,
+  .wt-card:focus-within .wt-media,
+  .wt-card:hover .wt-price,
+  .wt-card:focus-within .wt-price {
     transform: none;
   }
 }

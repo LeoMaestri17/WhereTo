@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, ChevronDown, Check, TriangleAlert } from 'lucide-react';
+import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
@@ -215,7 +216,10 @@ export function BuildCanvas({ slug }: { slug: string }) {
           ) : (
             <>
               <div className="mt-3 flex items-center gap-2">
-                <Total amount={money(quote.perPersonTotal)} caption="a head, everything in" />
+                <Total
+                  amount={<AnimatedMoney value={quote.perPersonTotal} />}
+                  caption="a head, everything in"
+                />
                 <SourceTag source={quote.source} detail={sourceDetail(quote.source)} />
               </div>
               <p className="type-secondary mt-2">
@@ -336,15 +340,16 @@ function Row({
           <p className={`text-[1rem] font-bold leading-snug ${unavailable ? 'text-muted' : ''}`}>
             {row.title}
           </p>
-          <p className="type-body mt-1 text-muted">{row.detail.filter(Boolean).join(' · ')}</p>
+          <p className="type-body mt-1 flex flex-wrap items-center gap-x-1.5 text-muted">
+            <span>{row.detail.filter(Boolean).join(' · ')}</span>
+            {row.lines.length > 0 ? (
+              <SourceTag
+                source={row.source}
+                detail={row.checkedLabel ?? `${row.lines[0].provider} · ${hostOf(row.lines[0].url)}`}
+              />
+            ) : null}
+          </p>
 
-          {row.lines.length > 0 ? (
-            <SourceTag
-              source={row.source}
-              detail={row.checkedLabel ?? `${row.lines[0].provider} · ${hostOf(row.lines[0].url)}`}
-              className="mt-2"
-            />
-          ) : null}
 
           {unavailable && row.blockedReason ? (
             <p className="type-body mt-2 text-muted">{row.blockedReason}</p>
@@ -353,7 +358,7 @@ function Row({
 
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <span className={`type-figure text-[1.0625rem] ${unavailable ? 'text-faint' : ''}`}>
-            {unavailable ? '' : row.perPersonTotal === 0 ? 'Included' : money(row.perPersonTotal)}
+            {unavailable ? '' : row.perPersonTotal === 0 ? 'Included' : <AnimatedMoney value={row.perPersonTotal} />}
           </span>
           {changeable ? (
             <Button variant="quiet" size="sm" onClick={onToggle} className="-mr-2 px-2 py-1">
@@ -364,9 +369,15 @@ function Row({
         </div>
       </div>
 
-      {/* Expands in place. No navigation, so the scroll position survives. */}
-      {open && children ? (
-        <div className="mt-4 rounded-[10px] border border-hairline bg-ground p-4">{children}</div>
+      {/* Expands in place, to its real height. No navigation, so the scroll position survives. */}
+      {children ? (
+        <div className="wt-expand" data-open={open}>
+          <div>
+            <div className="mt-4 rounded-[10px] border border-hairline bg-ground p-4">
+              {children}
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

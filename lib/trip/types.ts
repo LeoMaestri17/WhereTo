@@ -86,6 +86,8 @@ export const AGE_BAND_LABELS: Record<AgeBand, string> = {
  * already attached rather than assembled at render time, where it would eventually get dropped
  * by someone tidying up a component.
  */
+export type Tone = 'peri' | 'coral' | 'sage' | 'butter' | 'rose' | 'peach' | 'sky';
+
 export interface DestinationPhoto {
   /** The CDN URL, already sized. Served by Unsplash, never by us. */
   url: string;
@@ -176,6 +178,16 @@ export interface Destination {
 
   /** What to search Unsplash for. Specific enough that the top result is actually the place. */
   photoQuery: string;
+
+  /**
+   * The palette colour this destination carries.
+   *
+   * Red rock is rose, desert is sage, coast is sky. It tints the hover wash and the category
+   * marker, so a board of twenty reads as twenty places rather than twenty cards with one
+   * accent colour repeated. Presentation, but it belongs with the record: the alternative is a
+   * lookup table in a component that nobody updates when a destination is added.
+   */
+  tone: Tone;
   /** The area string sent to Google Hotels by the warm script. */
   hotelQuery: string;
   /** Null when the trip is a drive, which is why most of these cost no flight searches. */

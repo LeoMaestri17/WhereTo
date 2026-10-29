@@ -102,7 +102,8 @@
     ],
     "content": null,
     "photo": null,
-    "photoQuery": "Zion National Park canyon Utah"
+    "photoQuery": "Zion National Park canyon Utah",
+    "tone": "rose"
   },
   {
     "slug": "san-francisco",
@@ -221,7 +222,8 @@
     ],
     "content": null,
     "photo": null,
-    "photoQuery": "San Francisco Golden Gate Bridge"
+    "photoQuery": "San Francisco Golden Gate Bridge",
+    "tone": "peach"
   },
   {
     "slug": "joshua-tree",
@@ -316,7 +318,8 @@
     ],
     "content": null,
     "photo": null,
-    "photoQuery": "Joshua Tree National Park desert"
+    "photoQuery": "Joshua Tree National Park desert",
+    "tone": "sage"
   },
   {
     "slug": "san-diego",
@@ -435,6 +438,7 @@
     ],
     "content": null,
     "photo": null,
-    "photoQuery": "San Diego California coast"
+    "photoQuery": "San Diego California coast",
+    "tone": "sky"
   }
 ]
