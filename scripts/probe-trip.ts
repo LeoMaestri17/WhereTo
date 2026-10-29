@@ -144,7 +144,7 @@ function main(): void {
   // $25/day over three hire days, split four ways.
   check('the gap is exactly the fee, split', Math.abs(gap - (25 * 3) / 4) < 0.01, `got ${gap.toFixed(2)}`);
   const carRowYoung = young.rows.find((r) => r.kind === 'car');
-  check('and the car row says so on its face', carRowYoung?.detail.some((d) => d.includes('under-25')) === true, JSON.stringify(carRowYoung?.detail));
+  check('and the car row says so on its face', carRowYoung?.detail.some((d) => d.includes('under 25')) === true, JSON.stringify(carRowYoung?.detail));
 
   heading('8. A carless group still gets San Diego');
   const sd = DESTINATIONS_BY_SLUG['san-diego'];
@@ -159,7 +159,14 @@ function main(): void {
     const q = quoteTrip(dest, WINDOW, 4, OLDER);
     check(`${dest.slug}: three rows`, q.rows.length === 3);
     check(`${dest.slug}: travel, stay, car in order`, q.rows.map((r) => r.kind).join(',') === 'travel,stay,car');
-    check(`${dest.slug}: no row is empty of detail`, q.rows.every((r) => r.detail[0].length > 0));
+    /* Every row says what it is, and every row that costs money says something about what you
+       are paying for. A row that costs nothing ("No car needed", "Included") has no further
+       fact to state, and padding it out was how the interface started explaining itself. */
+    check(`${dest.slug}: every row is named`, q.rows.every((r) => r.title.length > 0));
+    check(
+      `${dest.slug}: every priced row carries detail`,
+      q.rows.every((r) => r.perPersonTotal === 0 || r.detail.filter(Boolean).length > 0),
+    );
     const sum = q.rows.reduce((s, r) => s + r.perPersonTotal, 0) + q.fees.perPersonTotal;
     check(`${dest.slug}: the total is the sum of its rows`, Math.abs((q.perPersonTotal ?? 0) - sum) < 0.01, `${q.perPersonTotal} vs ${sum}`);
     check(`${dest.slug}: the party total is the per-person times the party`, Math.abs((q.partyTotal ?? 0) - (q.perPersonTotal ?? 0) * 4) < 0.01);

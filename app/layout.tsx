@@ -24,7 +24,7 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   title: 'WhereTo',
   description:
-    'What a weekend out of Los Angeles actually costs — travel, beds, the car and the fuel, split between the people going.',
+    'What a weekend out of Los Angeles actually costs: travel, beds, the car and the fuel, split between the people going.',
 };
 
 export const viewport: Viewport = {

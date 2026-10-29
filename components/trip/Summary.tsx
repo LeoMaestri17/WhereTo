@@ -142,9 +142,7 @@ export function Summary({ slug }: { slug: string }) {
               </p>
 
               <div className="mt-6 flex flex-col gap-3 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="type-body text-muted">
-                  Send this and they see the same prices, for the same group, on the same dates.
-                </p>
+
                 <button
                   type="button"
                   onClick={share}
@@ -252,7 +250,7 @@ function FeeRow({ line, amount }: { line: CostLine; amount: number }) {
       />
       <div className="min-w-0 flex-1">
         <p className="text-[0.9375rem] font-bold leading-snug">{line.label}</p>
-        {line.note ? <p className="type-body mt-0.5 line-clamp-2 text-muted">{line.note}</p> : null}
+        
         <SourceTag
           source={line.source}
           detail={`${line.provider} · checked ${line.checkedOn}`}

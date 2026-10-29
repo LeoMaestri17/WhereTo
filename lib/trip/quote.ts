@@ -255,10 +255,11 @@ export function carRow(
   const rules = carRules();
   const rate = compactRate();
 
+  /* Short enough to sit on a row. The agency detail belongs in the car panel, not here. */
   const blockedReason = !driver.hasLicence
-    ? 'Nobody in the group has a driving licence, so a hire is not an option.'
+    ? 'No licence in the group'
     : driver.ageBand === 'under-21'
-      ? rules.note
+      ? `Agencies rent from ${rules.minimumAge}`
       : undefined;
 
   const canHire = driver.hasLicence && driver.ageBand !== null && driver.ageBand !== 'under-21';
@@ -276,12 +277,11 @@ export function carRow(
     title: canHire ? `${rate.provider}, ${days} days` : 'No hire available',
     detail: canHire
       ? [
-          driver.ageBand === '21-24'
-            ? `Includes the ${money(rules.youngDriverFee.amount)}/day under-25 fee`
-            : 'No young-driver fee at 25 or over',
-          dest.parkingPerNight ? `Plus ${money(dest.parkingPerNight.amount)}/night to park it` : `${days} hire days for ${window.nights} nights`,
-        ]
-      : [blockedReason ?? '', ''],
+          `${days} days`,
+          driver.ageBand === '21-24' ? `+${money(rules.youngDriverFee.amount)}/day under 25` : '',
+          dest.parkingPerNight ? `+${money(dest.parkingPerNight.amount)}/night parking` : '',
+        ].filter(Boolean)
+      : [],
     lines: canHire ? lines : [],
     perPersonTotal: canHire
       ? lines.reduce((sum, l) => sum + perPerson(l, partySize, window.nights), 0)
@@ -358,11 +358,11 @@ function continuing(text: string): string {
   return /^[A-Z][a-z]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
 }
 
-function noCarRow(dest: Destination): TripRow {
+function noCarRow(): TripRow {
   return {
     kind: 'car',
     title: 'No car needed',
-    detail: [`${dest.drive.verdict.split('.')[0]}.`, 'Nothing to hire, nothing to park.'],
+    detail: [],
     lines: [],
     perPersonTotal: 0,
     available: true,
@@ -422,7 +422,7 @@ export function quoteTrip(
           label: dest.transit.label,
           shortLabel: SHORT_LABEL[dest.transit.mode],
           travel: transitOpt.row,
-          car: noCarRow(dest),
+          car: noCarRow(),
           perPersonTotal: transitOpt.row.perPersonTotal,
           hoursEachWay: dest.transit.hoursEachWay,
         }
@@ -467,15 +467,8 @@ export function quoteTrip(
     : [
         {
           kind: 'travel',
-          title: 'No way in for this group',
-          /* The detail says what is wrong with the trip; blockedReason says what is wrong with
-             the group. Putting the same sentence in both printed it twice on screen. */
-          detail: [
-            dest.transit
-              ? `${dest.name} can be reached without a car, but not by this group.`
-              : `${dest.name} has no scheduled service from Los Angeles worth taking.`,
-            '',
-          ],
+          title: 'No way in',
+          detail: [],
           lines: [],
           perPersonTotal: 0,
           available: false,

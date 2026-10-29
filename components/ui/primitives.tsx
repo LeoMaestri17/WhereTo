@@ -157,46 +157,72 @@ export function Total({
 
 /* ------------------------------------------------------------------ provenance */
 
-/**
- * How a figure got here, said in one short line.
+export type PriceSourceKind = 'api' | 'operator' | 'authored';
+
+const SOURCE_WORD: Record<PriceSourceKind, string> = {
+  api: 'Live price',
+  operator: 'Published rate',
+  authored: 'Our estimate',
+};
+
+/*
+ * Three markers, distinguishable by shape as well as colour, so the difference survives a
+ * colour-blind reader and a greyscale screenshot:
  *
- * Three claims, three treatments. This is the product's whole argument rendered as a component,
- * so it is deliberately plain: a coloured dot, a word, and where it came from. An `authored`
- * number carries the loudest of the three because it is the one a reader most needs to discount.
+ *   api       solid sage disc      a provider answered
+ *   operator  hollow sky ring      a published rate card
+ *   authored  dotted butter ring   nobody checked
+ *
+ * Fill reads as "firmest", an outline as "less so", a dashed outline as "least". That ordering
+ * is legible before any word is read, which is the point of making it a mark rather than a
+ * sentence.
+ */
+const SOURCE_MARK: Record<PriceSourceKind, string> = {
+  api: 'bg-sage border border-sage',
+  operator: 'border-2 border-sky bg-transparent',
+  authored: 'border-2 border-dotted border-butter bg-transparent',
+};
+
+/**
+ * Where a figure came from, as a mark rather than a sentence.
+ *
+ * This used to print a line of prose on every costed row, which meant the interface explained
+ * its own provenance three times a screen and read as though it were apologising. The claim is
+ * now a dot; the detail arrives on hover or focus, where somebody who wants it can go and get
+ * it and nobody else has to read past it.
+ *
+ * Keyboard reachable on purpose. A tooltip that only answers to a mouse hides the audit trail
+ * from exactly the readers most likely to need it.
  */
 export function SourceTag({
   source,
   detail,
   className = '',
 }: {
-  source: 'api' | 'operator' | 'authored';
-  /** "checked 3 days ago", "nps.gov", "not checked". */
+  source: PriceSourceKind;
+  /** "checked 3 days ago", "nps.gov". Shown only on hover or focus. */
   detail: string;
   className?: string;
 }) {
-  const dot = {
-    api: 'bg-sage',
-    operator: 'bg-sky',
-    authored: 'bg-butter',
-  }[source];
+  const word = SOURCE_WORD[source];
 
-  const word = { api: 'Live price', operator: 'Published rate', authored: 'Our estimate' }[source];
-
-  /* One line, always. Letting the detail wrap turned a provenance note into a three-line block
-     on a phone and made the row look broken; the claim is the part that must always be legible,
-     so the detail truncates behind it rather than pushing it around. The full string stays in
-     the title attribute for anyone who wants it. */
   return (
-    <span
-      className={`flex items-center gap-1.5 text-[0.75rem] text-muted ${className}`}
-      title={`${word} — ${detail}`}
-    >
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} aria-hidden />
-      <span className="shrink-0 font-semibold">{word}</span>
-      <span className="shrink-0" aria-hidden>
-        ·
+    <span className={`group/src relative inline-flex ${className}`}>
+      <button
+        type="button"
+        aria-label={`${word}. ${detail}`}
+        className="wt-ease flex h-5 w-5 items-center justify-center rounded-full hover:bg-[rgba(42,40,35,0.05)]"
+      >
+        <span className={`h-2.5 w-2.5 rounded-full ${SOURCE_MARK[source]}`} aria-hidden />
+      </button>
+
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1.5 w-max max-w-[15rem] -translate-x-1/2 scale-95 rounded-[8px] border border-hairline bg-ink px-2.5 py-1.5 text-[0.75rem] leading-snug text-paper opacity-0 shadow-[var(--shadow-lift)] transition duration-200 ease-out group-hover/src:scale-100 group-hover/src:opacity-100 group-focus-within/src:scale-100 group-focus-within/src:opacity-100"
+      >
+        <span className="font-bold">{word}</span>
+        <span className="block opacity-80">{detail}</span>
       </span>
-      <span className="truncate">{detail}</span>
     </span>
   );
 }

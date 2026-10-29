@@ -19,6 +19,12 @@ import type { Destination } from '@/lib/trip/types';
  * "is this the one?" rather than to be clicked.
  */
 
+const PANEL_SOURCE: Record<'api' | 'operator' | 'authored', string> = {
+  api: 'Quoted for these dates',
+  operator: 'Published rates, checked on the dates shown',
+  authored: 'Part estimate, not yet quoted',
+};
+
 const SHARE = [
   { key: 'travel', label: 'Getting there', colour: 'var(--sky)' },
   { key: 'stay', label: 'Beds', colour: 'var(--sage)' },
@@ -159,7 +165,7 @@ export function DestinationPanel({
                             style={{ background: meta.colour }}
                             aria-hidden
                           />
-                          <span className="truncate text-[0.875rem] font-semibold">
+                          <span className="text-[0.875rem] font-semibold">
                             {meta.label}
                           </span>
                         </span>
@@ -177,17 +183,7 @@ export function DestinationPanel({
                     {money(quote.perPersonTotal)}
                   </span>
                 </div>
-                <SourceTag
-                  source={quote.source}
-                  detail={
-                    quote.source === 'api'
-                      ? 'quoted for these dates'
-                      : quote.source === 'operator'
-                        ? 'published rates, checked on the dates shown'
-                        : 'part estimate — the breakdown says which lines'
-                  }
-                  className="mt-2"
-                />
+                <SourceTag source={quote.source} detail={PANEL_SOURCE[quote.source]} className="mt-2" />
               </>
             )}
           </div>
@@ -207,7 +203,7 @@ export function DestinationPanel({
                   />
                   <div className="min-w-0">
                     <p className="text-[0.9375rem] font-bold">{item.title}</p>
-                    <p className="type-body mt-0.5 line-clamp-2 text-muted">{item.what}</p>
+                    
                     <p className="type-body mt-1 text-muted">
                       {item.cost} · {item.timeNeeded}
                     </p>

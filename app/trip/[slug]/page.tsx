@@ -24,7 +24,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const dest = DESTINATIONS_BY_SLUG[slug];
   if (!dest) return { title: 'WhereTo' };
-  return { title: `${dest.name} — WhereTo`, description: dest.hook };
+  return { title: `${dest.name}, WhereTo`, description: dest.hook };
 }
 
 export default async function TripPage({ params }: { params: Promise<{ slug: string }> }) {

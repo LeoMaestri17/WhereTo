@@ -30,8 +30,11 @@ import { AGE_BAND_LABELS, PARTY_SIZES, type AgeBand, type PartySize } from '@/li
  * nothing here touches the network: every price on every surface is computed from committed data
  * in the browser, so a chip change is instant.
  *
- * The strip is deliberately not a wizard. It is four facts shown as answers you can edit, not
- * four questions you must get past — which is the difference between a tool and a toll gate.
+ * The strip is deliberately not a wizard: four facts shown as answers you can edit, not four
+ * questions you must get past.
+ *
+ * No panel here carries a caption. A control that needs a sentence underneath explaining what it
+ * does is a control that needs redesigning, and these did not.
  */
 
 type PanelId = 'origin' | 'party' | 'dates' | 'budget';
@@ -104,10 +107,6 @@ export function ControlStrip() {
                     {o.name}
                   </Chip>
                 ))}
-                <p className="type-body w-full text-muted">
-                  One city for now. Everything is modelled per origin, so a second is data rather
-                  than a rewrite.
-                </p>
               </Row>
             ) : null}
 
@@ -141,12 +140,6 @@ export function ControlStrip() {
                     </Chip>
                   ))}
                 </Row>
-                {/* The age question decides whether a hire is possible at all, so it is asked
-                    plainly rather than discovered at the car row. */}
-                <p className="type-body text-muted">
-                  No major agency in California rents to under-21s, and 21 to 24 carries a $25 a
-                  day surcharge. Both change the price, so both are asked up front.
-                </p>
               </div>
             ) : null}
 
@@ -164,9 +157,6 @@ export function ControlStrip() {
                     {w.label}
                   </Chip>
                 ))}
-                <p className="type-body w-full text-muted">
-                  With no weekend chosen, every price shown is the cheapest of these.
-                </p>
               </Row>
             ) : null}
 
@@ -187,12 +177,6 @@ export function ControlStrip() {
                     Under ${b}
                   </Chip>
                 ))}
-                {/* A budget marks things, it never hides them. A trip $20 over is exactly the
-                    one worth knowing about. */}
-                <p className="type-body w-full text-muted">
-                  Nothing is hidden by a budget. Anything over it is marked, because a trip that
-                  just misses is the one worth seeing.
-                </p>
               </Row>
             ) : null}
           </div>

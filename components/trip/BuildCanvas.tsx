@@ -113,10 +113,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
         <section className={`${MEASURE} mt-5`}>
           <div className="flex items-start gap-3 rounded-[14px] border border-hairline-strong bg-paper p-4 sm:p-5">
             <TriangleAlert size={18} className="mt-0.5 shrink-0 text-coral" strokeWidth={2.2} />
-            <div>
-              <p className="text-[0.9375rem] font-bold">This group cannot reach {dest.name}</p>
-              <p className="type-body mt-1.5 text-muted">{quote.verdict}</p>
-            </div>
+            <p className="text-[0.9375rem] font-bold">Not reachable without a car</p>
           </div>
         </section>
       ) : null}
@@ -133,8 +130,6 @@ export function BuildCanvas({ slug }: { slug: string }) {
           >
             {quote.alternative ? (
               <AlternativePanel
-                verdict={quote.verdict}
-                closeCall={quote.closeCall}
                 options={[
                   { id: chosenId(quote), label: travel.title, hours: travel.hoursEachWay ?? 0, perPerson: travel.perPersonTotal + car.perPersonTotal, selected: true },
                   {
@@ -160,10 +155,8 @@ export function BuildCanvas({ slug }: { slug: string }) {
             onToggle={() => setOpenRow(openRow === 'stay' ? null : 'stay')}
             changeable
           >
-            <p className="type-body text-muted">
-              {stay.source === 'api'
-                ? 'Other properties from the same search will appear here.'
-                : `No live prices for ${dest.hotelQuery} on these dates yet. The figure above is what beds there cost, collected by hand — a warm run replaces it with a real quote.`}
+            <p className="text-[0.9375rem] font-bold">
+              {stay.source === 'api' ? 'Other beds nearby' : 'Not priced yet'}
             </p>
           </Row>
 
@@ -174,10 +167,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
             onToggle={() => setOpenRow(openRow === 'car' ? null : 'car')}
             changeable={car.available}
           >
-            <p className="type-body text-muted">
-              Compact is the only class with a collected rate. An invented mid-size price would be
-              worse than an absent one, so there is one option until a real quote replaces it.
-            </p>
+            <p className="text-[0.9375rem] font-bold">One class priced</p>
           </Row>
         </Card>
       </section>
@@ -223,15 +213,16 @@ export function BuildCanvas({ slug }: { slug: string }) {
             <p className="type-body mt-3 max-w-lg">{quote.verdict}</p>
           ) : (
             <>
-              <Total className="mt-3" amount={money(quote.perPersonTotal)} caption="a head, everything in" />
+              <div className="mt-3 flex items-center gap-2">
+                <Total amount={money(quote.perPersonTotal)} caption="a head, everything in" />
+                <SourceTag source={quote.source} detail={sourceDetail(quote.source)} />
+              </div>
               <p className="type-secondary mt-2">
                 {money(quote.partyTotal ?? 0)} for {partySize} of you, in {quote.rooms}{' '}
                 {quote.rooms === 1 ? 'room' : 'rooms'}
               </p>
 
-              <div className="mt-5 border-t border-hairline pt-4">
-                <WholeTotalClaim source={quote.source} />
-              </div>
+
             </>
           )}
         </Card>
@@ -296,6 +287,14 @@ function chosenId(quote: ReturnType<typeof quoteTrip>): 'drive' | 'transit' {
   return quote.alternative?.id === 'drive' ? 'transit' : 'drive';
 }
 
+function sourceDetail(source: 'api' | 'operator' | 'authored'): string {
+  return {
+    api: 'Quoted for these dates',
+    operator: 'Published rates, checked on the dates shown',
+    authored: 'Part estimate, not yet quoted',
+  }[source];
+}
+
 function hostOf(url: string): string {
   try {
     return new URL(url).host.replace(/^www\./, '');
@@ -338,10 +337,6 @@ function Row({
           </p>
           <p className="type-body mt-1 text-muted">{row.detail.filter(Boolean).join(' · ')}</p>
 
-          {/* The note only. `detail` already leads with the journey time, and saying it twice in
-              consecutive lines reads like a mistake. */}
-          {row.hoursNote ? <p className="type-body mt-0.5 text-muted">{row.hoursNote}</p> : null}
-
           {row.lines.length > 0 ? (
             <SourceTag
               source={row.source}
@@ -357,7 +352,7 @@ function Row({
 
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <span className={`type-figure text-[1.0625rem] ${unavailable ? 'text-faint' : ''}`}>
-            {unavailable ? '—' : row.perPersonTotal === 0 ? 'Included' : money(row.perPersonTotal)}
+            {unavailable ? '' : row.perPersonTotal === 0 ? 'Included' : money(row.perPersonTotal)}
           </span>
           {changeable ? (
             <Button variant="quiet" size="sm" onClick={onToggle} className="-mr-2 px-2 py-1">
@@ -377,13 +372,9 @@ function Row({
 }
 
 function AlternativePanel({
-  verdict,
-  closeCall,
   options,
   onPick,
 }: {
-  verdict: string;
-  closeCall: boolean;
   options: {
     id: 'drive' | 'transit';
     label: string;
@@ -395,14 +386,7 @@ function AlternativePanel({
 }) {
   return (
     <div>
-      <p className="type-body">{verdict}</p>
-      {closeCall ? (
-        <p className="type-body mt-1 text-muted">
-          Neither is better on both counts, so this one is yours to call.
-        </p>
-      ) : null}
-
-      <div className="mt-3.5 flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {options.map((opt) => (
           <button
             key={opt.id}
@@ -427,21 +411,7 @@ function AlternativePanel({
           </button>
         ))}
       </div>
-      <p className="type-body mt-2.5 text-muted">
-        Travel and car together, per person. The beds and the entry fees are the same either way.
-      </p>
     </div>
   );
 }
 
-/** One line under the total saying what the whole figure can claim, set by its weakest part. */
-function WholeTotalClaim({ source }: { source: 'api' | 'operator' | 'authored' }) {
-  const text = {
-    api: 'Every line above was quoted by its provider for these exact dates.',
-    operator: 'Every line is a published rate from the operator, checked on the date shown.',
-    authored:
-      'One or more lines is our own estimate rather than a quote, so the total is too. Each line says which it is.',
-  }[source];
-
-  return <SourceTag source={source} detail={text} />;
-}

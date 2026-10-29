@@ -22,6 +22,12 @@ import type { Destination } from '@/lib/trip/types';
  * gap. There is no popularity signal anywhere in this product and there will not be one.
  */
 
+const SOURCE_DETAIL: Record<'api' | 'operator' | 'authored', string> = {
+  api: 'Quoted for these dates',
+  operator: 'Published rates, checked on the dates shown',
+  authored: 'Part estimate, not yet quoted',
+};
+
 interface Priced {
   dest: Destination;
   perPerson: number | null;
@@ -83,29 +89,17 @@ export function DiscoveryBoard() {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const open = priced.find((p) => p.dest.slug === openSlug) ?? null;
 
-  const reachable = priced.filter((p) => p.perPerson !== null).length;
-
   return (
     <main className="min-h-dvh pb-24">
       <section className={`${MEASURE} pt-9 sm:pt-12`}>
         <Eyebrow>Travel · Beds · Car · Fuel</Eyebrow>
         <h1 className="type-hero mt-4 max-w-3xl">The whole trip, priced. Not just the flight.</h1>
         <p className="type-body-lg mt-4 max-w-xl">
-          Every number came from somewhere and the page says where — including the surcharges that
-          depend on your age and who is driving.
+          Travel, beds, the car and the fuel. Priced for your group, your dates and who can drive.
         </p>
       </section>
 
       <section className={`${MEASURE} mt-10`}>
-        <div className="flex items-baseline justify-between gap-4">
-          <Eyebrow>
-            {reachable} of {priced.length} reachable for this group
-          </Eyebrow>
-          {/* Hidden on a phone, where it wraps to two lines to state something the order of the
-              cards already makes obvious. */}
-          <span className="type-body hidden shrink-0 text-muted sm:block">Cheapest first</span>
-        </div>
-
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {priced.map((p) => (
             <BoardCard key={p.dest.slug} priced={p} onOpen={() => setOpenSlug(p.dest.slug)} />
@@ -125,66 +119,71 @@ export function DiscoveryBoard() {
 }
 
 function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
-  const { dest, perPerson, windowLabel, source, reason, overBudget } = priced;
+  const { dest, perPerson, windowLabel, source, overBudget } = priced;
   const blocked = perPerson === null;
 
-  /* A button, not a link: this opens a panel over the board rather than navigating, so a real
-     anchor would promise a page change that never happens. */
+  /*
+   * A stretched link rather than a card-sized button.
+   *
+   * Wrapping the whole card in a <button> put the source marker's own button inside it, which is
+   * invalid HTML and failed hydration outright. So the only interactive element is the heading,
+   * and its ::after covers the card to make the whole thing clickable. The accessible name is
+   * then the destination rather than the card's entire text content, which is also the better
+   * screen-reader result.
+   *
+   * It is a button, not a link: this opens a panel over the board, and an anchor would promise a
+   * page change that never happens.
+   */
   return (
-    <button type="button" onClick={onOpen} className="block w-full text-left focus-visible:outline-none">
-      <Card interactive className="h-full overflow-hidden">
-        <Photo
-          src={dest.image}
-          alt={dest.name}
-          ratio="square"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          rounded={false}
-          eager
-        />
+    <Card interactive className="relative h-full overflow-hidden">
+      <Photo
+        src={dest.image}
+        alt={dest.name}
+        ratio="square"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        rounded={false}
+        eager
+      />
 
-        <div className="flex flex-col gap-2.5 p-4">
-          <div>
-            <Eyebrow>{dest.eyebrow}</Eyebrow>
-            <h2 className="type-title mt-1.5">{dest.name}</h2>
-          </div>
-
-          <p className="type-body line-clamp-2 text-muted">{dest.hook}</p>
-
-          <div className="mt-1 border-t border-hairline pt-3">
-            {blocked ? (
-              <>
-                <p className="text-[0.9375rem] font-bold text-muted">Not reachable</p>
-                <p className="type-body mt-1 line-clamp-3 text-muted">{reason}</p>
-              </>
-            ) : (
-              <>
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="type-figure text-[1.375rem]">
-                    from {money(perPerson)}
-                  </span>
-                  <ArrowRight size={16} strokeWidth={2.5} className="shrink-0 text-muted" />
-                </div>
-                <p className="type-body mt-0.5 text-muted">each, {windowLabel}</p>
-                {overBudget ? (
-                  /* Marked, never hidden. */
-                  <p className="mt-2 text-[0.75rem] font-bold text-coral">Over your budget</p>
-                ) : null}
-                <SourceTag
-                  source={source}
-                  detail={
-                    source === 'api'
-                      ? 'quoted for these dates'
-                      : source === 'operator'
-                        ? 'published rates'
-                        : 'part estimate, see the breakdown'
-                  }
-                  className="mt-2"
-                />
-              </>
-            )}
-          </div>
+      <div className="flex flex-col gap-2.5 p-4">
+        <div>
+          <Eyebrow>{dest.eyebrow}</Eyebrow>
+          <h2 className="type-title mt-1.5">
+            <button
+              type="button"
+              onClick={onOpen}
+              className="text-left after:absolute after:inset-0 after:rounded-[14px] after:content-[''] focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-peri-d focus-visible:outline-none"
+            >
+              {dest.name}
+            </button>
+          </h2>
         </div>
-      </Card>
-    </button>
+
+        <p className="type-body text-muted">{dest.hook}</p>
+
+        <div className="mt-1 border-t border-hairline pt-3">
+          {blocked ? (
+            <p className="text-[0.9375rem] font-bold text-muted">Needs a driver</p>
+          ) : (
+            <>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="type-figure text-[1.375rem]">from {money(perPerson)}</span>
+                <ArrowRight size={16} strokeWidth={2.5} className="shrink-0 text-muted" />
+              </div>
+              <p className="type-body mt-0.5 text-muted">each, {windowLabel}</p>
+              {overBudget ? (
+                <p className="mt-2 text-[0.75rem] font-bold text-coral">Over your budget</p>
+              ) : null}
+              {/* Above the stretched link, so the marker stays reachable. */}
+              <SourceTag
+                source={source}
+                detail={SOURCE_DETAIL[source]}
+                className="relative z-10 mt-2"
+              />
+            </>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }
