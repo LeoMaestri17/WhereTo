@@ -43,3 +43,7 @@ next-env.d.ts
 
 # Local price-lookup cache, so development does not spend API quota
 .pricing-cache
+
+# Raw uploaded artwork. Converted into public/assets as WebP; the originals are 25MB
+# and have no business in the repository.
+/assets-source

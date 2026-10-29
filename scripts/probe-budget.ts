@@ -21,6 +21,9 @@ import path from 'node:path';
 const SCRATCH = fs.mkdtempSync(path.join(os.tmpdir(), 'whereto-budget-'));
 const USAGE = path.join(SCRATCH, 'usage.json');
 process.env.WHERETO_USAGE_FILE = USAGE;
+/* Stubbed responses must never reach the committed fixture set, or a later dev server would
+   serve a price this probe invented as though a provider had returned it. */
+process.env.WHERETO_FIXTURE_DIR = path.join(SCRATCH, 'fixtures');
 delete process.env.PRICING_CACHE_DIR;
 delete process.env.SERPAPI_API_KEY;
 
@@ -112,11 +115,37 @@ async function main(): Promise<void> {
   run.refund();
   check('a refund frees a slot', run.remaining === 1);
 
-  heading('5. No key means no spend');
+  heading('5. Fixture mode cannot spend, whatever else is true');
   resetUsage();
   process.env.SERPAPI_MONTHLY_MAX = '200';
+  process.env.SERPAPI_MODE = 'fixture';
+  process.env.SERPAPI_API_KEY = 'a-real-looking-key';
+
   const { serpApiSearch } = await import('../lib/pricing/serpapi');
   const { isUnavailable } = await import('../lib/pricing/types');
+
+  let fixtureFetches = 0;
+  const realFetchEarly = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    fixtureFetches += 1;
+    throw new Error('fixture mode must never reach the network');
+  }) as typeof fetch;
+
+  const noFixture = await serpApiSearch({
+    engine: 'google_hotels',
+    params: { q: 'nowhere recorded', check_in_date: '2026-11-06', check_out_date: '2026-11-08' },
+    ttlMs: 1000,
+    budget: null,
+  });
+  check('a miss is reported as a miss', isUnavailable(noFixture) && noFixture.unavailable === 'no_fixture');
+  check('it never reached the network', fixtureFetches === 0, `${fixtureFetches} requests`);
+  check('even with a key present, nothing was spent', usageReport().serpapi.spent === 0, `got ${usageReport().serpapi.spent}`);
+  globalThis.fetch = realFetchEarly;
+
+  heading('5b. No key in live mode means no spend');
+  resetUsage();
+  process.env.SERPAPI_MODE = 'live';
+  delete process.env.SERPAPI_API_KEY;
 
   const noKey = await serpApiSearch({
     engine: 'google_hotels',

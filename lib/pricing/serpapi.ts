@@ -1,21 +1,43 @@
 import { RunBudget, claim, release } from '@/lib/budget/guard';
 import { readCache, writeCache, cacheKey } from './cache';
+import { readFixture, writeFixture } from './fixtures';
 import { isUnavailable, unavailable, type PriceLookup, type Unavailable } from './types';
 
 /**
- * The shared SerpApi client.
+ * The one way to reach SerpApi, and mostly the one way not to.
  *
  * SerpApi runs the scraping of Google Flights and Google Hotels and hands back structured JSON.
  * That matters because neither has a public API: Google retired QPX, and Booking.com's Demand API
- * is partner-only and closed to new registrations. This is the one route to live prices that does
- * not involve breaking somebody's terms of service.
+ * is partner-only. This is the one route to live prices that does not involve breaking somebody's
+ * terms of service.
  *
- * Free tier: 250 searches a month, 50 an hour, no card. One key covers both engines.
+ * Free tier: 250 searches a month, 50 an hour, one key for both engines. Small enough that the
+ * default here is **not to spend it**.
+ *
+ * ## Two modes, and fixture is the default
+ *
+ * `SERPAPI_MODE=fixture` (the default, including when the variable is unset) reads recorded
+ * responses from `fixtures/` and makes no network call whatsoever. No key is read, no quota is
+ * claimed, nothing can be spent. Every dev server, every probe and every page load in
+ * development runs in this mode, so building the product costs nothing.
+ *
+ * `SERPAPI_MODE=live` is set by `npm run warm` and nothing else. A live answer is written to the
+ * fixture set as well as the cache, so a search spent once improves the offline environment
+ * permanently instead of evaporating with the process.
+ *
+ * If any other script, route or test can reach the network through here, that is a bug.
  */
 
 const BASE = 'https://serpapi.com/search.json';
 const TIMEOUT_MS = 15_000;
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+export type SerpMode = 'fixture' | 'live';
+
+/** Anything other than an explicit "live" is fixture. Spending has to be asked for. */
+export function serpMode(): SerpMode {
+  return process.env.SERPAPI_MODE === 'live' ? 'live' : 'fixture';
+}
 
 export function hasSerpApiKey(): boolean {
   return Boolean(process.env.SERPAPI_API_KEY);
@@ -24,7 +46,7 @@ export function hasSerpApiKey(): boolean {
 export interface SerpApiOptions {
   engine: string;
   params: Record<string, string | number | boolean | undefined>;
-  /** How long an answer stays usable. */
+  /** How long an answer stays usable in the live-mode cache. */
   ttlMs: number;
   budget: RunBudget | null;
 }
@@ -33,37 +55,57 @@ export interface SerpApiSuccess {
   data: Record<string, unknown>;
   checkedAt: string;
   cachedAt?: string;
+  /** Where this answer came from, for the warm script's own reporting. */
+  from: 'fixture' | 'cache' | 'network';
 }
 
 export async function serpApiSearch(
   options: SerpApiOptions,
 ): Promise<PriceLookup<SerpApiSuccess>> {
-  const apiKey = process.env.SERPAPI_API_KEY;
-  if (!apiKey) {
-    return unavailable(
-      'no_api_key',
-      'No SERPAPI_API_KEY is set, so live prices are not available on this run.',
-    );
-  }
-
   const clean: Record<string, unknown> = { engine: options.engine };
   for (const [k, v] of Object.entries(options.params)) {
     if (v !== undefined && v !== null && v !== '') clean[k] = v;
   }
+  const key = cacheKey(options.engine, clean);
 
-  const key = cacheKey(options.engine, clean as Record<string, unknown>);
+  /* ---------------------------------------------------------------- fixture mode
+   *
+   * Returns before anything reads a key, claims a unit or opens a socket. A miss is reported as
+   * a miss rather than quietly escalating to a live call — the whole point is that development
+   * cannot spend, so falling through would defeat it.
+   */
+  if (serpMode() === 'fixture') {
+    const fixture = readFixture(key);
+    if (!fixture) {
+      return unavailable(
+        'no_fixture',
+        `No recorded response for ${options.engine} with these parameters. ` +
+          `Record one with: npm run warm -- --live --limit 1`,
+      );
+    }
+    return { data: fixture.data, checkedAt: fixture.recordedAt, from: 'fixture' };
+  }
+
+  /* ---------------------------------------------------------------- live mode */
+
+  const apiKey = process.env.SERPAPI_API_KEY;
+  if (!apiKey) {
+    return unavailable(
+      'no_api_key',
+      'SERPAPI_MODE is live but no SERPAPI_API_KEY is set.',
+    );
+  }
+
   const hit = readCache<Record<string, unknown>>(key);
   if (hit) {
-    return { data: hit.value, checkedAt: hit.storedAt, cachedAt: hit.storedAt };
+    return { data: hit.value, checkedAt: hit.storedAt, cachedAt: hit.storedAt, from: 'cache' };
   }
 
   /*
-   * Two brakes, and they fail differently on purpose.
-   *
-   * The per-run cap returns, because running out mid-operation is a result the caller can work
-   * with. The monthly ceiling throws, because nothing should be calling a paid API once the
-   * month is spent — an `unavailable` there would hide the bug that got us here. Both are
-   * claimed synchronously, before the request is built.
+   * Two brakes, and they fail differently on purpose. The per-run cap returns, because running
+   * out mid-operation is a result the caller can work with. The monthly ceiling throws, because
+   * nothing should be calling a paid API once the month is spent. Both are claimed synchronously,
+   * before the request is built.
    */
   if (options.budget) {
     if (options.budget.remaining <= 0) {
@@ -104,7 +146,9 @@ export async function serpApiSearch(
 
       const checkedAt = new Date().toISOString();
       writeCache(key, data, options.ttlMs);
-      return { data, checkedAt };
+      // The unit is spent either way; recording it is what stops it being spent again.
+      writeFixture(key, options.engine, clean, data);
+      return { data, checkedAt, from: 'network' };
     } catch (err) {
       const aborted = err instanceof Error && err.name === 'AbortError';
       return unavailable(
@@ -119,8 +163,7 @@ export async function serpApiSearch(
   };
 
   let result = await attempt();
-  // One retry, and only for the statuses worth retrying. The unit is already claimed either way,
-  // so a second attempt costs nothing extra against the budget.
+  // One retry, and only for the statuses worth retrying. The unit is already claimed either way.
   if (isUnavailable(result) && result.unavailable === 'upstream_error') {
     await new Promise((r) => setTimeout(r, 900));
     result = await attempt();

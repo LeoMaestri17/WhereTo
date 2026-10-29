@@ -35,6 +35,22 @@ function loadEnvLocal(): void {
 
 loadEnvLocal();
 
+/*
+ * Fixture unless live is asked for in so many words, and set here rather than left to the
+ * environment. A stray SERPAPI_MODE=live in .env.local must not be able to turn an ordinary run
+ * into a spending one — the flag on the command line is the only thing that decides.
+ */
+const LIVE = process.argv.includes('--live');
+process.env.SERPAPI_MODE = LIVE ? 'live' : 'fixture';
+
+/** `--limit 12`. Required for a live run; there is no default, on purpose. */
+function parseLimit(): number | null {
+  const i = process.argv.indexOf('--limit');
+  if (i === -1) return null;
+  const n = Number(process.argv[i + 1]);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
 /* --------------------------------------------------------------- the matrix */
 
 interface Window {
@@ -105,19 +121,38 @@ function describe(search: PlannedSearch, matrix: Matrix): string {
 /* --------------------------------------------------------------- main */
 
 async function main(): Promise<void> {
-  const live = process.argv.includes('--live');
+  const live = LIVE;
+  const limit = parseLimit();
+
+  /* A live run with no cap is the failure mode this whole script exists to prevent, so it is
+     refused rather than defaulted. The cap is also a hard stop, not a suggestion: the loop
+     breaks at N regardless of what the matrix says. */
+  if (live && limit === null) {
+    console.error(
+      '\nRefusing to run live without a cap.\n\n' +
+        '  npm run warm -- --live --limit 20\n\n' +
+        'Nothing was spent.\n',
+    );
+    process.exit(1);
+  }
+
   const matrix = JSON.parse(fs.readFileSync(MATRIX_FILE, 'utf8')) as Matrix;
-  const plan = buildPlan(matrix);
+  const full = buildPlan(matrix);
+  const plan = limit === null ? full : full.slice(0, limit);
 
   const guard = await import('../lib/budget/guard');
   const before = guard.usageReport();
 
   console.log('');
-  console.log(`WhereTo — warm${live ? '' : ' (dry run)'}`);
+  console.log(`WhereTo — warm${live ? ` (LIVE, capped at ${limit})` : ' (dry run, fixture mode)'}`);
   console.log('─'.repeat(78));
   console.log(
     `${matrix.destinations.length} destinations x ${matrix.windows.length} windows ` +
-      `= ${plan.length} searches (${plan.filter((p) => p.kind === 'stays').length} stays, ` +
+      `= ${full.length} searches in the matrix` +
+      (limit !== null && limit < full.length ? `, capped to the first ${limit}` : ''),
+  );
+  console.log(
+    `this run: ${plan.length} searches (${plan.filter((p) => p.kind === 'stays').length} stays, ` +
       `${plan.filter((p) => p.kind === 'flights').length} flights)`,
   );
   console.log(
@@ -151,18 +186,36 @@ async function main(): Promise<void> {
     }
   }
 
+  /* The projection is printed whether or not anything will be spent, because the whole point of
+     the dry run is to see exactly what a live run would do before authorising it. */
   console.log('─'.repeat(78));
+  plan.forEach((search, i) => {
+    console.log(`  ${String(i + 1).padStart(2)}. ${describe(search, matrix)}`);
+  });
+  console.log('─'.repeat(78));
+  console.log(
+    `projected: ${plan.length} searches · after this run ${before.serpapi.spent + plan.length} ` +
+      `of ${before.serpapi.ceiling} used, ${before.serpapi.remaining - plan.length} left`,
+  );
 
   if (!live) {
-    plan.forEach((search, i) => {
-      console.log(`  ${String(i + 1).padStart(2)}. ${describe(search, matrix)}`);
-    });
-    console.log('─'.repeat(78));
-    console.log(`Dry run. Nothing was requested and nothing was spent.`);
-    console.log(`After a live run: ${before.serpapi.spent + plan.length} of ${before.serpapi.ceiling} used, ${before.serpapi.remaining - plan.length} left.`);
-    console.log(`\nTo fetch for real:  npm run warm -- --live\n`);
+    console.log('\nDry run. Nothing was requested and nothing was spent.');
+    console.log('To fetch for real:  npm run warm -- --live --limit 20\n');
     return;
   }
+
+  /* Nothing is spent until this is typed. A flag can be left in shell history and re-run by
+     accident; a word typed at the prompt cannot. */
+  const readline = await import('node:readline/promises');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await rl.question(`\nSpend ${plan.length} of your ${before.serpapi.remaining} remaining searches? Type yes to confirm: `);
+  rl.close();
+
+  if (answer.trim().toLowerCase() !== 'yes') {
+    console.log('\nCancelled. Nothing was spent.\n');
+    return;
+  }
+  console.log('');
 
   const { searchFlights } = await import('../lib/pricing/flights');
   const { searchHotels } = await import('../lib/pricing/hotels');

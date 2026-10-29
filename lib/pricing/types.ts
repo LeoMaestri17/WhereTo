@@ -124,7 +124,9 @@ export type UnavailableReason =
   | 'run_budget'
   | 'timeout'
   | 'bad_request'
-  | 'upstream_error';
+  | 'upstream_error'
+  /** Fixture mode, and nothing recorded for this query. Never escalates to a live call. */
+  | 'no_fixture';
 
 export interface Unavailable {
   unavailable: UnavailableReason;
