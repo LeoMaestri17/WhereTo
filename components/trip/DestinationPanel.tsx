@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { DestinationPhotoFrame, GradientPlaceholder } from '@/components/ui/Photo';
 import { Eyebrow, SourceTag } from '@/components/ui/primitives';
+import { COST_CATEGORIES, COST_COLOUR, COST_LABEL } from '@/lib/trip/categories';
 import { money, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
 
@@ -25,12 +26,11 @@ const PANEL_SOURCE: Record<'api' | 'operator' | 'authored', string> = {
   authored: 'Part estimate, not yet quoted',
 };
 
-const SHARE = [
-  { key: 'travel', label: 'Getting there', colour: 'var(--sky)' },
-  { key: 'stay', label: 'Beds', colour: 'var(--sage)' },
-  { key: 'car', label: 'Car', colour: 'var(--rose)' },
-  { key: 'fees', label: 'Entry and fees', colour: 'var(--butter)' },
-] as const;
+const SHARE = COST_CATEGORIES.map((key) => ({
+  key,
+  label: COST_LABEL[key],
+  colour: COST_COLOUR[key],
+}));
 
 export function DestinationPanel({
   dest,

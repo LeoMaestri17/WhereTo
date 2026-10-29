@@ -7,8 +7,9 @@ import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
-import { DESTINATIONS, WINDOWS, windowById } from '@/lib/trip/catalogue';
-import { quoteTrip, type TripQuote } from '@/lib/trip/quote';
+import { describeWindow } from '@/lib/trip/brief';
+import { DESTINATIONS, ORIGIN, WINDOWS, windowById } from '@/lib/trip/catalogue';
+import { money, quoteTrip, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
 
 /**
@@ -92,20 +93,39 @@ export function DiscoveryBoard() {
   const open = priced.find((p) => p.dest.slug === openSlug) ?? null;
 
   const reachable = priced.filter((p) => p.perPerson !== null);
+
+  const range = reachable.length
+    ? {
+        low: Math.min(...reachable.map((p) => p.perPerson as number)),
+        high: Math.max(...reachable.map((p) => p.perPerson as number)),
+      }
+    : null;
   const blocked = priced.filter((p) => p.perPerson === null);
   const shown = showBlocked ? [...reachable, ...blocked] : reachable;
 
   return (
     <main className="min-h-dvh pb-24">
-      <section className={`${MEASURE} pt-9 sm:pt-12`}>
-        <Eyebrow>Travel · Beds · Car · Fuel</Eyebrow>
-        <h1 className="type-hero mt-4 max-w-3xl">The whole trip, priced. Not just the flight.</h1>
-        <p className="type-body-lg mt-4 max-w-xl">
-          Travel, beds, the car and the fuel. Priced for your group, your dates and who can drive.
+      {/* A status line, not a pitch: it reports the state of your own search and changes when
+          you change a chip. The board starts inside the first screenful. */}
+      <section className={`${MEASURE} pt-5`}>
+        <p className="type-secondary flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-bold text-ink">{DESTINATIONS.length} places</span>
+          <span aria-hidden>·</span>
+          <span>from {ORIGIN.city}</span>
+          <span aria-hidden>·</span>
+          <span>{describeWindow(brief.windowId)}</span>
+          {range ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className="font-bold text-ink">
+                {money(range.low)} to {money(range.high)} a head
+              </span>
+            </>
+          ) : null}
         </p>
       </section>
 
-      <section className={`${MEASURE} mt-10`}>
+      <section className={`${MEASURE} mt-5`}>
         {/* The first two run wide. Twenty identical rectangles is a grid, not a board. */}
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {shown.map((p, i) => (

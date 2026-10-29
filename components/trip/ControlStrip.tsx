@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { Check, MapPin, CalendarDays, Search, Users, Wallet } from 'lucide-react';
+import { Wordmark } from '@/components/ui/Logo';
 import { Chip, Eyebrow, MEASURE } from '@/components/ui/primitives';
 import { DESTINATIONS, WINDOWS } from '@/lib/trip/catalogue';
 import {
@@ -75,15 +75,8 @@ export function ControlStrip() {
   return (
     <div className="sticky top-0 z-40 border-b border-hairline bg-ground/92 backdrop-blur">
       <div className={`${MEASURE} flex items-center gap-3 py-3`}>
-        <Link href="/" className="shrink-0" aria-label="WhereTo, back to all trips">
-          <Image
-            src="/assets/logo.webp"
-            alt=""
-            width={32}
-            height={32}
-            priority
-            className="h-8 w-8 rounded-full object-cover"
-          />
+        <Link href="/" className="wt-ease shrink-0 hover:opacity-80" aria-label="WhereTo, all trips">
+          <Wordmark size={30} />
         </Link>
 
         {/* A rail rather than a wrap: four chips must stay on one line at phone width, and a

@@ -306,6 +306,28 @@ body {
 }
 
 /* Horizontal chip rails scroll without a visible bar, but keep keyboard reachability. */
+/* The mark folding and unfolding. Each panel pivots on its own fold line, staggered, so it
+   reads as paper rather than as four shapes blinking. Used for loading and transitions. */
+@keyframes wt-fold {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.18);
+  }
+}
+
+.wt-fold {
+  animation: wt-fold 1.6s var(--ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-fold {
+    animation: none;
+  }
+}
+
 .wt-rail {
   scrollbar-width: none;
 }
