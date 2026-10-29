@@ -93,7 +93,11 @@ export interface TransitRoute {
   mode: 'train' | 'plane' | 'coach';
   /** "Amtrak Pacific Surfliner", "Fly LAX to SFO". */
   label: string;
+  /** The headline leg, as the operator sells it. Never used for the comparison. */
   journeyTime: string;
+  /** Door to door from campus. See the note on `Destination['drive'].hoursEachWay`. */
+  hoursEachWay: number;
+  hoursNote: string;
   /** The long-haul leg, per person. */
   fare: CostLine;
   /** Getting around once you are there, per person. */
@@ -140,7 +144,17 @@ export interface Destination {
     miles: number;
     roundTripMiles: number;
     time: string;
-    /** Stated plainly when driving is the wrong call. */
+    /**
+     * Door to door from campus, not the headline leg.
+     *
+     * A flight sold as "1h 25m in the air" is nothing like 1h 25m of your Friday, and comparing
+     * that against a drive measured kerb to kerb is how every travel site makes flying look
+     * better than it is. Both numbers here are the whole journey or neither is worth having.
+     */
+    hoursEachWay: number;
+    /** How that figure is made up, so the reader can disagree with it. */
+    hoursNote: string;
+    /** The editorial view, which the arithmetic does not always share. */
     verdict: string;
   };
 

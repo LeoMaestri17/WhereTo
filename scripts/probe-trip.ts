@@ -12,7 +12,7 @@
  */
 import { DESTINATIONS, DESTINATIONS_BY_SLUG, WINDOWS, carRules, compactRate } from '../lib/trip/catalogue';
 import { perPerson, quoteTrip, roomsFor, weakestBasis } from '../lib/trip/quote';
-import type { CostLine, Driver, PartySize, Unit } from '../lib/trip/types';
+import type { CostLine, Driver, Unit } from '../lib/trip/types';
 
 let passed = 0;
 let failed = 0;
@@ -179,6 +179,78 @@ function main(): void {
     const four = quoteTrip(dest, WINDOW, 4, OLDER).perPersonTotal ?? 0;
     check(`${dest.slug}: four costs less a head than one`, four < solo, `${four.toFixed(0)} vs ${solo.toFixed(0)}`);
   }
+
+  heading('12. Hours are door to door, or they are worth nothing');
+  for (const dest of DESTINATIONS) {
+    check(`${dest.slug}: the drive has a door-to-door figure`, dest.drive.hoursEachWay > 0);
+    check(`${dest.slug}: and says how it is made up`, dest.drive.hoursNote.length > 20);
+    if (dest.transit) {
+      check(`${dest.slug}: so does ${dest.transit.label}`, dest.transit.hoursEachWay > 0);
+      /* The trap this exists to avoid: comparing "1h 25m in the air" against a drive measured
+         kerb to kerb. A flight door to door is always more than its headline leg. */
+      const headlineHours = Number(/(\d+)h/.exec(dest.transit.journeyTime)?.[1] ?? 0);
+      check(
+        `${dest.slug}: and it exceeds the headline leg of ${dest.transit.journeyTime}`,
+        dest.transit.hoursEachWay > headlineHours,
+        `${dest.transit.hoursEachWay} vs ${headlineHours}`,
+      );
+    }
+  }
+  const travelRows = DESTINATIONS.map((d) => quoteTrip(d, WINDOW, 4, OLDER).rows[0]);
+  check('every travel row carries its hours', travelRows.every((r) => (r.hoursEachWay ?? 0) > 0));
+
+  heading('13. Nothing puts a price on an hour');
+  const allQuotes = DESTINATIONS.flatMap((d) =>
+    [OLDER, YOUNG, NO_LICENCE].map((drv) => quoteTrip(d, WINDOW, 4, drv)),
+  );
+  check(
+    'no cost line is a time charge',
+    allQuotes.every((q) =>
+      [...q.rows.flatMap((r) => r.lines), ...q.fees.lines].every(
+        (l) => !/\b(hour|time|wage)\b/i.test(l.label),
+      ),
+    ),
+    'an invented hourly rate next to a real price would undo the whole claim',
+  );
+
+  heading('14. A real trade is handed to the person going');
+  const sf = DESTINATIONS_BY_SLUG['san-francisco'];
+  const sfQuote = quoteTrip(sf, WINDOW, 4, OLDER);
+  check('San Francisco has two ways in', sfQuote.alternative !== null);
+  check(
+    'driving is cheaper but flying is quicker, so it is a close call',
+    sfQuote.closeCall,
+    `drive ${sfQuote.rows[0].title}, alternative ${sfQuote.alternative?.label}`,
+  );
+  check('and the verdict asks rather than tells', sfQuote.verdict.startsWith('Your call'), sfQuote.verdict);
+  check('the cheaper one is pre-filled, so no row is empty', sfQuote.perPersonTotal !== null);
+  check(
+    'the alternative costs more but saves hours',
+    (sfQuote.alternative?.perPersonTotal ?? 0) > (sfQuote.perPersonTotal ?? 0) - (sfQuote.rows[1].perPersonTotal + sfQuote.fees.perPersonTotal) &&
+      (sfQuote.alternative?.hoursEachWay ?? 99) < sfQuote.rows[0].hoursEachWay!,
+  );
+
+  const sdQuote = quoteTrip(DESTINATIONS_BY_SLUG['san-diego'], WINDOW, 4, OLDER);
+  check('San Diego is a close call the other way round', sdQuote.closeCall, sdQuote.verdict);
+  check('the train is the cheaper default', sdQuote.rows[0].title.includes('Surfliner'), sdQuote.rows[0].title);
+  check('and driving is offered as the quicker alternative', sdQuote.alternative?.id === 'drive');
+
+  heading('15. With one way in there is nothing to ask');
+  for (const slug of ['zion', 'joshua-tree']) {
+    const q = quoteTrip(DESTINATIONS_BY_SLUG[slug], WINDOW, 4, OLDER);
+    check(`${slug}: no alternative exists`, q.alternative === null);
+    check(`${slug}: so it is not a close call`, !q.closeCall);
+    check(`${slug}: and the verdict states the case for driving`, q.verdict === DESTINATIONS_BY_SLUG[slug].drive.verdict);
+  }
+  const sdNoLicenceAgain = quoteTrip(DESTINATIONS_BY_SLUG['san-diego'], WINDOW, 4, NO_LICENCE);
+  check('a group with no licence is never asked to choose', !sdNoLicenceAgain.closeCall);
+  check('and is told why the train is the only option', sdNoLicenceAgain.verdict.includes('licence'), sdNoLicenceAgain.verdict);
+
+  heading('16. The written verdict is kept, not overwritten');
+  check(
+    'every quote carries the researched view alongside the arithmetic',
+    allQuotes.every((q) => q.writtenVerdict === q.destination.drive.verdict),
+  );
 
   console.log(`\n${'─'.repeat(60)}`);
   console.log(`${passed} passed, ${failed} failed`);

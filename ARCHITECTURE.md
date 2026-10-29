@@ -340,14 +340,28 @@ replaces it with `quoted`.
 
 ### Two things Stage 3 turned up
 
-**The model recommends driving to San Francisco, and the research says do not.**
-`dest.drive.verdict` reads "Do not drive. Six hours up the 5, then a car you pay to store and
-cannot use". The arithmetic disagrees: for four people the drive is about $111 a head against
-$160 to fly, so `quoteTrip()` picks the car and writes a verdict saying so. Both numbers are
-right; the model simply has no price for twelve hours in a car, and the hire rate it is using is
-`seeded`. A real LAX–SFO fare from the warm run may well flip it. **This predates Stage 3** — the
-old `decideTravel()` reached the same conclusion — and it needs a decision rather than a silent
-patch: either time gets a cost, or the written verdict overrides the comparison.
+**~~The model recommends driving to San Francisco, and the research says do not.~~ Settled: when
+neither option wins outright, the person going decides.**
+
+No price is put on an hour. Any figure for that would be invented, and a made-up hourly rate
+rendered next to real prices would undo the only claim this product makes. Instead both options
+carry **door-to-door** hours — a flight sold as "1h 25m in the air" is nothing like 1h 25m of your
+Friday, and comparing that against a drive measured kerb to kerb is how every travel site makes
+flying look better than it is — and the rule is plain dominance:
+
+- One option cheaper **and** no slower → recommend it, and say by how much on both axes.
+- Each wins on one axis → `closeCall: true`. State both sides and let the person choose. The
+  cheaper one is pre-filled so Surface 3 never opens on an empty row, and the other is offered as
+  `alternative` behind Change.
+- One option only → no question to ask.
+
+San Francisco comes out "Your call. Driving saves $49 a head; flying saves 1h 15m each way, 2h 30m
+across the weekend." San Diego is the same shape reversed — the train saves $6, driving saves 2h 30m
+across the weekend. Zion and Joshua Tree have one way in and are stated, not asked.
+
+`writtenVerdict` keeps the researched editorial view on every quote alongside the arithmetic, so
+"Do not drive" is still there to render; it no longer silently loses an argument it was never
+given.
 
 **Surface 2 wants five or six photographs of things to do, and there is one illustration per
 destination.** The itineraries carry four items each with a sourced cost and a stated catch, so

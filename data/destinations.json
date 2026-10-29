@@ -13,7 +13,9 @@
       "miles": 430,
       "roundTripMiles": 860,
       "time": "6h 30m each way",
-      "verdict": "Drive. There is no scheduled service from Los Angeles that gets you to Springdale and back in a weekend, and once you are there the free shuttle does the canyon better than a car is allowed to."
+      "verdict": "Drive. There is no scheduled service from Los Angeles that gets you to Springdale and back in a weekend, and once you are there the free shuttle does the canyon better than a car is allowed to.",
+      "hoursEachWay": 6.5,
+      "hoursNote": "Kerb to kerb up the 15, before any stop."
     },
     "fees": [
       {
@@ -114,7 +116,9 @@
       "miles": 380,
       "roundTripMiles": 760,
       "time": "6h each way up the 5",
-      "verdict": "Do not drive. Six hours up the 5, then a car you pay to store and cannot use — the city is built for its own transit and the parking alone costs more than the flight saves."
+      "verdict": "Do not drive. Six hours up the 5, then a car you pay to store and cannot use — the city is built for its own transit and the parking alone costs more than the flight saves.",
+      "hoursEachWay": 6,
+      "hoursNote": "Kerb to kerb up the 5, before any stop."
     },
     "fees": [
       {
@@ -150,7 +154,9 @@
         "source": "https://www.bart.gov/tickets/calculator",
         "checkedOn": "2026-09-16",
         "note": "BART fares rose 6.2% in January 2026 and SFO carries a surcharge on top."
-      }
+      },
+      "hoursEachWay": 4.75,
+      "hoursNote": "1h 25m in the air, plus the ride to LAX, two hours before departure, and BART into the city. The in-air figure is the small half of it."
     },
     "parkingPerNight": {
       "label": "Overnight parking",
@@ -227,7 +233,9 @@
       "miles": 145,
       "roundTripMiles": 290,
       "time": "2h 30m each way",
-      "verdict": "Drive, and there is no alternative worth pretending about. A coach reaches Palm Springs and a weekday bus reaches the town, but the park boundary is still five miles further and the good rock is fifteen beyond that, with no service inside and no signal to call anything."
+      "verdict": "Drive, and there is no alternative worth pretending about. A coach reaches Palm Springs and a weekday bus reaches the town, but the park boundary is still five miles further and the good rock is fifteen beyond that, with no service inside and no signal to call anything.",
+      "hoursEachWay": 2.5,
+      "hoursNote": "Kerb to kerb on the 10."
     },
     "fees": [
       {
@@ -318,7 +326,9 @@
       "miles": 120,
       "roundTripMiles": 240,
       "time": "2h 15m each way, worse on a Friday",
-      "verdict": "A car here is money spent on a problem. The train goes along the coast for the last hour, the trolley and the MTS buses reach the beaches and Balboa Park, and Balboa introduced paid parking in January 2026 — so driving buys you a queue on the I-5 and somewhere to pay overnight."
+      "verdict": "A car here is money spent on a problem. The train goes along the coast for the last hour, the trolley and the MTS buses reach the beaches and Balboa Park, and Balboa introduced paid parking in January 2026 — so driving buys you a queue on the I-5 and somewhere to pay overnight.",
+      "hoursEachWay": 2.25,
+      "hoursNote": "Kerb to kerb on the 5, and reliably worse leaving LA on a Friday afternoon."
     },
     "fees": [
       {
@@ -354,7 +364,9 @@
         "basis": "seeded",
         "source": "https://www.sdmts.com/fares-passes",
         "checkedOn": "2026-09-16"
-      }
+      },
+      "hoursEachWay": 3.5,
+      "hoursNote": "2h 45m on the train, plus about 30 minutes to Union Station and the walk off at the far end."
     },
     "parkingPerNight": {
       "label": "Overnight parking",
