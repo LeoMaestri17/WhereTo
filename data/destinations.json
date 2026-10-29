@@ -102,7 +102,14 @@
       }
     ],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1443632864897-14973fa006cf?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1443632864897-14973fa006cf",
+      "author": "Jamie Hagan",
+      "authorUrl": "https://unsplash.com/@dearjamie?utm_source=whereto&utm_medium=referral",
+      "alt": "brown mountains with forest",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Zion National Park canyon Utah",
     "tone": "rose"
   },
@@ -223,7 +230,14 @@
       }
     ],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1501594907352-04cda38ebc29",
+      "author": "Maarten van den Heuvel",
+      "authorUrl": "https://unsplash.com/@mvdheuvel?utm_source=whereto&utm_medium=referral",
+      "alt": "Golden Gate Bridge during daytime",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "San Francisco Golden Gate Bridge",
     "tone": "peach"
   },
@@ -320,7 +334,14 @@
       }
     ],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1576191919769-40424bb34367?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1576191919769-40424bb34367",
+      "author": "Cedric Letsch",
+      "authorUrl": "https://unsplash.com/@cedricletsch?utm_source=whereto&utm_medium=referral",
+      "alt": "cactus plants in desert",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Joshua Tree National Park desert",
     "tone": "sage"
   },
@@ -441,7 +462,14 @@
       }
     ],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1519954352454-2d5a7353e277?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1519954352454-2d5a7353e277",
+      "author": "Daniel Guerra",
+      "authorUrl": "https://unsplash.com/@dguerra95?utm_source=whereto&utm_medium=referral",
+      "alt": "photography of boat in body of water",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "San Diego California coast",
     "tone": "sky"
   },
@@ -492,7 +520,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1773904594792-1cf6a8c6e9fd?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1773904594792-1cf6a8c6e9fd",
+      "author": "Erick Morales Oyola",
+      "authorUrl": "https://unsplash.com/@ejmoralesoyola?utm_source=whereto&utm_medium=referral",
+      "alt": "Coastal city with mountains and ocean view",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Santa Barbara California landscape",
     "tone": "sky"
   },
@@ -543,7 +578,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1613070561201-b0dccb982856?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1613070561201-b0dccb982856",
+      "author": "Gustavo Zambelli",
+      "authorUrl": "https://unsplash.com/@zamax?utm_source=whereto&utm_medium=referral",
+      "alt": "Waves rolling onto a sandy beach lined with palm trees",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Ventura California landscape",
     "tone": "sage"
   },
@@ -594,7 +636,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1580813661848-89ee397b4a76?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1580813661848-89ee397b4a76",
+      "author": "Tobias Smietana",
+      "authorUrl": "https://unsplash.com/@tobiashh?utm_source=whereto&utm_medium=referral",
+      "alt": "people standing on beach during sunset",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Pismo Beach California landscape",
     "tone": "peach"
   },
@@ -629,7 +678,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1503520102536-1c981eb410fd?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1503520102536-1c981eb410fd",
+      "author": "Luke Dahlgren",
+      "authorUrl": "https://unsplash.com/@lukedahlgren?utm_source=whereto&utm_medium=referral",
+      "alt": "mountain and body of water during daytime",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Morro Bay California landscape",
     "tone": "sky"
   },
@@ -664,7 +720,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1757715628829-34cd468203b6?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1757715628829-34cd468203b6",
+      "author": "Rodrigo Kammer",
+      "authorUrl": "https://unsplash.com/@rodkammer?utm_source=whereto&utm_medium=referral",
+      "alt": "Coastal town with buildings along the oceanfront",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Monterey California landscape",
     "tone": "sage"
   },
@@ -699,7 +762,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1527488982891-99714e169214?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1527488982891-99714e169214",
+      "author": "Hendrik Cornelissen",
+      "authorUrl": "https://unsplash.com/@the_bracketeer?utm_source=whereto&utm_medium=referral",
+      "alt": "sea waves on rock formation during sunrise",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Carmel-by-the-Sea California landscape",
     "tone": "rose"
   },
@@ -734,7 +804,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1558996923-e575015e76fb?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1558996923-e575015e76fb",
+      "author": "Starboard Creek",
+      "authorUrl": "https://unsplash.com/@starboardcreek?utm_source=whereto&utm_medium=referral",
+      "alt": "buildings by the sea",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Laguna Beach California landscape",
     "tone": "peach"
   },
@@ -769,7 +846,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1574876999742-a8be3a43f151?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1574876999742-a8be3a43f151",
+      "author": "Cody Board",
+      "authorUrl": "https://unsplash.com/@codypboard?utm_source=whereto&utm_medium=referral",
+      "alt": "structure beside palm trees",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Palm Springs California landscape",
     "tone": "butter"
   },
@@ -804,7 +888,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1601371857684-cfdbb2161e78?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1601371857684-cfdbb2161e78",
+      "author": "Joshua Chun",
+      "authorUrl": "https://unsplash.com/@joshuachun?utm_source=whereto&utm_medium=referral",
+      "alt": "green trees near body of water during daytime",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Big Bear Lake California landscape",
     "tone": "sage"
   },
@@ -839,7 +930,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1506452305024-9d3f02d1c9b5?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1506452305024-9d3f02d1c9b5",
+      "author": "Kyle Glenn",
+      "authorUrl": "https://unsplash.com/@kylejglenn?utm_source=whereto&utm_medium=referral",
+      "alt": "green leafed pine trees",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Idyllwild California landscape",
     "tone": "sage"
   },
@@ -874,7 +972,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1528993840449-07c3ff4db40f?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1528993840449-07c3ff4db40f",
+      "author": "OC Gonzalez",
+      "authorUrl": "https://unsplash.com/@ocvisual?utm_source=whereto&utm_medium=referral",
+      "alt": "body of water surrounded by pine tree during daytime",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Mammoth Lakes California landscape",
     "tone": "sky"
   },
@@ -909,7 +1014,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1552083375-1447ce886485?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1552083375-1447ce886485",
+      "author": "Fabian Quintero",
+      "authorUrl": "https://unsplash.com/@onefabian?utm_source=whereto&utm_medium=referral",
+      "alt": "An aerial view of Emerald Bay State Park with boats on blue water",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Lake Tahoe California landscape",
     "tone": "sky"
   },
@@ -944,7 +1056,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1699500782833-7e47052a0845?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1699500782833-7e47052a0845",
+      "author": "Carlos Gonzalez",
+      "authorUrl": "https://unsplash.com/@karurosux?utm_source=whereto&utm_medium=referral",
+      "alt": "a large house with a flag on the front of it",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Solvang California landscape",
     "tone": "butter"
   },
@@ -979,7 +1098,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1609960722436-e90e5304d46b?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1609960722436-e90e5304d46b",
+      "author": "Johanna Zender",
+      "authorUrl": "https://unsplash.com/@johannavzender?utm_source=whereto&utm_medium=referral",
+      "alt": "green trees and mountains under blue sky during daytime",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Ojai California landscape",
     "tone": "rose"
   },
@@ -1014,7 +1140,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1660702253530-7d4ad585fbba?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1660702253530-7d4ad585fbba",
+      "author": "Tianlei Sun",
+      "authorUrl": "https://unsplash.com/@terry_sun?utm_source=whereto&utm_medium=referral",
+      "alt": "a hot air balloon over a field",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Temecula California landscape",
     "tone": "rose"
   },
@@ -1065,7 +1198,14 @@
     ],
     "itinerary": [],
     "content": null,
-    "photo": null,
+    "photo": {
+      "url": "https://images.unsplash.com/photo-1581351721010-8cf859cb14a4?auto=format&fit=crop&w=1600&q=80",
+      "id": "photo-1581351721010-8cf859cb14a4",
+      "author": "Julian Paefgen",
+      "authorUrl": "https://unsplash.com/@julianpaefgen?utm_source=whereto&utm_medium=referral",
+      "alt": "city with lights turned on during night time",
+      "fetchedAt": "2026-10-29T18:53:22.963Z"
+    },
     "photoQuery": "Las Vegas Nevada",
     "tone": "butter"
   }

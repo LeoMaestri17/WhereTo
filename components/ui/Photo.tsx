@@ -86,6 +86,7 @@ export function DestinationPhotoFrame({
       <Photo
         src={fallbackSrc}
         alt={name}
+        label={name}
         ratio={ratio}
         sizes={sizes}
         priority={priority}
@@ -101,6 +102,9 @@ export function DestinationPhotoFrame({
       <Photo
         src={photo.url}
         alt={photo.alt || name}
+        /* The gradient that stands in if the photograph fails says where you are going, not what
+           the photographer called their picture. */
+        label={name}
         ratio={ratio}
         sizes={sizes}
         priority={priority}
@@ -123,6 +127,7 @@ export function DestinationPhotoFrame({
 export function Photo({
   src,
   alt,
+  label,
   ratio = 'square',
   sizes = '100vw',
   priority = false,
@@ -130,9 +135,11 @@ export function Photo({
   className = '',
   rounded = true,
 }: {
-  /** A path under /public, or null when this record has no artwork yet. */
+  /** A path under /public, or an absolute URL on a CDN, or null. */
   src: string | null;
   alt: string;
+  /** What the gradient says when there is no image. Defaults to the alt text. */
+  label?: string;
   ratio?: PhotoRatio;
   sizes?: string;
   priority?: boolean;
@@ -156,7 +163,50 @@ export function Photo({
   const radius = rounded ? 'rounded-[14px]' : '';
 
   if (!src || failed) {
-    return <GradientPlaceholder label={alt} ratio={ratio} className={`${radius} ${className}`} />;
+    return (
+      <GradientPlaceholder
+        label={label ?? alt}
+        ratio={ratio}
+        className={`${radius} ${className}`}
+      />
+    );
+  }
+
+  /*
+   * Remote images skip the optimiser, and this is not a preference.
+   *
+   * next/image fetches a remote source server-side before serving it. On a machine behind a
+   * TLS-intercepting proxy that fetch fails with UNABLE_TO_VERIFY_LEAF_SIGNATURE and every
+   * photograph 500s, which is exactly what happened here. The browser has the proxy's root CA
+   * and Node does not.
+   *
+   * It also buys nothing: Unsplash resizes and format-negotiates in the URL itself, so the
+   * optimiser would be a second round trip doing work already done. Loading straight from their
+   * CDN is what their guidelines expect, keeps the browser the only thing that needs to reach
+   * the network, and makes onError below the single place a failure is handled.
+   */
+  if (src.startsWith('http')) {
+    const at = (w: number) => {
+      const u = new URL(src);
+      u.searchParams.set('w', String(w));
+      return u.toString();
+    };
+    return (
+      <div className={`relative overflow-hidden ${RATIO[ratio]} ${radius} ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- see the note above */}
+        <img
+          src={at(1600)}
+          srcSet={[480, 768, 1080, 1600].map((w) => `${at(w)} ${w}w`).join(', ')}
+          sizes={sizes}
+          alt={alt}
+          loading={eager || priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    );
   }
 
   return (

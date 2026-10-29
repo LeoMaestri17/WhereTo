@@ -3,19 +3,16 @@ import type { NextConfig } from 'next';
 /**
  * Deliberately close to empty.
  *
- * Local artwork under /public needs no configuration. Destination photographs come from
- * Unsplash, fetched once at catalogue build and stored in the records, so their CDN is the one
- * remote host listed below.
+ * Local artwork under /public needs no configuration, and there is no remotePatterns block
+ * because remote photographs deliberately do not go through the optimiser. See the note in
+ * components/ui/Photo.tsx: a server-side fetch of a remote image fails outright behind a
+ * TLS-intercepting proxy, and Unsplash has already done the resizing the optimiser would do.
  *
  * `turbopack.root` pins the workspace to this directory. Without it Next walks up looking for a
  * lockfile and can find an unrelated one above the repo, which changes how modules resolve.
  */
 const nextConfig: NextConfig = {
   images: {
-    /* Destination photographs are served by Unsplash's CDN, not by us: the catalogue stores the
-       URL and next/image resizes from it. One host, listed explicitly rather than opened up. */
-    remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' }],
-
     /*
      * WebP only, and this one line is worth the explanation.
      *
