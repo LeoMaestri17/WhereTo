@@ -328,6 +328,54 @@ body {
   }
 }
 
+/* The budget slider. Native range inputs ship with a different look in every browser, so the
+   track and the thumb are drawn here rather than inherited. */
+.wt-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.wt-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--hairline-strong);
+}
+
+.wt-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--hairline-strong);
+}
+
+.wt-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -7px;
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: var(--coral);
+  border: 3px solid var(--paper);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--dur) var(--ease);
+}
+
+.wt-slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: var(--coral);
+  border: 3px solid var(--paper);
+  box-shadow: var(--shadow-card);
+}
+
+.wt-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
 .wt-rail {
   scrollbar-width: none;
 }
