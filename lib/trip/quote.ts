@@ -1,6 +1,6 @@
 import { freshness, getQuote } from '@/lib/cache/quotes';
-import { carRules, compactRate, fuelBasis, type TripWindow } from './catalogue';
-import type { Basis, CostLine, Destination, Driver, PartySize, TransitRoute } from './types';
+import { carRules, compactRate, fuelRate, type TripWindow } from './catalogue';
+import type { PriceSource, CostLine, Destination, Driver, PartySize, TransitRoute } from './types';
 
 /**
  * What a weekend actually costs this group.
@@ -11,8 +11,8 @@ import type { Basis, CostLine, Destination, Driver, PartySize, TransitRoute } fr
  * load that can spend quota, and the architecture exists to make that impossible rather than
  * merely unlikely.
  *
- * Two things carry the product. The first is `basis` on every line, so a quoted figure and a
- * seeded one are never confused on screen. The second is the eligibility check: a group with no
+ * Two things carry the product. The first is `source` on every line, so a live quote and a
+ * hand-collected one are never confused on screen. The second is the eligibility check: a group with no
  * licence, or one under 21, is told plainly that a hire is not available and why, rather than
  * being shown a price nobody in it can act on.
  */
@@ -46,12 +46,12 @@ export function perPerson(
 }
 
 /** The weakest claim in a set of lines is the claim the set can make. */
-const RANK: Record<Basis, number> = { quoted: 0, published: 1, seeded: 2 };
+const RANK: Record<PriceSource, number> = { api: 0, operator: 1, authored: 2 };
 
-export function weakestBasis(lines: CostLine[]): Basis {
-  return lines.reduce<Basis>(
-    (worst, l) => (RANK[l.basis] > RANK[worst] ? l.basis : worst),
-    'quoted',
+export function weakestSource(lines: CostLine[]): PriceSource {
+  return lines.reduce<PriceSource>(
+    (worst, l) => (RANK[l.source] > RANK[worst] ? l.source : worst),
+    'api',
   );
 }
 
@@ -67,7 +67,7 @@ export interface TripRow {
   available: boolean;
   /** Why not, when unavailable. Shown verbatim — a conflict surfaced, not an error afterwards. */
   blockedReason?: string;
-  basis: Basis;
+  source: PriceSource;
   /** "checked 3 days ago", when any line in the row came from a real lookup. */
   checkedLabel: string | null;
   bookingLink?: string;
@@ -106,10 +106,10 @@ export function stayRow(
       provider: cached.provider,
       amount: cheapest.totalRateUsd,
       unit: 'per-room-stay',
-      basis: 'quoted',
-      source: cheapest.link ?? cached.query,
+      source: 'api',
+      url: cheapest.link ?? cached.query,
       checkedOn: cached.fetchedAt,
-      note: cached.basis,
+      note: cached.searchedFor,
     };
     return {
       kind: 'stay',
@@ -121,7 +121,7 @@ export function stayRow(
       lines: [line],
       perPersonTotal: perPerson(line, partySize, window.nights, rooms),
       available: true,
-      basis: 'quoted',
+      source: 'api',
       checkedLabel: freshness(cached.fetchedAt, now).label,
       bookingLink: cheapest.link,
     };
@@ -135,8 +135,8 @@ export function stayRow(
     provider: 'Collected by hand, not yet quoted',
     amount: dest.seededStayTotals[partySize - 1],
     unit: 'per-party',
-    basis: 'seeded',
-    source: `https://www.google.com/travel/hotels/${encodeURIComponent(dest.hotelQuery)}`,
+    source: 'authored',
+    url: `https://www.google.com/travel/hotels/${encodeURIComponent(dest.hotelQuery)}`,
     checkedOn: '2026-09-16',
   };
   return {
@@ -149,7 +149,7 @@ export function stayRow(
     lines: [line],
     perPersonTotal: perPerson(line, partySize, window.nights),
     available: true,
-    basis: 'seeded',
+    source: 'authored',
     checkedLabel: null,
   };
 }
@@ -157,14 +157,14 @@ export function stayRow(
 /* ------------------------------------------------------------------ travel */
 
 function fuelLine(dest: Destination): CostLine {
-  const fuel = fuelBasis();
+  const fuel = fuelRate();
   return {
     label: `Fuel, ${dest.drive.roundTripMiles} miles round trip`,
     provider: fuel.provider,
     amount: Math.round(dest.drive.roundTripMiles * fuel.usdPerMile),
     unit: 'per-party',
-    basis: fuel.basis,
     source: fuel.source,
+    url: fuel.url,
     checkedOn: fuel.checkedOn,
     note: 'The state average. The mileage is routed approximately.',
   };
@@ -186,7 +186,7 @@ function driveOption(dest: Destination, window: TripWindow, partySize: PartySize
       lines: [line],
       perPersonTotal: perPerson(line, partySize, window.nights),
       available: true,
-      basis: line.basis,
+      source: line.source,
       checkedLabel: null,
       hoursEachWay: dest.drive.hoursEachWay,
       hoursNote: dest.drive.hoursNote,
@@ -214,10 +214,10 @@ function transitOption(
           provider: `${cheapest.airline}, via ${cached.provider}`,
           amount: cheapest.perPersonUsd,
           unit: 'per-person',
-          basis: 'quoted',
-          source: cheapest.bookingLink ?? dest.transit.fare.source,
+          source: 'api',
+          url: cheapest.bookingLink ?? dest.transit.fare.url,
           checkedOn: cached.fetchedAt,
-          note: cached.basis,
+          note: cached.searchedFor,
         }
       : dest.transit.fare;
 
@@ -235,7 +235,7 @@ function transitOption(
       lines,
       perPersonTotal: lines.reduce((sum, l) => sum + perPerson(l, partySize, window.nights), 0),
       available: true,
-      basis: weakestBasis(lines),
+      source: weakestSource(lines),
       checkedLabel: cached ? freshness(cached.fetchedAt, now).label : null,
       bookingLink: cheapest?.bookingLink,
       hoursEachWay: dest.transit.hoursEachWay,
@@ -288,7 +288,7 @@ export function carRow(
       : 0,
     available: canHire,
     blockedReason: canHire ? undefined : blockedReason,
-    basis: canHire ? weakestBasis(lines) : 'published',
+    source: canHire ? weakestSource(lines) : 'operator',
     checkedLabel: null,
   };
 }
@@ -327,7 +327,7 @@ export interface TripQuote {
   perPersonTotal: number | null;
   partyTotal: number | null;
   /** The claim the whole total can make. */
-  basis: Basis;
+  source: PriceSource;
   /** The other way in, when there is one. The build canvas offers it behind Change. */
   alternative: TravelChoice | null;
   /**
@@ -366,7 +366,7 @@ function noCarRow(dest: Destination): TripRow {
     lines: [],
     perPersonTotal: 0,
     available: true,
-    basis: 'published',
+    source: 'operator',
     checkedLabel: null,
   };
 }
@@ -376,6 +376,14 @@ export function quoteTrip(
   window: TripWindow,
   partySize: PartySize,
   driver: Driver,
+  /**
+   * Override the recommendation, when the person has used Change to pick the other way in.
+   *
+   * Their choice wins outright — if they have looked at both and decided, re-deciding for them
+   * on the next render is the opposite of what Change means. Ignored when the preferred option
+   * is not available to this group, because an unavailable option is not a choice.
+   */
+  prefer: 'drive' | 'transit' | null = null,
   now = new Date(),
 ): TripQuote {
   const rooms = roomsFor(partySize);
@@ -442,8 +450,12 @@ export function quoteTrip(
     const driveCheaper = drive.perPersonTotal <= transit.perPersonTotal;
     const driveFaster = drive.hoursEachWay <= transit.hoursEachWay;
     closeCall = driveCheaper !== driveFaster;
-    chosen = driveCheaper ? drive : transit;
-    alternative = driveCheaper ? transit : drive;
+
+    // A deliberate choice outranks the default, but never invents an option.
+    const picked =
+      prefer === 'drive' ? drive : prefer === 'transit' ? transit : driveCheaper ? drive : transit;
+    chosen = picked;
+    alternative = picked === drive ? transit : drive;
   } else {
     chosen = drive ?? transit;
   }
@@ -456,12 +468,19 @@ export function quoteTrip(
         {
           kind: 'travel',
           title: 'No way in for this group',
-          detail: [hire.blockedReason ?? 'Nobody in the group has a licence.', ''],
+          /* The detail says what is wrong with the trip; blockedReason says what is wrong with
+             the group. Putting the same sentence in both printed it twice on screen. */
+          detail: [
+            dest.transit
+              ? `${dest.name} can be reached without a car, but not by this group.`
+              : `${dest.name} has no scheduled service from Los Angeles worth taking.`,
+            '',
+          ],
           lines: [],
           perPersonTotal: 0,
           available: false,
           blockedReason: hire.blockedReason,
-          basis: 'published',
+          source: 'operator',
           checkedLabel: null,
         },
         stay,
@@ -482,7 +501,7 @@ export function quoteTrip(
     fees,
     perPersonTotal,
     partyTotal: perPersonTotal === null ? null : perPersonTotal * partySize,
-    basis: weakestBasis([...rows.flatMap((r) => r.lines), ...fees.lines]),
+    source: weakestSource([...rows.flatMap((r) => r.lines), ...fees.lines]),
     alternative,
     closeCall,
     verdict: buildVerdict(dest, chosen, alternative, closeCall, hire, partySize),

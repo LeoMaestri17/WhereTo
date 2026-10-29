@@ -182,12 +182,21 @@ export function SourceTag({
 
   const word = { api: 'Live price', operator: 'Published rate', authored: 'Our estimate' }[source];
 
+  /* One line, always. Letting the detail wrap turned a provenance note into a three-line block
+     on a phone and made the row look broken; the claim is the part that must always be legible,
+     so the detail truncates behind it rather than pushing it around. The full string stays in
+     the title attribute for anyone who wants it. */
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[0.75rem] text-muted ${className}`}>
+    <span
+      className={`flex items-center gap-1.5 text-[0.75rem] text-muted ${className}`}
+      title={`${word} — ${detail}`}
+    >
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} aria-hidden />
-      <span className="font-semibold">{word}</span>
-      <span aria-hidden>·</span>
-      <span>{detail}</span>
+      <span className="shrink-0 font-semibold">{word}</span>
+      <span className="shrink-0" aria-hidden>
+        ·
+      </span>
+      <span className="truncate">{detail}</span>
     </span>
   );
 }

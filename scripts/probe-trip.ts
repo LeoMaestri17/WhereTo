@@ -11,7 +11,7 @@
  * most are the unit cases and the eligibility cases.
  */
 import { DESTINATIONS, DESTINATIONS_BY_SLUG, WINDOWS, carRules, compactRate } from '../lib/trip/catalogue';
-import { perPerson, quoteTrip, roomsFor, weakestBasis } from '../lib/trip/quote';
+import { perPerson, quoteTrip, roomsFor, weakestSource } from '../lib/trip/quote';
 import type { CostLine, Driver, Unit } from '../lib/trip/types';
 
 let passed = 0;
@@ -79,18 +79,18 @@ function main(): void {
 
   heading('2. Every figure says where it came from');
   const lines = allLines();
-  check(`all ${lines.length} lines carry a basis`, lines.every((l) => ['quoted', 'published', 'seeded'].includes(l.basis)));
+  check(`all ${lines.length} lines say where they came from`, lines.every((l) => ['api', 'operator', 'authored'].includes(l.source)));
   check('all lines carry a valid unit', lines.every((l) => VALID_UNITS.includes(l.unit)), lines.filter((l) => !VALID_UNITS.includes(l.unit)).map((l) => l.label).join(', '));
-  check('all lines link to a source', lines.every((l) => /^https?:\/\//.test(l.source)));
+  check('all lines link to a page you can check', lines.every((l) => /^https?:\/\//.test(l.url)));
   check('all lines carry a check date', lines.every((l) => /^\d{4}-\d{2}-\d{2}/.test(l.checkedOn)));
-  check('the park fees are published, not seeded', DESTINATIONS_BY_SLUG.zion.fees.every((f) => f.basis === 'published'));
-  check('the hire rate is honest about being seeded', compactRate().basis === 'seeded');
-  check('the under-25 fee is published', carRules().youngDriverFee.basis === 'published');
-  check('the weakest basis wins', weakestBasis([{ basis: 'quoted' } as CostLine, { basis: 'seeded' } as CostLine]) === 'seeded');
+  check('the park fees are operator-sourced, not authored', DESTINATIONS_BY_SLUG.zion.fees.every((f) => f.source === 'operator'));
+  check('the hire rate owns up to being authored', compactRate().source === 'authored');
+  check('the under-25 fee is operator-sourced', carRules().youngDriverFee.source === 'operator');
+  check('the weakest claim wins', weakestSource([{ source: 'api' } as CostLine, { source: 'authored' } as CostLine]) === 'authored');
 
   heading('3. Units split the way they are charged');
   const nights = 2;
-  const perVehicle: CostLine = { label: '', provider: '', amount: 40, unit: 'per-vehicle', basis: 'published', source: '', checkedOn: '' };
+  const perVehicle: CostLine = { label: '', provider: '', amount: 40, unit: 'per-vehicle', source: 'operator', url: '', checkedOn: '' };
   const perHead: CostLine = { ...perVehicle, unit: 'per-person' };
   const perDay: CostLine = { ...perVehicle, amount: 50, unit: 'per-vehicle-day' };
   const perRoom: CostLine = { ...perVehicle, amount: 300, unit: 'per-room-stay' };
@@ -169,7 +169,7 @@ function main(): void {
   for (const dest of DESTINATIONS) {
     const q = quoteTrip(dest, WINDOW, 2, OLDER);
     const stay = q.rows[1];
-    check(`${dest.slug}: the stay row is marked seeded until a warm run`, stay.basis === 'seeded', stay.basis);
+    check(`${dest.slug}: the stay row is marked authored until a warm run`, stay.source === 'authored', stay.source);
     check(`${dest.slug}: and claims no check date`, stay.checkedLabel === null);
   }
 

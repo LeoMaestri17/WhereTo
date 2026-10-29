@@ -59,6 +59,6 @@ export function compactRate() {
   return CARS.rates['los-angeles'].compact;
 }
 
-export function fuelBasis() {
+export function fuelRate() {
   return CARS.fuel.california;
 }

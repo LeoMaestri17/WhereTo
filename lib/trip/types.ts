@@ -2,18 +2,21 @@
  * The trip data model.
  *
  * One rule governs this file, and it is the product: **every figure says where it came from.**
- * `basis` is the answer, in three words rather than a hedge on every line:
+ * `source` is the answer, and it is not optional — a price without one cannot be constructed,
+ * which is the point. Three values:
  *
- *   quoted     a provider answered for these exact dates and this exact occupancy. From the warm
- *              cache, with the datetime it was fetched. This is the claim the product makes.
- *   published  read off the operator's own page — a park fee, a published surcharge, a state fuel
- *              average. Real and checkable, but it is a rate card, not a quote for your weekend.
- *   seeded     collected by hand and not checked since. The hire rates and the stay fallbacks.
+ *   api       a provider answered for these exact dates and this exact occupancy. From the warm
+ *             cache, carrying the datetime it was fetched. This is the claim the product makes.
+ *   operator  read off the operator's own page — a park fee, a published surcharge, a state fuel
+ *             average. Real and checkable, but a rate card rather than a quote for your weekend.
+ *   authored  our own estimate, collected by hand. The hire rates and the stay fallbacks.
  *
  * There was a boolean `verified` here once and it was removed for a good reason: a caveat the
  * interface must keep explaining teaches people to stop reading it. Three words on three kinds of
  * line is different from a warning on all of them, and the distinction is the one the reader
  * actually needs — "is this my price, or a price?".
+ *
+ * `url` is where to go and check. `source` is how much to trust it before you do.
  *
  * The other thing this file must get right is `unit`. A per-vehicle cost divided by party size
  * and a per-person cost left alone give very different answers, and that difference is the whole
@@ -32,7 +35,7 @@ export type Unit =
   /** Already a whole-stay total for one room. Multiplied by rooms, then split. */
   | 'per-room-stay';
 
-export type Basis = 'quoted' | 'published' | 'seeded';
+export type PriceSource = 'api' | 'operator' | 'authored';
 
 export interface CostLine {
   label: string;
@@ -40,9 +43,9 @@ export interface CostLine {
   provider: string;
   amount: number;
   unit: Unit;
-  basis: Basis;
-  /** Where the figure came from. Rendered as an outbound link. */
-  source: string;
+  source: PriceSource;
+  /** The page a reader can go and check it on. Rendered as an outbound link. */
+  url: string;
   /** ISO date or datetime the figure was read or fetched. */
   checkedOn: string;
   note?: string;
@@ -186,7 +189,7 @@ export interface Destination {
 export interface Agency {
   name: string;
   minimumAge: number;
-  source: string;
+  url: string;
 }
 
 export interface CarRules {
@@ -199,18 +202,18 @@ export interface CarRules {
   note: string;
 }
 
-export interface FuelBasis {
+export interface FuelRate {
   usdPerGallon: number;
   mpg: number;
   usdPerMile: number;
   provider: string;
-  source: string;
+  url: string;
   checkedOn: string;
-  basis: Basis;
+  source: PriceSource;
 }
 
 export interface CarCatalogue {
   rules: Record<string, CarRules>;
   rates: Record<string, Record<string, CostLine>>;
-  fuel: Record<string, FuelBasis>;
+  fuel: Record<string, FuelRate>;
 }

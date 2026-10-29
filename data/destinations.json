@@ -23,30 +23,30 @@
         "provider": "Zion National Park",
         "amount": 35,
         "unit": "per-vehicle",
-        "basis": "published",
-        "source": "https://www.nps.gov/zion/planyourvisit/fees.htm",
         "checkedOn": "2026-09-16",
-        "note": "Valid seven days. Splits across everyone in the car."
+        "note": "Valid seven days. Splits across everyone in the car.",
+        "source": "operator",
+        "url": "https://www.nps.gov/zion/planyourvisit/fees.htm"
       },
       {
         "label": "Non-resident surcharge",
         "provider": "National Park Service",
         "amount": 100,
         "unit": "per-person",
-        "basis": "published",
-        "source": "https://www.nps.gov/aboutus/commercial-tours-and-nonresident-fees.htm",
         "checkedOn": "2026-09-16",
-        "note": "From 1 January 2026, every visitor aged 16 or over without US residency pays this on top of entry, at eleven parks. Zion is one. The $70 Zion annual pass does not waive it — that pass is for US citizens and residents. The $250 non-resident America the Beautiful pass does."
+        "note": "From 1 January 2026, every visitor aged 16 or over without US residency pays this on top of entry, at eleven parks. Zion is one. The $70 Zion annual pass does not waive it — that pass is for US citizens and residents. The $250 non-resident America the Beautiful pass does.",
+        "source": "operator",
+        "url": "https://www.nps.gov/aboutus/commercial-tours-and-nonresident-fees.htm"
       },
       {
         "label": "Zion Canyon shuttle",
         "provider": "Zion National Park",
         "amount": 0,
         "unit": "per-person",
-        "basis": "published",
-        "source": "https://www.nps.gov/zion/planyourvisit/zion-canyon-shuttle-system.htm",
         "checkedOn": "2026-09-16",
-        "note": "Free, no ticket, no reservation. Private cars are banned on the Scenic Drive throughout shuttle season, which covers both October weekends — so the car gets you to Utah and then stays parked."
+        "note": "Free, no ticket, no reservation. Private cars are banned on the Scenic Drive throughout shuttle season, which covers both October weekends — so the car gets you to Utah and then stays parked.",
+        "source": "operator",
+        "url": "https://www.nps.gov/zion/planyourvisit/zion-canyon-shuttle-system.htm"
       }
     ],
     "transit": null,
@@ -126,10 +126,10 @@
         "provider": "None",
         "amount": 0,
         "unit": "per-person",
-        "basis": "published",
-        "source": "https://www.sftravel.com/",
         "checkedOn": "2026-09-16",
-        "note": "Nothing to pay to be in the city. The costs here are the bed, getting there, and getting around."
+        "note": "Nothing to pay to be in the city. The costs here are the bed, getting there, and getting around.",
+        "source": "operator",
+        "url": "https://www.sftravel.com/"
       }
     ],
     "transit": {
@@ -141,19 +141,19 @@
         "provider": "Southwest, Alaska and United all fly it",
         "amount": 128,
         "unit": "per-person",
-        "basis": "seeded",
-        "source": "https://www.google.com/travel/flights?q=flights%20from%20LAX%20to%20SFO",
-        "checkedOn": "2026-09-16"
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.google.com/travel/flights?q=flights%20from%20LAX%20to%20SFO"
       },
       "local": {
         "label": "BART from SFO, plus a Muni day pass",
         "provider": "BART and SFMTA",
         "amount": 32,
         "unit": "per-person",
-        "basis": "seeded",
-        "source": "https://www.bart.gov/tickets/calculator",
         "checkedOn": "2026-09-16",
-        "note": "BART fares rose 6.2% in January 2026 and SFO carries a surcharge on top."
+        "note": "BART fares rose 6.2% in January 2026 and SFO carries a surcharge on top.",
+        "source": "authored",
+        "url": "https://www.bart.gov/tickets/calculator"
       },
       "hoursEachWay": 4.75,
       "hoursNote": "1h 25m in the air, plus the ride to LAX, two hours before departure, and BART into the city. The in-air figure is the small half of it."
@@ -163,10 +163,10 @@
       "provider": "SFMTA Union Square garage",
       "amount": 45,
       "unit": "per-vehicle-day",
-      "basis": "seeded",
-      "source": "https://www.sfmta.com/getting-around/drive-park/parking-garages-lots",
       "checkedOn": "2026-09-16",
-      "note": "The line that decides the car question in San Francisco."
+      "note": "The line that decides the car question in San Francisco.",
+      "source": "authored",
+      "url": "https://www.sfmta.com/getting-around/drive-park/parking-garages-lots"
     },
     "seededStayTotals": [
       190,
@@ -243,20 +243,20 @@
         "provider": "Joshua Tree National Park",
         "amount": 30,
         "unit": "per-vehicle",
-        "basis": "published",
-        "source": "https://www.nps.gov/jotr/planyourvisit/fees.htm",
         "checkedOn": "2026-09-16",
-        "note": "Valid seven days, and it splits. Four people in one car pay $7.50 each."
+        "note": "Valid seven days, and it splits. Four people in one car pay $7.50 each.",
+        "source": "operator",
+        "url": "https://www.nps.gov/jotr/planyourvisit/fees.htm"
       },
       {
         "label": "Non-resident surcharge",
         "provider": "National Park Service",
         "amount": 0,
         "unit": "per-person",
-        "basis": "published",
-        "source": "https://www.nps.gov/aboutus/commercial-tours-and-nonresident-fees.htm",
         "checkedOn": "2026-09-16",
-        "note": "Joshua Tree is not one of the eleven parks that levies the $100 surcharge. A foreign passport pays the standard rate here — which is why it is the cheapest weekend on this list by a distance."
+        "note": "Joshua Tree is not one of the eleven parks that levies the $100 surcharge. A foreign passport pays the standard rate here — which is why it is the cheapest weekend on this list by a distance.",
+        "source": "operator",
+        "url": "https://www.nps.gov/aboutus/commercial-tours-and-nonresident-fees.htm"
       }
     ],
     "transit": null,
@@ -336,10 +336,10 @@
         "provider": "None",
         "amount": 0,
         "unit": "per-person",
-        "basis": "published",
-        "source": "https://www.sandiego.org/",
         "checkedOn": "2026-09-16",
-        "note": "Nothing to pay to be there. Balboa Park is free to walk through; the museums inside it are not."
+        "note": "Nothing to pay to be there. Balboa Park is free to walk through; the museums inside it are not.",
+        "source": "operator",
+        "url": "https://www.sandiego.org/"
       }
     ],
     "transit": {
@@ -351,19 +351,19 @@
         "provider": "Amtrak Pacific Surfliner",
         "amount": 52,
         "unit": "per-person",
-        "basis": "seeded",
-        "source": "https://www.pacificsurfliner.com/",
         "checkedOn": "2026-09-16",
-        "note": "Students aged 25 and under get 15% off the adult fare, already applied here."
+        "note": "Students aged 25 and under get 15% off the adult fare, already applied here.",
+        "source": "authored",
+        "url": "https://www.pacificsurfliner.com/"
       },
       "local": {
         "label": "MTS day passes",
         "provider": "San Diego MTS",
         "amount": 12,
         "unit": "per-person",
-        "basis": "seeded",
-        "source": "https://www.sdmts.com/fares-passes",
-        "checkedOn": "2026-09-16"
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.sdmts.com/fares-passes"
       },
       "hoursEachWay": 3.5,
       "hoursNote": "2h 45m on the train, plus about 30 minutes to Union Station and the walk off at the far end."
@@ -373,10 +373,10 @@
       "provider": "Downtown San Diego garage",
       "amount": 25,
       "unit": "per-vehicle-day",
-      "basis": "seeded",
-      "source": "https://www.sandiego.gov/parking",
       "checkedOn": "2026-09-16",
-      "note": "Balboa Park added paid parking in January 2026, so a car costs you at both ends."
+      "note": "Balboa Park added paid parking in January 2026, so a car costs you at both ends.",
+      "source": "authored",
+      "url": "https://www.sandiego.gov/parking"
     },
     "seededStayTotals": [
       140,

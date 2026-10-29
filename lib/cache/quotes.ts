@@ -14,7 +14,7 @@ import raw from '@/data/cache/quotes.json';
  * `.pricing-cache/` where the warm script can reuse them without re-spending.
  *
  * MOCK BOUNDARY: nothing in here is estimated. Every figure was returned by the named provider
- * for the dates and occupancy in `basis`, and `fetchedAt` says when. A miss returns null, and the
+ * for the dates and occupancy in `searchedFor`, and `fetchedAt` says when. A miss returns null, and the
  * caller shows an honest empty state — it never falls through to a live lookup.
  */
 
@@ -32,7 +32,7 @@ export interface CachedStay {
   name: string;
   type: string;
   ratePerNightUsd: number | null;
-  /** The whole stay for ONE room at the occupancy in `basis`. Multiply by rooms, never by people. */
+  /** The whole stay for ONE room at the occupancy in `searchedFor`. Multiply by rooms, never by people. */
   totalRateUsd: number | null;
   rating: number | null;
   link?: string;
@@ -47,7 +47,7 @@ interface Common {
   /** ISO datetime the provider actually answered. */
   fetchedAt: string;
   /** What was searched for, in words, for the line that explains the number. */
-  basis: string;
+  searchedFor: string;
 }
 
 export type QuoteEntry =
