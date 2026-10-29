@@ -1,82 +1,108 @@
-import { SmartImage } from '@/components/SmartImage';
-import {
-  ArrowIcon,
-  Eyebrow,
-  PhotoFrame,
-  PillLink,
-  RidgeMark,
-} from '@/components/nocturne/primitives';
-import { MEASURE } from '@/components/nocturne/measure';
-import { PHOTOS } from '@/lib/seed/images';
+import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
+import { Photo } from '@/components/ui/Photo';
+import { ButtonLink, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { DESTINATIONS } from '@/lib/trip/catalogue';
 
 /**
  * The landing page.
  *
- * One screen, one photograph, one sentence, one way forward.
+ * It exists to say one thing: the number on a WhereTo card is the whole trip, and you can see
+ * where it came from. So the page shows a real total with a real provenance line underneath it
+ * rather than describing the idea in prose.
  *
- * It is deliberately not about California. The product happens to start from Los Angeles, but the
- * thing it does — take a few answers and return what a trip really costs, split between the people
- * going — is not regional, and a landing page that names one city sells the smaller idea. Nor does
- * it mention how many destinations or weekends are loaded: that is a fact about this build, not
- * about the product, and stating it invites the reader to judge the scaffolding.
+ * Deliberately not about California. The product starts from Los Angeles because that is where
+ * the research is, but what it does — take a few answers and return what a trip actually costs,
+ * split between the people going — is not regional, and naming one city sells the smaller idea.
  */
 export default function LandingPage() {
   return (
-    <main className="min-h-dvh">
-      <PhotoFrame
-        scrim="hero"
-        className="flex min-h-dvh flex-col"
-        image={
-          <SmartImage
-            photoId={PHOTOS.zionCanyon}
-            alt=""
-            width={2000}
-            height={1400}
-            priority
-            sizes="100vw"
-            className="sq-graded h-full w-full object-cover"
-          />
-        }
-      >
-        {/* The mark and the name together. The mark alone said nothing. */}
-        <header className={`${MEASURE} flex items-center gap-3 pt-8`}>
-          <RidgeMark className="text-type" size={26} />
-          <span className="type-title text-[1.0625rem] tracking-[-0.01em] text-type">WhereTo</span>
-        </header>
+    <main className="min-h-dvh pb-24">
+      <header className={`${MEASURE} flex items-center gap-2.5 py-7`}>
+        {/* The mark is drawn on cream and sits on --ground without a cut-out. */}
+        <Image
+          src="/assets/logo.webp"
+          alt=""
+          width={36}
+          height={36}
+          priority
+          className="h-9 w-9 rounded-full object-cover"
+        />
+        <span className="text-[1.0625rem] font-extrabold tracking-[-0.02em]">WhereTo</span>
+      </header>
 
-        {/* Bottom third. Everything lands here. */}
-        <div className={`${MEASURE} mt-auto pb-20 sm:pb-28`}>
-          <div className="max-w-2xl">
-            <Eyebrow className="sq-rise sq-rise-1 sq-text-glow font-medium text-type">
-              Trip planning, with the real numbers
-            </Eyebrow>
+      <section className={`${MEASURE} pt-6 sm:pt-12`}>
+        <div className="max-w-3xl">
+          <Eyebrow>Travel · Beds · Car · Fuel</Eyebrow>
+          <h1 className="type-hero mt-5">
+            The whole trip, priced. Not just the flight.
+          </h1>
+          <p className="type-body-lg mt-5 max-w-xl">
+            Every number here came from somewhere, and the page says where. Including the
+            surcharges that depend on your age and who is driving — the ones that turn a $180
+            weekend into a $293 one.
+          </p>
 
-            <h1 className="type-hero sq-rise sq-rise-2 sq-text-glow mt-6 text-type">
-              Plan a trip in two minutes. See every cost in one place.
-            </h1>
-
-            <p className="type-body-lg sq-rise sq-rise-3 sq-text-glow mt-6 max-w-lg text-type">
-              Flights, beds, transport, entry fees. Real prices, split between you, before you
-              commit. Not a headline rate for somebody else — the figure you actually pay, with the
-              surcharges that depend on your age and who is driving already in it.
-            </p>
-
-            <div className="sq-rise sq-rise-4 mt-10">
-              <PillLink href="/survey" variant="solid" size="lg">
-                Plan my trip
-                <ArrowIcon size={17} />
-              </PillLink>
-            </div>
-
-            {/* --type at weight 500, not the muted eyebrow tone. Small tracked caps over a
-                photograph fail perceptually before they fail numerically: the stems at 11px are
-                hairlines, and weight is what makes them survive the image behind. */}
-            <p className="type-eyebrow sq-rise sq-rise-4 mt-10 font-medium text-type">
-              Live Pricing · Made For Students · No sign up
-            </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <ButtonLink href="/trip/zion" size="lg">
+              See a real trip
+              <ArrowRight size={17} strokeWidth={2.5} />
+            </ButtonLink>
           </div>
         </div>
-      </PhotoFrame>
+      </section>
+
+      {/* The artwork, full measure. One image doing the emotional work. */}
+      <section className={`${MEASURE} mt-12`}>
+        <Photo
+          src="/assets/hero-canyon.webp"
+          alt="A canyon road at sunrise"
+          ratio="banner"
+          sizes="(max-width: 1152px) 100vw, 1152px"
+          priority
+        />
+      </section>
+
+      {/* What the cards will look like. Four real destinations, four real illustrations. */}
+      <section className={`${MEASURE} mt-14`}>
+        <Eyebrow>Priced so far</Eyebrow>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {DESTINATIONS.map((dest) => (
+            <Card key={dest.slug} className="overflow-hidden" interactive>
+              <Photo
+                src={dest.image}
+                alt={dest.name}
+                ratio="square"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                rounded={false}
+                eager
+              />
+              <div className="p-4">
+                <Eyebrow>{dest.eyebrow}</Eyebrow>
+                <h2 className="type-title mt-2">{dest.name}</h2>
+                <p className="type-body mt-2 line-clamp-2 text-muted">{dest.hook}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* The claim, made concretely rather than asserted. */}
+      <section className={`${MEASURE} mt-14`}>
+        <Card className="p-6 sm:p-8">
+          <Eyebrow>Zion, two nights, four people sharing</Eyebrow>
+          <Total className="mt-3" amount="$291" caption="a head, everything in" />
+          <div className="mt-5 flex flex-col gap-2 border-t border-hairline pt-5">
+            <SourceTag source="operator" detail="Park entry and the non-resident surcharge, nps.gov" />
+            <SourceTag source="authored" detail="Beds in Springdale, not yet quoted for these dates" />
+            <SourceTag source="operator" detail="Fuel at the AAA California average" />
+          </div>
+          <p className="type-body mt-5 max-w-lg text-muted">
+            The $100 non-resident surcharge is per person and does not split. Most planners miss
+            it entirely, which is most of the gap between their estimate and the bill.
+          </p>
+        </Card>
+      </section>
     </main>
   );
 }

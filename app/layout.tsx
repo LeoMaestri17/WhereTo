@@ -1,41 +1,41 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Figtree } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 
 /**
  * One family, self-hosted by next/font.
  *
- * Plus Jakarta Sans is the closest free, self-hostable match to General Sans and Satoshi, which
- * the art direction calls for but which are Fontshare ITF FFL — that licence forbids
- * redistributing the font files, so neither can ship with the app. Jakarta is OFL, variable, and
- * holds the same geometric-humanist character at the tight tracking this direction needs.
+ * Figtree is a geometric sans with a warm, slightly rounded bowl that sits with the illustration
+ * rather than against it. Four weights, because the hierarchy here is carried by weight and size
+ * rather than by a second typeface: 400 body, 500 secondary, 700 titles, 800 the hero and the
+ * total.
  *
- * No mono. The label voice here is tracked-out caps in the same grotesque, and a terminal face
- * would fight the editorial tone.
+ * No serif, script or handwritten face anywhere in this product.
  */
-const jakarta = Plus_Jakarta_Sans({
+const figtree = Figtree({
   subsets: ['latin'],
-  variable: '--font-jakarta',
+  weight: ['400', '500', '700', '800'],
+  variable: '--font-figtree',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'WhereTo',
   description:
-    'Weekends out of Los Angeles, priced for who you actually are — your age, your licence, and how many of you are going.',
+    'What a weekend out of Los Angeles actually costs — travel, beds, the car and the fuel, split between the people going.',
 };
 
 export const viewport: Viewport = {
-  // Dark only, so one colour rather than a light/dark pair.
-  themeColor: '#16160f',
+  // Cream, so the browser chrome on mobile matches the page rather than framing it.
+  themeColor: '#f8f2e6',
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${jakarta.variable} h-full`}>
+    <html lang="en" className={`${figtree.variable} h-full`}>
       <body className="min-h-full">{children}</body>
     </html>
   );
