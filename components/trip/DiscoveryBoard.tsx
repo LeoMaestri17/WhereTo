@@ -1,13 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Photo } from '@/components/ui/Photo';
 import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
+import { DestinationPanel } from '@/components/trip/DestinationPanel';
 import { DESTINATIONS, WINDOWS, windowById } from '@/lib/trip/catalogue';
-import { money, quoteTrip } from '@/lib/trip/quote';
+import { money, quoteTrip, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
 
 /**
@@ -30,6 +30,8 @@ interface Priced {
   source: 'api' | 'operator' | 'authored';
   reason: string;
   overBudget: boolean;
+  /** The quote behind the card, so the panel opens on exactly the number that was clicked. */
+  quote: TripQuote;
 }
 
 export function DiscoveryBoard() {
@@ -56,6 +58,7 @@ export function DiscoveryBoard() {
           source: q.source,
           reason: q.verdict,
           overBudget: false,
+          quote: q,
         };
       }
 
@@ -68,6 +71,7 @@ export function DiscoveryBoard() {
         source: best.q.source,
         reason: best.q.verdict,
         overBudget: brief.budgetPerPerson !== null && total > brief.budgetPerPerson,
+        quote: best.q,
       };
     }).sort((a, b) => {
       if (a.perPerson === null) return 1;
@@ -75,6 +79,9 @@ export function DiscoveryBoard() {
       return a.perPerson - b.perPerson;
     });
   }, [brief]);
+
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const open = priced.find((p) => p.dest.slug === openSlug) ?? null;
 
   const reachable = priced.filter((p) => p.perPerson !== null).length;
 
@@ -101,20 +108,30 @@ export function DiscoveryBoard() {
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {priced.map((p) => (
-            <BoardCard key={p.dest.slug} priced={p} />
+            <BoardCard key={p.dest.slug} priced={p} onOpen={() => setOpenSlug(p.dest.slug)} />
           ))}
         </div>
       </section>
+
+      {open ? (
+        <DestinationPanel
+          dest={open.dest}
+          quote={open.quote}
+          onClose={() => setOpenSlug(null)}
+        />
+      ) : null}
     </main>
   );
 }
 
-function BoardCard({ priced }: { priced: Priced }) {
+function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
   const { dest, perPerson, windowLabel, source, reason, overBudget } = priced;
   const blocked = perPerson === null;
 
+  /* A button, not a link: this opens a panel over the board rather than navigating, so a real
+     anchor would promise a page change that never happens. */
   return (
-    <Link href={`/trip/${dest.slug}`} className="block focus-visible:outline-none">
+    <button type="button" onClick={onOpen} className="block w-full text-left focus-visible:outline-none">
       <Card interactive className="h-full overflow-hidden">
         <Photo
           src={dest.image}
@@ -168,6 +185,6 @@ function BoardCard({ priced }: { priced: Priced }) {
           </div>
         </div>
       </Card>
-    </Link>
+    </button>
   );
 }

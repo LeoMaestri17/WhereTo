@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { ArrowLeft, ChevronDown, Check, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, Check, TriangleAlert } from 'lucide-react';
 import { Photo } from '@/components/ui/Photo';
 import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
@@ -236,6 +236,19 @@ export function BuildCanvas({ slug }: { slug: string }) {
           )}
         </Card>
       </section>
+
+      {/* One way forward, once the trip looks right. */}
+      {quote.reachable ? (
+        <section className={`${MEASURE} mt-5`}>
+          <Link
+            href={`/trip/${dest.slug}/summary`}
+            className="wt-ease flex w-full items-center justify-center gap-2 rounded-full bg-peri px-6 py-3.5 text-[0.9375rem] font-semibold text-ink hover:bg-peri-d"
+          >
+            This looks right
+            <ArrowRight size={17} strokeWidth={2.5} />
+          </Link>
+        </section>
+      ) : null}
 
       {/* ---------------------------------------------------------- secondary, collapsed */}
       <section className={`${MEASURE} mt-5`}>
