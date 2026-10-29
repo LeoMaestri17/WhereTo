@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronLeft, TriangleAlert } from 'lucide-react';
 import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
+import { CostIcon, type IconName } from '@/components/ui/icons';
+import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
 import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
@@ -19,6 +20,7 @@ import {
   type TripChoices,
   type TripRow,
 } from '@/lib/trip/quote';
+import type { CostCategory } from '@/lib/trip/categories';
 import type { PriceSource } from '@/lib/trip/types';
 
 /**
@@ -37,13 +39,20 @@ import type { PriceSource } from '@/lib/trip/types';
  * Who is going and when comes from the control strip, never from this screen.
  */
 
-const ROW_ICON: Record<string, string> = {
-  drive: '/assets/icon-fuel.webp',
-  plane: '/assets/icon-plane.webp',
-  train: '/assets/icon-ticket.webp',
-  coach: '/assets/icon-ticket.webp',
-  stay: '/assets/icon-bed.webp',
-  car: '/assets/icon-car.webp',
+const ROW_ICON: Record<string, IconName> = {
+  drive: 'fuel',
+  plane: 'plane',
+  train: 'train',
+  coach: 'train',
+  stay: 'bed',
+  car: 'car',
+};
+
+/** Row kind to cost category, so the glyph and its colour always travel together. */
+const CATEGORY_FOR: Record<TripRow['kind'], CostCategory> = {
+  travel: 'travel',
+  stay: 'stay',
+  car: 'car',
 };
 
 const FOCUS_TITLE: Record<TripRow['kind'], string> = {
@@ -117,29 +126,49 @@ export function BuildCanvas({ slug }: { slug: string }) {
         </Link>
       </div>
 
-      <section className={`${MEASURE} pt-5`}>
-        <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_280px] sm:items-end">
-          <div>
+      {/* A full-bleed band rather than a rectangle floating off-grid in the corner. The title
+          sits on the photograph, which is what the photograph was chosen for. */}
+      <section className="relative mt-4">
+        <div className="relative h-[200px] w-full overflow-hidden sm:h-[280px]">
+          <DestinationPhotoFrame
+            photo={dest.photo}
+            fallbackSrc={dest.image}
+            name={dest.name}
+            ratio="banner"
+            sizes="100vw"
+            rounded={false}
+            eager
+            className="absolute inset-0 [&>div]:h-full [&>div]:w-full"
+          />
+          {/* Weighted to the bottom, so the picture keeps its top two thirds. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(42,40,35,0.74) 0%, rgba(42,40,35,0.28) 46%, transparent 76%)',
+            }}
+            aria-hidden
+          />
+          <div className={`${MEASURE} absolute inset-x-0 bottom-0 pb-5`}>
             <span className="flex items-center gap-2.5">
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: `var(--${dest.tone})` }}
                 aria-hidden
               />
-              <Eyebrow>{dest.eyebrow}</Eyebrow>
+              <span className="type-eyebrow" style={{ color: 'rgba(255,253,248,0.88)' }}>
+                {dest.eyebrow}
+              </span>
             </span>
-            <h1 className="type-display mt-2.5">{dest.name}</h1>
-            <p className="type-body mt-3 max-w-xl text-muted">{dest.hook}</p>
+            <h1 className="type-display mt-2" style={{ color: 'var(--paper)' }}>
+              {dest.name}
+            </h1>
           </div>
-          <DestinationPhotoFrame
-            photo={dest.photo}
-            fallbackSrc={dest.image}
-            name={dest.name}
-            ratio="wide"
-            sizes="(max-width: 640px) 100vw, 280px"
-            eager
-          />
         </div>
+      </section>
+
+      <section className={`${MEASURE} mt-5`}>
+        <p className="type-body max-w-xl text-muted">{dest.hook}</p>
       </section>
 
       <section className={`${MEASURE} mt-7`}>
@@ -168,6 +197,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
                 key={row.kind}
                 row={row}
                 icon={iconFor(row.kind)}
+                category={CATEGORY_FOR[row.kind]}
                 onFocus={() => setFocus(row.kind)}
                 canChoose={
                   row.available &&
@@ -177,6 +207,13 @@ export function BuildCanvas({ slug }: { slug: string }) {
             ))}
           </Card>
         ) : (
+          <>
+          {quote.perPersonTotal !== null ? (
+            <RunningTotal
+              current={quote.perPersonTotal}
+              preview={previewQuote?.perPersonTotal ?? null}
+            />
+          ) : null}
           <FocusedRow
             kind={focus}
             icon={iconFor(focus)}
@@ -192,6 +229,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
               setPreview(null);
             }}
           />
+          </>
         )}
       </section>
 
@@ -200,13 +238,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
         <section className={`${MEASURE} mt-5`}>
           <Card className="p-4 sm:p-5">
             <div className="flex items-center gap-2.5">
-              <Image
-                src="/assets/icon-ticket.webp"
-                alt=""
-                width={28}
-                height={28}
-                className="h-7 w-7 object-contain"
-              />
+              <CostIcon name="ticket" category="fees" size={30} />
               <Eyebrow>Entry and fees</Eyebrow>
             </div>
             <ul className="mt-3.5 flex flex-col gap-3">
@@ -253,6 +285,11 @@ export function BuildCanvas({ slug }: { slug: string }) {
                     {money(quote.partyTotal ?? 0)} for {partySize} of you, in {quote.rooms}{' '}
                     {quote.rooms === 1 ? 'room' : 'rooms'}
                   </p>
+                  <MoneyBar
+                    parts={partsFromQuote(quote)}
+                    size="compact"
+                    className="mt-5 border-t border-hairline pt-5"
+                  />
                 </>
               )}
             </Card>
@@ -306,14 +343,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
         </>
       ) : null}
 
-      {/* The total stays pinned while comparing, and moves as the cursor does. */}
-      {focus !== null && quote.perPersonTotal !== null ? (
-        <PinnedTotal
-          current={quote.perPersonTotal}
-          preview={previewQuote?.perPersonTotal ?? null}
-          partySize={partySize}
-        />
-      ) : null}
+
     </main>
   );
 }
@@ -323,11 +353,13 @@ export function BuildCanvas({ slug }: { slug: string }) {
 function AssembledRow({
   row,
   icon,
+  category,
   onFocus,
   canChoose,
 }: {
   row: TripRow;
-  icon: string;
+  icon: IconName;
+  category: CostCategory;
   onFocus: () => void;
   canChoose: boolean;
 }) {
@@ -336,13 +368,7 @@ function AssembledRow({
   return (
     <div className="p-4 sm:p-5">
       <div className="flex items-start gap-3.5 sm:gap-4">
-        <Image
-          src={icon}
-          alt=""
-          width={44}
-          height={44}
-          className={`h-11 w-11 shrink-0 rounded-[10px] object-contain ${unavailable ? 'opacity-35' : ''}`}
-        />
+        <CostIcon name={icon} category={category} size={44} dimmed={unavailable} />
 
         <div className="min-w-0 flex-1">
           <p className={`text-[1rem] font-bold leading-snug ${unavailable ? 'text-muted' : ''}`}>
@@ -395,33 +421,38 @@ function FocusedRow({
   onPick,
 }: {
   kind: TripRow['kind'];
-  icon: string;
+  icon: IconName;
   options: RowOption[];
   onBack: () => void;
   onPreview: (option: RowOption | null) => void;
   onPick: (option: RowOption) => void;
 }) {
   return (
-    <div>
+    <div className="mx-auto w-full max-w-3xl">
       <div className="flex items-center gap-3">
         <Button variant="outline" size="sm" onClick={onBack}>
           <ChevronLeft size={15} strokeWidth={2.6} />
           Back
         </Button>
         <span className="flex items-center gap-2.5">
-          <Image src={icon} alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+          <CostIcon name={icon} category={CATEGORY_FOR[kind]} size={30} />
           <h2 className="text-[1.0625rem] font-bold">{FOCUS_TITLE[kind]}</h2>
         </span>
       </div>
 
       {options.length === 1 ? (
-        <p className="type-body mt-4 text-muted">
-          {kind === 'stay' ? 'One option until these dates are priced.' : 'One option priced.'}
-        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <p className="text-[0.9375rem] font-bold">One option priced</p>
+          {kind === 'stay' ? (
+            <code className="rounded-[8px] border border-hairline bg-paper px-2.5 py-1 text-[0.8125rem] font-semibold">
+              npm run warm
+            </code>
+          ) : null}
+        </div>
       ) : null}
 
       <div
-        className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        className="mt-4 grid items-stretch gap-4 sm:grid-cols-2"
         onMouseLeave={() => onPreview(null)}
       >
         {options.map((option) => (
@@ -431,7 +462,7 @@ function FocusedRow({
             onMouseEnter={() => onPreview(option)}
             onFocus={() => onPreview(option)}
             onClick={() => onPick(option)}
-            className={`wt-ease flex flex-col gap-3 rounded-[14px] border bg-paper p-4 text-left active:translate-y-px ${
+            className={`wt-ease flex h-full min-h-[148px] flex-col gap-3 rounded-[14px] border bg-paper p-4 text-left active:translate-y-px ${
               option.selected
                 ? 'border-peri-d shadow-[var(--shadow-card)]'
                 : 'border-hairline hover:-translate-y-0.5 hover:border-peri-d hover:shadow-[var(--shadow-lift)]'
@@ -472,45 +503,34 @@ function FocusedRow({
 }
 
 /**
- * The running total, pinned while comparing.
+ * The running total, beside the options rather than pinned below them.
  *
  * It shows what the trip costs now and, under the cursor, what it would cost with the option
- * being considered. That is the whole reason to compare in place rather than on a separate
- * screen: the consequence of a choice is visible before it is made.
+ * being considered. That is the whole reason to compare in place: the consequence of a choice is
+ * visible before it is made. It sits next to the options because a total 400px away from the
+ * thing changing it is not responding to anything you can see.
  */
-function PinnedTotal({
-  current,
-  preview,
-  partySize,
-}: {
-  current: number;
-  preview: number | null;
-  partySize: number;
-}) {
+function RunningTotal({ current, preview }: { current: number; preview: number | null }) {
   const showing = preview ?? current;
   const delta = preview === null ? 0 : preview - current;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper/95 backdrop-blur">
-      <div className={`${MEASURE} flex items-center justify-between gap-4 py-3.5`}>
-        <div>
-          <Eyebrow>Running total</Eyebrow>
-          <p className="type-figure mt-0.5 text-[1.375rem]">
-            <AnimatedMoney value={showing} /> <span className="type-secondary">a head</span>
-          </p>
-        </div>
-        {Math.abs(delta) >= 1 ? (
-          <span
-            className="rounded-full px-3 py-1.5 text-[0.8125rem] font-bold"
-            style={{ background: delta > 0 ? 'var(--peach)' : 'var(--sage)', color: 'var(--ink)' }}
-          >
-            {delta > 0 ? '+' : '−'}
-            {money(Math.abs(delta))} a head
-          </span>
-        ) : (
-          <span className="type-body text-muted">{partySize} sharing</span>
-        )}
+    <div className="mx-auto mb-4 flex w-full max-w-3xl items-center justify-between gap-4 rounded-[14px] border border-hairline bg-paper px-4 py-3">
+      <div>
+        <Eyebrow>Running total</Eyebrow>
+        <p className="type-figure mt-0.5 text-[1.375rem]">
+          <AnimatedMoney value={showing} /> <span className="type-secondary">a head</span>
+        </p>
       </div>
+      {Math.abs(delta) >= 1 ? (
+        <span
+          className="rounded-full px-3 py-1.5 text-[0.8125rem] font-bold"
+          style={{ background: delta > 0 ? 'var(--peach)' : 'var(--sage)', color: 'var(--ink)' }}
+        >
+          {delta > 0 ? '+' : '−'}
+          {money(Math.abs(delta))} a head
+        </span>
+      ) : null}
     </div>
   );
 }

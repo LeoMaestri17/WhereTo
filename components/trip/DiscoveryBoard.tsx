@@ -7,6 +7,7 @@ import { DestinationPhotoFrame } from '@/components/ui/Photo';
 import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
+import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
 import { describeWindow } from '@/lib/trip/brief';
 import { DESTINATIONS, ORIGIN, WINDOWS, windowById } from '@/lib/trip/catalogue';
 import { money, quoteTrip, type TripQuote } from '@/lib/trip/quote';
@@ -245,6 +246,8 @@ function BoardCard({
                 <ArrowRight size={16} strokeWidth={2.5} className="shrink-0 text-muted" />
               </div>
               <p className="type-body mt-0.5 text-muted">each, {windowLabel}</p>
+              {/* The signature element, miniaturised: the shape of the price, on every card. */}
+              <MoneyBar parts={partsFromQuote(priced.quote)} size="mini" className="mt-2.5" />
               {overBudget ? (
                 <p className="mt-2 text-[0.75rem] font-bold text-coral">Over your budget</p>
               ) : null}

@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { DestinationPhotoFrame, GradientPlaceholder } from '@/components/ui/Photo';
 import { Eyebrow, SourceTag } from '@/components/ui/primitives';
-import { COST_CATEGORIES, COST_COLOUR, COST_LABEL } from '@/lib/trip/categories';
+import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
 import { money, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
 
@@ -26,12 +26,6 @@ const PANEL_SOURCE: Record<'api' | 'operator' | 'authored', string> = {
   authored: 'Part estimate, not yet quoted',
 };
 
-const SHARE = COST_CATEGORIES.map((key) => ({
-  key,
-  label: COST_LABEL[key],
-  colour: COST_COLOUR[key],
-}));
-
 export function DestinationPanel({
   dest,
   quote,
@@ -42,7 +36,6 @@ export function DestinationPanel({
   onClose: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState<string | null>(null);
 
   /* Escape closes, and the board behind must not scroll while the panel is over it — otherwise
      closing returns you somewhere you never scrolled to. */
@@ -60,14 +53,6 @@ export function DestinationPanel({
     };
   }, [onClose]);
 
-  const [travel, stay, car] = quote.rows;
-  const parts = [
-    { key: 'travel' as const, value: travel.perPersonTotal },
-    { key: 'stay' as const, value: stay.perPersonTotal },
-    { key: 'car' as const, value: car.perPersonTotal },
-    { key: 'fees' as const, value: quote.fees.perPersonTotal },
-  ];
-  const total = parts.reduce((s, p) => s + p.value, 0);
 
   /* Facts from the costed data rather than adjectives. When generate-content has run these are
      replaced by its tags; until then an honest derived label beats an empty row or an invented
@@ -149,73 +134,16 @@ export function DestinationPanel({
               <p className="type-body mt-3">{quote.verdict}</p>
             ) : (
               <>
-                <div
-                  className="mt-3 flex h-3 w-full gap-0.5 overflow-hidden rounded-full"
-                  onMouseLeave={() => setHovered(null)}
-                >
-                  {parts.map((part) =>
-                    part.value <= 0 ? null : (
-                      <button
-                        key={part.key}
-                        type="button"
-                        onMouseEnter={() => setHovered(part.key)}
-                        onFocus={() => setHovered(part.key)}
-                        onBlur={() => setHovered(null)}
-                        aria-label={`${SHARE.find((s) => s.key === part.key)!.label}, ${money(part.value)} per person`}
-                        className="wt-ease h-full"
-                        style={{
-                          width: `${(part.value / total) * 100}%`,
-                          background: SHARE.find((s) => s.key === part.key)!.colour,
-                          /* The hovered segment stays full strength and the rest step back, so
-                             the one being read is the one that stands out. */
-                          opacity: hovered === null || hovered === part.key ? 1 : 0.32,
-                          transform: hovered === part.key ? 'scaleY(1.35)' : 'scaleY(1)',
-                        }}
-                      />
-                    ),
-                  )}
-                </div>
-
-                <ul className="mt-3.5 flex flex-col gap-2">
-                  {parts.map((p) => {
-                    const meta = SHARE.find((s) => s.key === p.key)!;
-                    return (
-                      <li
-                        key={p.key}
-                        onMouseEnter={() => setHovered(p.key)}
-                        onMouseLeave={() => setHovered(null)}
-                        className="wt-ease -mx-2 flex items-center justify-between gap-3 rounded-[8px] px-2 py-1"
-                        style={{
-                          background: hovered === p.key ? 'var(--ground)' : 'transparent',
-                          opacity: hovered === null || hovered === p.key ? 1 : 0.45,
-                        }}
-                      >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="wt-ease h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{
-                              background: meta.colour,
-                              transform: hovered === p.key ? 'scale(1.4)' : 'scale(1)',
-                            }}
-                            aria-hidden
-                          />
-                          <span className="text-[0.875rem] font-semibold">{meta.label}</span>
-                        </span>
-                        <span className="type-figure shrink-0 text-[0.9375rem]">
-                          {p.value <= 0 ? 'Included' : money(p.value)}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-
+                <MoneyBar parts={partsFromQuote(quote)} size="full" className="mt-3" />
                 <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-hairline pt-3.5">
                   <span className="text-[0.9375rem] font-bold">Per person</span>
-                  <span className="type-figure text-[1.25rem]">
-                    {money(quote.perPersonTotal)}
-                  </span>
+                  <span className="type-figure text-[1.25rem]">{money(quote.perPersonTotal)}</span>
                 </div>
-                <SourceTag source={quote.source} detail={PANEL_SOURCE[quote.source]} className="mt-2" />
+                <SourceTag
+                  source={quote.source}
+                  detail={PANEL_SOURCE[quote.source]}
+                  className="mt-2"
+                />
               </>
             )}
           </div>
