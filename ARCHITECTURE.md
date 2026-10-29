@@ -320,6 +320,40 @@ went with it because it depends on `lib/research/types` and has no future caller
 model call in this architecture parses preferences into filters, and never authors a price. All of
 it is recoverable from `8f613fa`.
 
+**§4.8 — three words, not a flag.** Every `CostLine` carries a `basis`:
+
+| | means | on |
+|---|---|---|
+| `quoted` | a provider answered for these exact dates and this occupancy | warm-cache stays and flights |
+| `published` | read off the operator's own page | park fees, the Zion surcharge, Enterprise's under-25 fee, the AAA fuel average |
+| `seeded` | collected by hand, not checked since | hire rates, train fares, parking, the stay fallbacks |
+
+This is the `verified` flag returning under a better name, and against the reason it was removed.
+The reason was good — a caveat on every line teaches people to ignore it — but it does not apply
+here, because these are three different claims rather than one warning repeated. A reader needs to
+know whether a figure is *their* price or *a* price, and `weakestBasis()` rolls the rows up so one
+seeded line downgrades the total rather than hiding inside it.
+
+**Surface 3 never shows an empty row**, so a destination with no warm entry falls back to
+`seededStayTotals` marked `seeded`, rather than a blank where a price should be. A warm run
+replaces it with `quoted`.
+
+### Two things Stage 3 turned up
+
+**The model recommends driving to San Francisco, and the research says do not.**
+`dest.drive.verdict` reads "Do not drive. Six hours up the 5, then a car you pay to store and
+cannot use". The arithmetic disagrees: for four people the drive is about $111 a head against
+$160 to fly, so `quoteTrip()` picks the car and writes a verdict saying so. Both numbers are
+right; the model simply has no price for twelve hours in a car, and the hire rate it is using is
+`seeded`. A real LAX–SFO fare from the warm run may well flip it. **This predates Stage 3** — the
+old `decideTravel()` reached the same conclusion — and it needs a decision rather than a silent
+patch: either time gets a cost, or the written verdict overrides the comparison.
+
+**Surface 2 wants five or six photographs of things to do, and there is one illustration per
+destination.** The itineraries carry four items each with a sourced cost and a stated catch, so
+the copy is there; the pictures are not. Either the panel renders them as text against the single
+destination illustration, or the set needs more artwork.
+
 ## 7. Stage order
 
 Stage 2 is done. Stage 3's `destinations.json` has `lib/mvp/data.ts` and

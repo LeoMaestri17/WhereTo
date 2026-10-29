@@ -2,6 +2,13 @@ import { PHOTOS } from '@/lib/seed/images';
 import type { CostLine, Destination, Unit } from './model';
 
 /**
+ * SUPERSEDED, Stage 3. Do not edit a figure here — edit data/destinations.json or data/cars.json.
+ *
+ * Everything in this file was migrated mechanically into those two, with a `basis` added to every
+ * line. It survives only because app/trips/* still renders from it; Stage 4 replaces those
+ * surfaces and deletes this. Until then the two copies can drift, and the JSON is the one that
+ * counts.
+ *
  * Every price in the product, in one file.
  *
  * Each line carries a provider, an amount, a unit, a source URL and the date it was checked, and

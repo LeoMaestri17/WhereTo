@@ -1,0 +1,65 @@
+{
+  "_comment": "SerpApi has no car rental engine, so this is data rather than a lookup. The rules object is the point of the file: the under-25 surcharge and the age floors are a real cost that every other travel site hides in a footnote, and this cohort is mostly 19 to 24. Rates carry basis 'seeded' until they are collected from an agency's own quote; the rules carry 'published' because they were read off the agency's page. Only 'compact' is listed because only 'compact' has a figure — an invented midsize rate would be worse than an absent one.",
+
+  "rules": {
+    "los-angeles": {
+      "minimumAge": 21,
+      "youngDriverAges": [21, 24],
+      "youngDriverFee": {
+        "label": "Under-25 young driver fee",
+        "provider": "Enterprise",
+        "amount": 25,
+        "unit": "per-vehicle-day",
+        "basis": "published",
+        "source": "https://www.enterprise.com/en/car-rental-faqs/us-renter-requirements/car-rental-under-25.html",
+        "checkedOn": "2026-09-16",
+        "note": "Enterprise states \"approximately $25.00 per day\", varying by location. Verified as a fact, soft as a figure. Applies to ages 21 to 24."
+      },
+      "agencies": [
+        {
+          "name": "Enterprise",
+          "minimumAge": 21,
+          "source": "https://www.enterprise.com/en/car-rental-faqs/us-renter-requirements/car-rental-under-25.html"
+        },
+        {
+          "name": "Avis",
+          "minimumAge": 21,
+          "source": "https://www.avis.com/en/customer-service/rental-requirements"
+        },
+        {
+          "name": "Hertz",
+          "minimumAge": 20,
+          "source": "https://www.hertz.com/rentacar/reservation/"
+        }
+      ],
+      "note": "No major agency in California rents to under-21s. Enterprise and Avis both set the floor at 21, and only Hertz will consider a 20-year-old. A foreign licence is accepted at all three, but a debit card usually is not — the deposit hold needs a credit card in the driver's own name, which is the thing that actually stops most of this cohort."
+    }
+  },
+
+  "rates": {
+    "los-angeles": {
+      "compact": {
+        "label": "Compact hire",
+        "provider": "Enterprise, LAX",
+        "amount": 52,
+        "unit": "per-vehicle-day",
+        "basis": "seeded",
+        "source": "https://www.enterprise.com/en/car-rental/locations/us/ca/los-angeles.html",
+        "checkedOn": "2026-09-16",
+        "note": "A Friday-to-Sunday weekend is three hire days, not two. Splits across the group. Collected by hand; it was previously carried at four slightly different rates per destination with no sourced reason for the difference, so it is one rate until a real quote replaces it."
+      }
+    }
+  },
+
+  "fuel": {
+    "california": {
+      "usdPerGallon": 6.0175,
+      "mpg": 30,
+      "usdPerMile": 0.2006,
+      "provider": "AAA California average, $6.0175/gal at 30 mpg",
+      "source": "https://gasprices.aaa.com/state-gas-price-averages/",
+      "checkedOn": "2026-09-16",
+      "basis": "published"
+    }
+  }
+}

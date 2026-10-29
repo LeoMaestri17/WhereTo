@@ -1,0 +1,202 @@
+/**
+ * The trip data model.
+ *
+ * One rule governs this file, and it is the product: **every figure says where it came from.**
+ * `basis` is the answer, in three words rather than a hedge on every line:
+ *
+ *   quoted     a provider answered for these exact dates and this exact occupancy. From the warm
+ *              cache, with the datetime it was fetched. This is the claim the product makes.
+ *   published  read off the operator's own page — a park fee, a published surcharge, a state fuel
+ *              average. Real and checkable, but it is a rate card, not a quote for your weekend.
+ *   seeded     collected by hand and not checked since. The hire rates and the stay fallbacks.
+ *
+ * There was a boolean `verified` here once and it was removed for a good reason: a caveat the
+ * interface must keep explaining teaches people to stop reading it. Three words on three kinds of
+ * line is different from a warning on all of them, and the distinction is the one the reader
+ * actually needs — "is this my price, or a price?".
+ *
+ * The other thing this file must get right is `unit`. A per-vehicle cost divided by party size
+ * and a per-person cost left alone give very different answers, and that difference is the whole
+ * reason the group-size control earns its place.
+ */
+
+export type Unit =
+  /** Charged once per traveller. Park entry on foot, a train ticket, a museum. */
+  | 'per-person'
+  /** Charged once for the vehicle, whatever is in it. Park entry by car. Splits by party size. */
+  | 'per-vehicle'
+  /** Charged per day for the vehicle. Hire rate, the young-driver fee, parking. Splits. */
+  | 'per-vehicle-day'
+  /** Charged once for the whole group regardless of size. Splits by party size. */
+  | 'per-party'
+  /** Already a whole-stay total for one room. Multiplied by rooms, then split. */
+  | 'per-room-stay';
+
+export type Basis = 'quoted' | 'published' | 'seeded';
+
+export interface CostLine {
+  label: string;
+  /** The named operator. "Zion National Park", "Enterprise", "Amtrak Pacific Surfliner". */
+  provider: string;
+  amount: number;
+  unit: Unit;
+  basis: Basis;
+  /** Where the figure came from. Rendered as an outbound link. */
+  source: string;
+  /** ISO date or datetime the figure was read or fetched. */
+  checkedOn: string;
+  note?: string;
+}
+
+/* ------------------------------------------------------------------ the group */
+
+export const PARTY_SIZES = [1, 2, 3, 4, 5] as const;
+export type PartySize = (typeof PARTY_SIZES)[number];
+
+/**
+ * What the control strip learns about driving.
+ *
+ * Two facts rather than one, because "the age of whoever holds a licence" has no answer when
+ * nobody holds one — and in this cohort that is the common case, not the edge case.
+ */
+export type AgeBand = 'under-21' | '21-24' | '25-plus';
+
+export interface Driver {
+  hasLicence: boolean;
+  /** Null when nobody in the group has a licence. */
+  ageBand: AgeBand | null;
+}
+
+export const AGE_BAND_LABELS: Record<AgeBand, string> = {
+  'under-21': 'Under 21',
+  '21-24': '21 to 24',
+  '25-plus': '25 or over',
+};
+
+/* ------------------------------------------------------------------ destinations */
+
+export interface ItineraryItem {
+  title: string;
+  /** Tracked-out caps label. One to three words. */
+  eyebrow: string;
+  what: string;
+  /** Human cost string: "Free, beyond park entry", "$6 per application". */
+  cost: string;
+  costSource: string;
+  needsCar: boolean;
+  timeNeeded: string;
+  /** Required. The honest sentence about what goes wrong. */
+  catch: string;
+}
+
+export interface TransitRoute {
+  mode: 'train' | 'plane' | 'coach';
+  /** "Amtrak Pacific Surfliner", "Fly LAX to SFO". */
+  label: string;
+  journeyTime: string;
+  /** The long-haul leg, per person. */
+  fare: CostLine;
+  /** Getting around once you are there, per person. */
+  local?: CostLine;
+}
+
+/**
+ * The model-written half of a destination record.
+ *
+ * Filled by `npm run generate-content` at build time and committed. The running app never
+ * regenerates it. Null until the script has run, and the interface renders the record without it
+ * rather than waiting — none of this is load-bearing, which is the point of keeping it separate
+ * from the costed data.
+ */
+export interface GeneratedContent {
+  /** One line on what the place feels like. Not what it is. */
+  vibe: string;
+  /** Three or four short phrases. What you would actually tell a friend. */
+  highlights: string[];
+  /** "first trip", "no car", "under 21", "cheapest". Lower case, two or three words. */
+  bestFor: string[];
+  generatedAt: string;
+  model: string;
+}
+
+export interface Destination {
+  slug: string;
+  name: string;
+  region: string;
+  /** "Utah · 430 miles". */
+  eyebrow: string;
+  /** One line: why go, never what it is. */
+  hook: string;
+  /** What early winter is actually like there. */
+  whySeason: string;
+  /** Path under /public. Missing file degrades to a palette gradient, never a grey box. */
+  image: string;
+  /** The area string sent to Google Hotels by the warm script. */
+  hotelQuery: string;
+  /** Null when the trip is a drive, which is why most of these cost no flight searches. */
+  airport: string | null;
+
+  drive: {
+    miles: number;
+    roundTripMiles: number;
+    time: string;
+    /** Stated plainly when driving is the wrong call. */
+    verdict: string;
+  };
+
+  /** Entry and unavoidable on-the-ground costs. Park fees, the non-resident surcharge. */
+  fees: CostLine[];
+
+  /** Null when there is no viable way in without a car. */
+  transit: TransitRoute | null;
+
+  /** Overnight parking where a car costs you at the far end too. */
+  parkingPerNight: CostLine | null;
+
+  /**
+   * The stay fallback, indexed by party size minus one, as a whole-party total.
+   *
+   * Used only when the warm cache has nothing for this destination and window. Surface 3 must
+   * never show an empty row, and a `seeded` figure the reader can see is seeded beats a blank
+   * where a price should be. A warm run replaces it with a `quoted` line.
+   */
+  seededStayTotals: [number, number, number, number, number];
+
+  itinerary: ItineraryItem[];
+
+  content: GeneratedContent | null;
+}
+
+/* ------------------------------------------------------------------ cars */
+
+export interface Agency {
+  name: string;
+  minimumAge: number;
+  source: string;
+}
+
+export interface CarRules {
+  /** The lowest age any major agency in this city will rent to at all. */
+  minimumAge: number;
+  youngDriverFee: CostLine;
+  /** Inclusive age range the fee applies to. */
+  youngDriverAges: [number, number];
+  agencies: Agency[];
+  note: string;
+}
+
+export interface FuelBasis {
+  usdPerGallon: number;
+  mpg: number;
+  usdPerMile: number;
+  provider: string;
+  source: string;
+  checkedOn: string;
+  basis: Basis;
+}
+
+export interface CarCatalogue {
+  rules: Record<string, CarRules>;
+  rates: Record<string, Record<string, CostLine>>;
+  fuel: Record<string, FuelBasis>;
+}

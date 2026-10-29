@@ -9,9 +9,11 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "warm": "tsx scripts/warm.ts",
+    "generate-content": "tsx scripts/generate-content.ts",
     "probe:budget": "tsx scripts/probe-budget.ts",
+    "probe:trip": "tsx scripts/probe-trip.ts",
     "probe:pricing": "tsx scripts/probe-pricing.ts",
-    "check": "npm run typecheck && npm run lint && npm run probe:budget && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run probe:budget && npm run probe:trip && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
