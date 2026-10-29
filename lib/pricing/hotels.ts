@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { TTL } from './cache';
-import type { RunBudget } from './quota';
+import type { RunBudget } from '@/lib/budget/guard';
 import { serpApiSearch } from './serpapi';
 import {
   isUnavailable,

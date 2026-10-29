@@ -32,6 +32,6 @@ export function pricingCapability(): PricingCapability {
 
 export { searchFlights, searchHotels, searchCampgrounds, hasSerpApiKey };
 export { verifyLinks, summariseLinks, type LinkCheck, type LinkStatus } from './links';
-export { quotaStatus, RunBudget, resetQuota } from './quota';
+export { RunBudget, claim, release, ceiling, remaining, usageReport, resetUsage, fetchSerpApiAccount, BudgetExceededError } from '@/lib/budget/guard';
 export { clearPricingCache } from './cache';
 export * from './types';

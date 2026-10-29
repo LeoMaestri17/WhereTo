@@ -40,7 +40,7 @@ async function loadModules() {
     ...(await import('../lib/pricing/hotels')),
     ...(await import('../lib/pricing/campgrounds')),
     ...(await import('../lib/pricing/links')),
-    ...(await import('../lib/pricing/quota')),
+    ...(await import('../lib/budget/guard')),
     ...(await import('../lib/pricing/types')),
     ...(await import('../lib/pricing/index')),
   };
@@ -161,15 +161,20 @@ async function main() {
   if (want('campgrounds')) await probeCampgrounds();
   if (want('links')) await probeLinks();
 
-  const quota = await M.quotaStatus();
-  heading('QUOTA');
-  console.log(`  spent this run: ${budget.spent} · per-run cap: ${quota.perRunCap}`);
-  if (quota.account) {
+  const report = M.usageReport();
+  const account = await M.fetchSerpApiAccount();
+  heading('BUDGET');
+  console.log(`  spent this run: ${budget.spent}`);
+  console.log(
+    `  serpapi: ${report.serpapi.spent} of ${report.serpapi.ceiling} used in ${report.month} · ` +
+      `${report.serpapi.remaining} left`,
+  );
+  if (!report.persisted) console.log('  (counter is in memory only — the file could not be written)');
+  if (account) {
     console.log(
-      `  SerpApi account: ${quota.account.totalSearchesLeft} of ${quota.account.searchesPerMonth} left · ` +
-        `${quota.account.thisMonthUsage} used this month · ${quota.account.thisHourSearches} this hour`,
+      `  SerpApi says: ${account.totalSearchesLeft} of ${account.searchesPerMonth} left · ` +
+        `${account.thisMonthUsage} used this month · ${account.thisHourSearches} this hour`,
     );
-    console.log(`  reserve floor: ${quota.reserveFloor} searches are held back and will not be spent.`);
   }
   console.log('  Re-running should cost 0 — the disk cache answers identical queries for free.');
 }

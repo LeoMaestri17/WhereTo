@@ -269,12 +269,62 @@ updating in the same commit or it breaks.
 
 ---
 
-## 6. Stage order
+## 6. Decisions, 28 October 2026
 
-Unchanged from the brief. Stage 2 builds the cost layer on `lib/pricing/{serpapi,quota,cache}.ts`
-rather than from scratch, which is most of why Stage 2 is small. Stage 3's `destinations.json` has
-`lib/mvp/data.ts` and `docs/research/mvp/costs.md` behind it. Stage 4 inherits a filter bar that
-is already the control strip.
+**§4.1 — cream wins.** NOCTURNE is retired. `globals.css` and `components/nocturne/` are rewritten
+in Stage 4 against the Part 3 palette, with Figtree in place of Plus Jakarta Sans.
+`docs/research/ui.md` becomes a record of a direction not taken rather than a specification.
 
-Open before Stage 2: §4.3, §4.4, §4.5. Open before Stage 3: §4.8. Open before Stage 4: §4.1, §4.2,
-and the four destination JPGs in `/public/assets`.
+**§4.2 — the assets are illustrations, not photographs.** This is the larger half of the same
+decision and it was not in the brief. What arrived is a flat illustrated set in the exact Part 3
+palette: a mark (peri disc, coral four-point star), a wide canyon landscape, four square
+destination scenes matching the four seeded destinations, six cost-category marks (plane, bed,
+car, fuel, parking, ticket, one per accent colour), a map, an arch, a price tag and a paper
+texture. No avatars are needed — there is no social layer.
+
+Three consequences:
+
+- **The photographic machinery goes entirely.** `.sq-graded`, the three gradient scrims, the film
+  grain and `sq-text-glow` all exist to make a saturated photograph survive under dark type.
+  Illustrations on cream need none of it. `SmartImage`, `lib/seed/images.ts` and the ~70 Unsplash
+  ids go with them, which also retires the broken `ImagePlacard` rather than fixing it.
+- **The cost icons are data, not UI chrome.** The brief says icons come from lucide-react. That
+  still holds for interface affordances — chevrons, close, edit. The six illustrated marks belong
+  to cost categories and are part of the brand, so they ship as assets and lucide covers the rest.
+- **Nothing is on disk yet.** `/public` is still empty. The files have to be placed before Stage 4
+  can render anything.
+
+**§4.3 — the ceiling throws, everything else degrades.** Built in `lib/budget/guard.ts`. Over the
+monthly ceiling raises `BudgetExceededError` before the request is built, because nothing should
+be calling a paid API in that state and a quiet `unavailable` would hide the bug. A timeout, a
+500, a missing key or an exhausted per-run cap still return `Unavailable` and degrade. Proved by
+`npm run probe:budget` cases 2 and 7.
+
+**§4.4 — the counter is committed, and says when it could not be.** `data/usage.json`, month-keyed
+`YYYY-MM`, tracking both APIs. It increments where writes work — a `npm run warm` on a developer's
+machine, which is the only place quota is legitimately spent — and those runs commit the counter
+beside the prices they bought. On Vercel the write fails and `usageReport().persisted` reports
+false rather than letting the count silently reset; `fetchSerpApiAccount()` is the authoritative
+figure, and it is free to call. **The refresh button in Part 1 rule 7 therefore cannot persist its
+own count in production.** Still open.
+
+**§4.5 — the committed cache holds normalised quotes.** `data/cache/quotes.json`, one file,
+`import`ed rather than read with `fs` so it is bundled at build time and cannot degrade into a
+runtime miss. Raw provider responses stay in the gitignored `.pricing-cache/`.
+
+**The dead stack is deleted.** `lib/research/`, `lib/intake/`, `lib/domain/`, `lib/pricing/`
+`{tools,ledger,quota}.ts`, `lib/seed/{ideas,highlights}.ts` and four probe scripts: about 4,100
+lines. The trigger was `new RunBudget()` in the dead agent, which no longer compiles against a cap
+with no default — contorting live code to keep dead code building is the wrong trade. `ledger.ts`
+went with it because it depends on `lib/research/types` and has no future caller: the only runtime
+model call in this architecture parses preferences into filters, and never authors a price. All of
+it is recoverable from `8f613fa`.
+
+## 7. Stage order
+
+Stage 2 is done. Stage 3's `destinations.json` has `lib/mvp/data.ts` and
+`docs/research/mvp/costs.md` behind it. Stage 4 inherits a filter bar that is already the control
+strip, and a palette decision already made.
+
+Open before Stage 3: §4.8, and whether the stay totals in `lib/mvp/data.ts` are replaced by warm
+output or relabelled. Open before Stage 4: the asset files in `/public/assets`.

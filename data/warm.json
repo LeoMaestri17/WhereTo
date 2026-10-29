@@ -1,0 +1,43 @@
+{
+  "_comment": "The matrix npm run warm fetches. Stage 3 folds the destination half of this into destinations.json; the windows stay here because they are a property of the warm run, not of a place. airport null means the trip is a drive, so no flight search is made for it — that is where most of the quota saving lives.",
+  "origin": {
+    "city": "Los Angeles",
+    "airport": "LAX"
+  },
+  "windows": [
+    { "id": "2026-11-06", "outbound": "2026-11-06", "return": "2026-11-08", "nights": 2, "label": "6-8 November" },
+    { "id": "2026-11-13", "outbound": "2026-11-13", "return": "2026-11-15", "nights": 2, "label": "13-15 November" },
+    { "id": "2026-11-20", "outbound": "2026-11-20", "return": "2026-11-22", "nights": 2, "label": "20-22 November" },
+    { "id": "2026-12-04", "outbound": "2026-12-04", "return": "2026-12-06", "nights": 2, "label": "4-6 December" }
+  ],
+  "destinations": [
+    {
+      "slug": "zion",
+      "name": "Zion National Park",
+      "hotelQuery": "Springdale, Utah",
+      "airport": null,
+      "note": "430 miles. No scheduled service gets you there and back in a weekend."
+    },
+    {
+      "slug": "joshua-tree",
+      "name": "Joshua Tree",
+      "hotelQuery": "Twentynine Palms, California",
+      "airport": null,
+      "note": "A drive. The nearest airport is Palm Springs and it costs more than the petrol."
+    },
+    {
+      "slug": "san-diego",
+      "name": "San Diego",
+      "hotelQuery": "San Diego, California",
+      "airport": null,
+      "note": "Drive or the Pacific Surfliner. Flying LAX-SAN is slower door to door."
+    },
+    {
+      "slug": "san-francisco",
+      "name": "San Francisco",
+      "hotelQuery": "San Francisco, California",
+      "airport": "SFO",
+      "note": "The one real flight in the set, which is what makes the car-versus-fly comparison worth showing."
+    }
+  ]
+}

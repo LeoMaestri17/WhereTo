@@ -1,5 +1,5 @@
+import { RunBudget, claim, release } from '@/lib/budget/guard';
 import { readCache, writeCache, cacheKey } from './cache';
-import { RunBudget, reserve } from './quota';
 import { isUnavailable, unavailable, type PriceLookup, type Unavailable } from './types';
 
 /**
@@ -57,15 +57,21 @@ export async function serpApiSearch(
     return { data: hit.value, checkedAt: hit.storedAt, cachedAt: hit.storedAt };
   }
 
-  const verdict = await reserve(options.budget);
-  if (!verdict.ok) {
-    return unavailable(
-      verdict.reason,
-      verdict.reason === 'quota'
-        ? 'The monthly SerpApi budget is spent.'
-        : 'This run has used its allowance of live price lookups.',
-    );
+  /*
+   * Two brakes, and they fail differently on purpose.
+   *
+   * The per-run cap returns, because running out mid-operation is a result the caller can work
+   * with. The monthly ceiling throws, because nothing should be calling a paid API once the
+   * month is spent — an `unavailable` there would hide the bug that got us here. Both are
+   * claimed synchronously, before the request is built.
+   */
+  if (options.budget) {
+    if (options.budget.remaining <= 0) {
+      return unavailable('run_budget', 'This run has used its allowance of live price lookups.');
+    }
+    options.budget.spend();
   }
+  claim('serpapi');
 
   const url = new URL(BASE);
   for (const [k, v] of Object.entries(clean)) url.searchParams.set(k, String(v));
@@ -113,11 +119,18 @@ export async function serpApiSearch(
   };
 
   let result = await attempt();
-  // One retry, and only for the statuses worth retrying. The quota unit is already spent either
-  // way, so a second attempt costs nothing extra against the budget.
+  // One retry, and only for the statuses worth retrying. The unit is already claimed either way,
+  // so a second attempt costs nothing extra against the budget.
   if (isUnavailable(result) && result.unavailable === 'upstream_error') {
     await new Promise((r) => setTimeout(r, 900));
     result = await attempt();
+  }
+
+  /* SerpApi bills successful searches only, so a request that never produced an answer gives its
+     unit back. Without this one flaky afternoon quietly eats a month of budget. */
+  if (isUnavailable(result)) {
+    options.budget?.refund();
+    release('serpapi');
   }
 
   return result;

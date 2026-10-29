@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "probe:intake": "tsx scripts/probe-intake.ts",
-    "check": "npm run typecheck && npm run lint && npm run probe:intake && npm run build"
+    "warm": "tsx scripts/warm.ts",
+    "probe:budget": "tsx scripts/probe-budget.ts",
+    "probe:pricing": "tsx scripts/probe-pricing.ts",
+    "check": "npm run typecheck && npm run lint && npm run probe:budget && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
