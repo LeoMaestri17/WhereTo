@@ -111,7 +111,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Zion National Park canyon Utah",
-    "tone": "rose"
+    "tone": "rose",
+    "coords": [
+      -112.9834,
+      37.2061
+    ]
   },
   {
     "slug": "san-francisco",
@@ -239,7 +243,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "San Francisco Golden Gate Bridge",
-    "tone": "peach"
+    "tone": "peach",
+    "coords": [
+      -122.4194,
+      37.7792
+    ]
   },
   {
     "slug": "joshua-tree",
@@ -343,7 +351,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Joshua Tree National Park desert",
-    "tone": "sage"
+    "tone": "sage",
+    "coords": [
+      -116.3152,
+      34.135
+    ]
   },
   {
     "slug": "san-diego",
@@ -471,7 +483,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "San Diego California coast",
-    "tone": "sky"
+    "tone": "sky",
+    "coords": [
+      -117.1602,
+      32.7136
+    ]
   },
   {
     "slug": "santa-barbara",
@@ -529,7 +545,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Santa Barbara California landscape",
-    "tone": "sky"
+    "tone": "sky",
+    "coords": [
+      -119.7034,
+      34.4233
+    ]
   },
   {
     "slug": "ventura",
@@ -587,7 +607,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Ventura California landscape",
-    "tone": "sage"
+    "tone": "sage",
+    "coords": [
+      -119.2947,
+      34.2808
+    ]
   },
   {
     "slug": "pismo-beach",
@@ -645,7 +669,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Pismo Beach California landscape",
-    "tone": "peach"
+    "tone": "peach",
+    "coords": [
+      -120.6414,
+      35.1407
+    ]
   },
   {
     "slug": "morro-bay",
@@ -687,7 +715,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Morro Bay California landscape",
-    "tone": "sky"
+    "tone": "sky",
+    "coords": [
+      -120.85,
+      35.3659
+    ]
   },
   {
     "slug": "monterey",
@@ -729,7 +761,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Monterey California landscape",
-    "tone": "sage"
+    "tone": "sage",
+    "coords": [
+      -121.8958,
+      36.6002
+    ]
   },
   {
     "slug": "carmel",
@@ -771,7 +807,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Carmel-by-the-Sea California landscape",
-    "tone": "rose"
+    "tone": "rose",
+    "coords": [
+      -121.9217,
+      36.555
+    ]
   },
   {
     "slug": "laguna-beach",
@@ -813,7 +853,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Laguna Beach California landscape",
-    "tone": "peach"
+    "tone": "peach",
+    "coords": [
+      -117.7833,
+      33.542
+    ]
   },
   {
     "slug": "palm-springs",
@@ -855,7 +899,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Palm Springs California landscape",
-    "tone": "butter"
+    "tone": "butter",
+    "coords": [
+      -116.5456,
+      33.8231
+    ]
   },
   {
     "slug": "big-bear-lake",
@@ -897,7 +945,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Big Bear Lake California landscape",
-    "tone": "sage"
+    "tone": "sage",
+    "coords": [
+      -116.9115,
+      34.2437
+    ]
   },
   {
     "slug": "idyllwild",
@@ -939,7 +991,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Idyllwild California landscape",
-    "tone": "sage"
+    "tone": "sage",
+    "coords": [
+      -116.7146,
+      33.7456
+    ]
   },
   {
     "slug": "mammoth-lakes",
@@ -981,7 +1037,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Mammoth Lakes California landscape",
-    "tone": "sky"
+    "tone": "sky",
+    "coords": [
+      -118.9666,
+      37.6401
+    ]
   },
   {
     "slug": "lake-tahoe",
@@ -1023,7 +1083,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Lake Tahoe California landscape",
-    "tone": "sky"
+    "tone": "sky",
+    "coords": [
+      -119.9772,
+      38.9399
+    ]
   },
   {
     "slug": "solvang",
@@ -1065,7 +1129,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Solvang California landscape",
-    "tone": "butter"
+    "tone": "butter",
+    "coords": [
+      -120.1418,
+      34.596
+    ]
   },
   {
     "slug": "ojai",
@@ -1107,7 +1175,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Ojai California landscape",
-    "tone": "rose"
+    "tone": "rose",
+    "coords": [
+      -119.2435,
+      34.4479
+    ]
   },
   {
     "slug": "temecula",
@@ -1149,7 +1221,11 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Temecula California landscape",
-    "tone": "rose"
+    "tone": "rose",
+    "coords": [
+      -117.1488,
+      33.4934
+    ]
   },
   {
     "slug": "las-vegas",
@@ -1207,6 +1283,10 @@
       "fetchedAt": "2026-10-29T18:53:22.963Z"
     },
     "photoQuery": "Las Vegas Nevada",
-    "tone": "butter"
+    "tone": "butter",
+    "coords": [
+      -115.1406,
+      36.1692
+    ]
   }
 ]

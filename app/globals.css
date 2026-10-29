@@ -376,6 +376,68 @@ body {
   transform: scale(1.15);
 }
 
+/* The map, warmed into the palette with one filter on the canvas.
+
+   Recolouring layer by layer was tried twice: by id, which misses layers whenever Mapbox renames
+   them, and by type, which flattens the map because not every fill is land. A filter cannot miss
+   a layer and keeps the contrast the cartographers chose. Markers are DOM siblings of the canvas,
+   so the price pins keep their true colours. */
+.wt-map .mapboxgl-canvas {
+  filter: sepia(0.42) saturate(0.78) hue-rotate(-8deg) brightness(1.04) contrast(0.96);
+}
+
+/* ------------------------------------------------------------------ map
+
+   A price pin, not a generic marker: the number is the point, so it is the pin. */
+.wt-pin {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--pin, var(--peri));
+  border-radius: 999px;
+  padding: 3px 9px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.wt-pin:hover,
+.wt-pin.is-active {
+  transform: scale(1.14);
+  box-shadow: var(--shadow-lift);
+  background: var(--pin, var(--peri));
+  z-index: 5;
+}
+
+.wt-pin.is-blocked {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.wt-origin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--coral);
+  border: 3px solid var(--paper);
+  box-shadow: var(--shadow-card);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-pin {
+    transition: none;
+  }
+  .wt-pin:hover,
+  .wt-pin.is-active {
+    transform: none;
+  }
+}
+
 .wt-rail {
   scrollbar-width: none;
 }

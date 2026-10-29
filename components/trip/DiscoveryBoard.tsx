@@ -8,6 +8,8 @@ import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
 import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
+import { MapView } from '@/components/trip/MapView';
+import { LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { describeWindow } from '@/lib/trip/brief';
 import { DESTINATIONS, ORIGIN, WINDOWS, windowById } from '@/lib/trip/catalogue';
 import { money, quoteTrip, type TripQuote } from '@/lib/trip/quote';
@@ -91,6 +93,9 @@ export function DiscoveryBoard() {
 
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [showBlocked, setShowBlocked] = useState(false);
+  const [view, setView] = useState<'board' | 'map'>('board');
+  /** Shared between the two views: hovering a card raises its pin and the reverse. */
+  const [hovered, setHovered] = useState<string | null>(null);
   const open = priced.find((p) => p.dest.slug === openSlug) ?? null;
 
   const reachable = priced.filter((p) => p.perPerson !== null);
@@ -126,6 +131,27 @@ export function DiscoveryBoard() {
         </p>
       </section>
 
+      <section className={`${MEASURE} mt-4`}>
+        <div className="inline-flex rounded-full border border-hairline bg-paper p-1">
+          <ViewTab on={view === 'board'} onClick={() => setView('board')} icon={<LayoutGrid size={14} strokeWidth={2.4} />}>
+            Board
+          </ViewTab>
+          <ViewTab on={view === 'map'} onClick={() => setView('map')} icon={<MapIcon size={14} strokeWidth={2.4} />}>
+            Map
+          </ViewTab>
+        </div>
+      </section>
+
+      {view === 'map' ? (
+        <section className={`${MEASURE} mt-5`}>
+          <MapView
+            pins={priced.map((p) => ({ dest: p.dest, perPerson: p.perPerson }))}
+            hovered={hovered}
+            onHover={setHovered}
+            onSelect={(slug) => setOpenSlug(slug)}
+          />
+        </section>
+      ) : (
       <section className={`${MEASURE} mt-5`}>
         {/* The first two run wide. Twenty identical rectangles is a grid, not a board. */}
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -135,6 +161,7 @@ export function DiscoveryBoard() {
                 priced={p}
                 featured={i < 2}
                 onOpen={() => setOpenSlug(p.dest.slug)}
+                onHover={setHovered}
               />
             </div>
           ))}
@@ -152,6 +179,7 @@ export function DiscoveryBoard() {
           </button>
         ) : null}
       </section>
+      )}
 
       {open ? (
         <DestinationPanel
@@ -164,13 +192,40 @@ export function DiscoveryBoard() {
   );
 }
 
+function ViewTab({
+  on,
+  onClick,
+  icon,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className="wt-ease flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-semibold"
+      style={{ background: on ? 'var(--peri)' : 'transparent', color: 'var(--ink)' }}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
 function BoardCard({
   priced,
   onOpen,
+  onHover,
   featured = false,
 }: {
   priced: Priced;
   onOpen: () => void;
+  onHover?: (slug: string | null) => void;
   featured?: boolean;
 }) {
   const { dest, perPerson, windowLabel, source, overBudget } = priced;
@@ -191,6 +246,8 @@ function BoardCard({
   return (
     <Card
       interactive
+      onMouseEnter={() => onHover?.(dest.slug)}
+      onMouseLeave={() => onHover?.(null)}
       className="wt-card relative h-full overflow-hidden"
       style={{ ['--tone' as string]: `var(--${dest.tone})` }}
     >

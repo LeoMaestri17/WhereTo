@@ -46,6 +46,9 @@ export const WINDOWS: TripWindow[] = warm.windows;
 
 export const ORIGIN = warm.origin;
 
+/** USC, where the cohort actually leaves from. [longitude, latitude], as maps want them. */
+export const ORIGIN_COORDS: [number, number] = [-118.2851, 34.0224];
+
 export function windowById(id: string): TripWindow | null {
   return WINDOWS.find((w) => w.id === id) ?? null;
 }

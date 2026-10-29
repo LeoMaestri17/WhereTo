@@ -179,6 +179,9 @@ export interface Destination {
   /** What to search Unsplash for. Specific enough that the top result is actually the place. */
   photoQuery: string;
 
+  /** [longitude, latitude]. Geocoded once at catalogue build; drives the map pins. */
+  coords?: [number, number];
+
   /**
    * The palette colour this destination carries.
    *

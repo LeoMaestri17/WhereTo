@@ -35,6 +35,8 @@ export function Card({
   className = '',
   interactive = false,
   style,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   children: ReactNode;
   className?: string;
@@ -42,10 +44,14 @@ export function Card({
   interactive?: boolean;
   /** Used to set the per-destination --tone custom property. */
   style?: CSSProperties;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }) {
   return (
     <div
       style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       className={`rounded-[14px] border border-hairline bg-paper shadow-[var(--shadow-card)] ${
         interactive ? 'wt-ease wt-lift' : ''
       } ${className}`}
