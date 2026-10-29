@@ -41,7 +41,7 @@ export interface TripBrief {
 export const DEFAULT_BRIEF: TripBrief = {
   origin: 'la',
   partySize: 4,
-  driver: { hasLicence: false, ageBand: null },
+  driver: { hasLicence: true, ageBand: '21-24' },
   windowId: null,
   budgetPerPerson: null,
 };

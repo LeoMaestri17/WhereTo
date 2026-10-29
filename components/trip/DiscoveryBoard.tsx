@@ -88,7 +88,12 @@ export function DiscoveryBoard() {
   }, [brief]);
 
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [showBlocked, setShowBlocked] = useState(false);
   const open = priced.find((p) => p.dest.slug === openSlug) ?? null;
+
+  const reachable = priced.filter((p) => p.perPerson !== null);
+  const blocked = priced.filter((p) => p.perPerson === null);
+  const shown = showBlocked ? [...reachable, ...blocked] : reachable;
 
   return (
     <main className="min-h-dvh pb-24">
@@ -101,11 +106,30 @@ export function DiscoveryBoard() {
       </section>
 
       <section className={`${MEASURE} mt-10`}>
+        {/* The first two run wide. Twenty identical rectangles is a grid, not a board. */}
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {priced.map((p) => (
-            <BoardCard key={p.dest.slug} priced={p} onOpen={() => setOpenSlug(p.dest.slug)} />
+          {shown.map((p, i) => (
+            <div key={p.dest.slug} className={i < 2 ? 'sm:col-span-2 lg:col-span-2' : ''}>
+              <BoardCard
+                priced={p}
+                featured={i < 2}
+                onOpen={() => setOpenSlug(p.dest.slug)}
+              />
+            </div>
           ))}
         </div>
+
+        {blocked.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setShowBlocked(!showBlocked)}
+            className="wt-ease mt-6 rounded-full border border-hairline bg-paper px-4 py-2 text-[0.8125rem] font-semibold hover:border-peri-d hover:text-peri-d"
+          >
+            {showBlocked
+              ? 'Hide the ones needing a driver'
+              : `${blocked.length} more need a driver`}
+          </button>
+        ) : null}
       </section>
 
       {open ? (
@@ -119,7 +143,15 @@ export function DiscoveryBoard() {
   );
 }
 
-function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
+function BoardCard({
+  priced,
+  onOpen,
+  featured = false,
+}: {
+  priced: Priced;
+  onOpen: () => void;
+  featured?: boolean;
+}) {
   const { dest, perPerson, windowLabel, source, overBudget } = priced;
   const blocked = perPerson === null;
 
@@ -147,7 +179,7 @@ function BoardCard({ priced, onOpen }: { priced: Priced; onOpen: () => void }) {
             photo={dest.photo}
             fallbackSrc={dest.image}
             name={dest.name}
-            ratio="square"
+            ratio={featured ? 'wide' : 'square'}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             rounded={false}
             eager

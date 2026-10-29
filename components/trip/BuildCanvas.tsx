@@ -271,6 +271,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
           ) : null}
 
           {/* ------------------------------------------------ secondary, collapsed */}
+          {dest.itinerary.length > 0 ? (
           <section className={`${MEASURE} mt-5`}>
             <details className="group rounded-[14px] border border-hairline bg-paper">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 sm:p-5">
@@ -301,6 +302,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
               </ul>
             </details>
           </section>
+          ) : null}
         </>
       ) : null}
 

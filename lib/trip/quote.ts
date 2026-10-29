@@ -167,10 +167,15 @@ function fuelLine(dest: Destination): CostLine {
     provider: fuel.provider,
     amount: Math.round(dest.drive.roundTripMiles * fuel.usdPerMile),
     unit: 'per-party',
-    source: fuel.source,
+    /* A sourced price times a guessed distance is a guess. The fuel rate is the AAA state
+       average either way, but the line only claims that credibility once the mileage is real. */
+    source: dest.drive.distanceSource === 'routed' ? fuel.source : 'authored',
     url: fuel.url,
     checkedOn: fuel.checkedOn,
-    note: 'The state average. The mileage is routed approximately.',
+    note:
+      dest.drive.distanceSource === 'routed'
+        ? 'The state average, over a routed distance.'
+        : 'The state average, over an estimated distance.',
   };
 }
 

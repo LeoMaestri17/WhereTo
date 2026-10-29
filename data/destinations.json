@@ -15,7 +15,8 @@
       "time": "6h 30m each way",
       "verdict": "Drive. There is no scheduled service from Los Angeles that gets you to Springdale and back in a weekend, and once you are there the free shuttle does the canyon better than a car is allowed to.",
       "hoursEachWay": 6.5,
-      "hoursNote": "Kerb to kerb up the 15, before any stop."
+      "hoursNote": "Kerb to kerb up the 15, before any stop.",
+      "distanceSource": "routed"
     },
     "fees": [
       {
@@ -121,7 +122,8 @@
       "time": "6h each way up the 5",
       "verdict": "Do not drive. Six hours up the 5, then a car you pay to store and cannot use — the city is built for its own transit and the parking alone costs more than the flight saves.",
       "hoursEachWay": 6,
-      "hoursNote": "Kerb to kerb up the 5, before any stop."
+      "hoursNote": "Kerb to kerb up the 5, before any stop.",
+      "distanceSource": "routed"
     },
     "fees": [
       {
@@ -241,7 +243,8 @@
       "time": "2h 30m each way",
       "verdict": "Drive, and there is no alternative worth pretending about. A coach reaches Palm Springs and a weekday bus reaches the town, but the park boundary is still five miles further and the good rock is fifteen beyond that, with no service inside and no signal to call anything.",
       "hoursEachWay": 2.5,
-      "hoursNote": "Kerb to kerb on the 10."
+      "hoursNote": "Kerb to kerb on the 10.",
+      "distanceSource": "routed"
     },
     "fees": [
       {
@@ -324,8 +327,8 @@
   {
     "slug": "san-diego",
     "name": "San Diego",
-    "region": "Southern California coast",
-    "eyebrow": "California · 120 miles",
+    "region": "SoCal coast",
+    "eyebrow": "SoCal coast · 120 miles",
     "hook": "The Surfliner runs along the sand for the last hour, and you never need a car once you arrive.",
     "whySeason": "Locals call it the second summer. The marine layer that greys out May and June is long gone, the water is at its warmest of the year, and the crowds went home in August.",
     "image": "/assets/sandiego.webp",
@@ -337,7 +340,8 @@
       "time": "2h 15m each way, worse on a Friday",
       "verdict": "A car here is money spent on a problem. The train goes along the coast for the last hour, the trolley and the MTS buses reach the beaches and Balboa Park, and Balboa introduced paid parking in January 2026 — so driving buys you a queue on the I-5 and somewhere to pay overnight.",
       "hoursEachWay": 2.25,
-      "hoursNote": "Kerb to kerb on the 5, and reliably worse leaving LA on a Friday afternoon."
+      "hoursNote": "Kerb to kerb on the 5, and reliably worse leaving LA on a Friday afternoon.",
+      "distanceSource": "routed"
     },
     "fees": [
       {
@@ -440,5 +444,629 @@
     "photo": null,
     "photoQuery": "San Diego California coast",
     "tone": "sky"
+  },
+  {
+    "slug": "santa-barbara",
+    "name": "Santa Barbara",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 95 miles",
+    "hook": "Ninety minutes up the coast and the only beach town near LA that closes at a sensible hour.",
+    "whySeason": "The fog that greys out June is long gone, the water is still warm, and the wine country behind the town is picking.",
+    "image": null,
+    "hotelQuery": "Santa Barbara, California",
+    "airport": null,
+    "drive": {
+      "miles": 95,
+      "roundTripMiles": 190,
+      "time": "1.75h each way",
+      "hoursEachWay": 1.75,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": {
+      "mode": "train",
+      "label": "Amtrak Pacific Surfliner",
+      "journeyTime": "Varies by stop",
+      "hoursEachWay": 3,
+      "hoursNote": "On the train, plus about 30 minutes to Union Station and the walk off at the far end.",
+      "fare": {
+        "label": "Return fare, LA Union Station to Santa Barbara",
+        "provider": "Amtrak Pacific Surfliner",
+        "amount": 44,
+        "unit": "per-person",
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.pacificsurfliner.com/",
+        "note": "Students aged 25 and under get 15% off the adult fare. Collected by hand, not quoted."
+      }
+    },
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      150,
+      190,
+      260,
+      300,
+      380
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Santa Barbara California landscape",
+    "tone": "sky"
+  },
+  {
+    "slug": "ventura",
+    "name": "Ventura",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 70 miles",
+    "hook": "The cheapest stretch of Californian coast you can reach before lunch, and the boat to the Channel Islands leaves from here.",
+    "whySeason": "Clear and warm into November, and the island crossings run all winter.",
+    "image": null,
+    "hotelQuery": "Ventura, California",
+    "airport": null,
+    "drive": {
+      "miles": 70,
+      "roundTripMiles": 140,
+      "time": "1.25h each way",
+      "hoursEachWay": 1.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": {
+      "mode": "train",
+      "label": "Amtrak Pacific Surfliner",
+      "journeyTime": "Varies by stop",
+      "hoursEachWay": 3,
+      "hoursNote": "On the train, plus about 30 minutes to Union Station and the walk off at the far end.",
+      "fare": {
+        "label": "Return fare, LA Union Station to Ventura",
+        "provider": "Amtrak Pacific Surfliner",
+        "amount": 44,
+        "unit": "per-person",
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.pacificsurfliner.com/",
+        "note": "Students aged 25 and under get 15% off the adult fare. Collected by hand, not quoted."
+      }
+    },
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      120,
+      150,
+      200,
+      240,
+      300
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Ventura California landscape",
+    "tone": "sage"
+  },
+  {
+    "slug": "pismo-beach",
+    "name": "Pismo Beach",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 190 miles",
+    "hook": "You can still drive on the sand here, which is not true anywhere else in California.",
+    "whySeason": "The monarchs arrive in the grove through November and stay until February.",
+    "image": null,
+    "hotelQuery": "Pismo Beach, California",
+    "airport": null,
+    "drive": {
+      "miles": 190,
+      "roundTripMiles": 380,
+      "time": "3.25h each way",
+      "hoursEachWay": 3.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": {
+      "mode": "train",
+      "label": "Amtrak Pacific Surfliner",
+      "journeyTime": "Varies by stop",
+      "hoursEachWay": 3,
+      "hoursNote": "On the train, plus about 30 minutes to Union Station and the walk off at the far end.",
+      "fare": {
+        "label": "Return fare, LA Union Station to Pismo Beach",
+        "provider": "Amtrak Pacific Surfliner",
+        "amount": 44,
+        "unit": "per-person",
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.pacificsurfliner.com/",
+        "note": "Students aged 25 and under get 15% off the adult fare. Collected by hand, not quoted."
+      }
+    },
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      130,
+      160,
+      220,
+      250,
+      320
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Pismo Beach California landscape",
+    "tone": "peach"
+  },
+  {
+    "slug": "morro-bay",
+    "name": "Morro Bay",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 200 miles",
+    "hook": "A working fishing harbour under a volcanic plug, with otters in the bay and none of the Carmel prices.",
+    "whySeason": "Quiet once the summer traffic goes, and the sea otters are easiest to find in cold water.",
+    "image": null,
+    "hotelQuery": "Morro Bay, California",
+    "airport": null,
+    "drive": {
+      "miles": 200,
+      "roundTripMiles": 400,
+      "time": "3.5h each way",
+      "hoursEachWay": 3.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      120,
+      150,
+      200,
+      240,
+      310
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Morro Bay California landscape",
+    "tone": "sky"
+  },
+  {
+    "slug": "monterey",
+    "name": "Monterey",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 330 miles",
+    "hook": "The aquarium is the best in the country and the rest of the peninsula is free.",
+    "whySeason": "Grey whales start moving south past Point Pinos through December.",
+    "image": null,
+    "hotelQuery": "Monterey, California",
+    "airport": null,
+    "drive": {
+      "miles": 330,
+      "roundTripMiles": 660,
+      "time": "5.5h each way",
+      "hoursEachWay": 5.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      170,
+      210,
+      290,
+      340,
+      430
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Monterey California landscape",
+    "tone": "sage"
+  },
+  {
+    "slug": "carmel",
+    "name": "Carmel-by-the-Sea",
+    "region": "Central coast",
+    "eyebrow": "Central coast · 335 miles",
+    "hook": "Expensive to sleep in, free to walk through, and the start of the Big Sur road.",
+    "whySeason": "Clear winter light, and the hotels drop their rates the moment summer ends.",
+    "image": null,
+    "hotelQuery": "Carmel-by-the-Sea, California",
+    "airport": null,
+    "drive": {
+      "miles": 335,
+      "roundTripMiles": 670,
+      "time": "5.5h each way",
+      "hoursEachWay": 5.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      210,
+      260,
+      350,
+      410,
+      520
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Carmel-by-the-Sea California landscape",
+    "tone": "rose"
+  },
+  {
+    "slug": "laguna-beach",
+    "name": "Laguna Beach",
+    "region": "Orange County",
+    "eyebrow": "Orange County · 60 miles",
+    "hook": "Thirty coves strung along six miles, most of them reachable only on foot.",
+    "whySeason": "The water holds its summer temperature into October and the crowds do not.",
+    "image": null,
+    "hotelQuery": "Laguna Beach, California",
+    "airport": null,
+    "drive": {
+      "miles": 60,
+      "roundTripMiles": 120,
+      "time": "1.25h each way",
+      "hoursEachWay": 1.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      160,
+      200,
+      270,
+      320,
+      400
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Laguna Beach California landscape",
+    "tone": "peach"
+  },
+  {
+    "slug": "palm-springs",
+    "name": "Palm Springs",
+    "region": "Low desert",
+    "eyebrow": "Low desert · 110 miles",
+    "hook": "A tram that climbs 8,500 feet in ten minutes, from desert floor to pine forest.",
+    "whySeason": "The month the desert becomes pleasant again, and the mid-century hotels drop off their summer peak.",
+    "image": null,
+    "hotelQuery": "Palm Springs, California",
+    "airport": null,
+    "drive": {
+      "miles": 110,
+      "roundTripMiles": 220,
+      "time": "2h each way",
+      "hoursEachWay": 2,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      140,
+      180,
+      240,
+      280,
+      360
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Palm Springs California landscape",
+    "tone": "butter"
+  },
+  {
+    "slug": "big-bear-lake",
+    "name": "Big Bear Lake",
+    "region": "San Bernardino",
+    "eyebrow": "San Bernardino · 100 miles",
+    "hook": "Two hours from the beach to seven thousand feet, and the first snow usually lands in November.",
+    "whySeason": "The lake is quiet between the summer boats and the ski season opening.",
+    "image": null,
+    "hotelQuery": "Big Bear Lake, California",
+    "airport": null,
+    "drive": {
+      "miles": 100,
+      "roundTripMiles": 200,
+      "time": "2.25h each way",
+      "hoursEachWay": 2.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      130,
+      160,
+      220,
+      260,
+      330
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Big Bear Lake California landscape",
+    "tone": "sage"
+  },
+  {
+    "slug": "idyllwild",
+    "name": "Idyllwild",
+    "region": "San Jacinto",
+    "eyebrow": "San Jacinto · 110 miles",
+    "hook": "A pine village with no chain anything, and granite walls that taught half of American climbing.",
+    "whySeason": "Cold enough for the fires to be lit, warm enough to climb in the afternoon.",
+    "image": null,
+    "hotelQuery": "Idyllwild, California",
+    "airport": null,
+    "drive": {
+      "miles": 110,
+      "roundTripMiles": 220,
+      "time": "2.5h each way",
+      "hoursEachWay": 2.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      120,
+      150,
+      200,
+      240,
+      300
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Idyllwild California landscape",
+    "tone": "sage"
+  },
+  {
+    "slug": "mammoth-lakes",
+    "name": "Mammoth Lakes",
+    "region": "Eastern Sierra",
+    "eyebrow": "Eastern Sierra · 310 miles",
+    "hook": "The 395 up the back of the Sierra is the best road in the state and almost nobody drives it.",
+    "whySeason": "The season turns here first. Expect snow on the passes from November.",
+    "image": null,
+    "hotelQuery": "Mammoth Lakes, California",
+    "airport": null,
+    "drive": {
+      "miles": 310,
+      "roundTripMiles": 620,
+      "time": "5.25h each way",
+      "hoursEachWay": 5.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      150,
+      190,
+      250,
+      300,
+      380
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Mammoth Lakes California landscape",
+    "tone": "sky"
+  },
+  {
+    "slug": "lake-tahoe",
+    "name": "Lake Tahoe",
+    "region": "Sierra Nevada",
+    "eyebrow": "Sierra Nevada · 470 miles",
+    "hook": "Eight hours is a lot, but it is the clearest big lake in the country and the only one with ski lifts on its shore.",
+    "whySeason": "Between seasons: the summer crowds have gone and the lifts have not opened, so everything is cheap.",
+    "image": null,
+    "hotelQuery": "South Lake Tahoe, California",
+    "airport": null,
+    "drive": {
+      "miles": 470,
+      "roundTripMiles": 940,
+      "time": "7.75h each way",
+      "hoursEachWay": 7.75,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      140,
+      180,
+      240,
+      290,
+      370
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Lake Tahoe California landscape",
+    "tone": "sky"
+  },
+  {
+    "slug": "solvang",
+    "name": "Solvang",
+    "region": "Santa Ynez",
+    "eyebrow": "Santa Ynez · 130 miles",
+    "hook": "A Danish village built by actual Danes, surrounded by the vineyards that made the valley famous.",
+    "whySeason": "Harvest is finished, the tasting rooms are quiet, and the town lights up for Christmas from late November.",
+    "image": null,
+    "hotelQuery": "Solvang, California",
+    "airport": null,
+    "drive": {
+      "miles": 130,
+      "roundTripMiles": 260,
+      "time": "2.5h each way",
+      "hoursEachWay": 2.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      140,
+      170,
+      230,
+      270,
+      350
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Solvang California landscape",
+    "tone": "butter"
+  },
+  {
+    "slug": "ojai",
+    "name": "Ojai",
+    "region": "Ventura County",
+    "eyebrow": "Ventura County · 80 miles",
+    "hook": "A valley with no traffic lights on its main street and a sunset that turns the mountains pink.",
+    "whySeason": "The pink moment is sharpest in cold clear air, and the citrus is coming in.",
+    "image": null,
+    "hotelQuery": "Ojai, California",
+    "airport": null,
+    "drive": {
+      "miles": 80,
+      "roundTripMiles": 160,
+      "time": "1.5h each way",
+      "hoursEachWay": 1.5,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      150,
+      190,
+      250,
+      300,
+      380
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Ojai California landscape",
+    "tone": "rose"
+  },
+  {
+    "slug": "temecula",
+    "name": "Temecula",
+    "region": "Inland",
+    "eyebrow": "Inland · 90 miles",
+    "hook": "Forty wineries ninety minutes from campus, and the balloons go up at dawn.",
+    "whySeason": "Crush is over and the tasting rooms stop charging summer prices.",
+    "image": null,
+    "hotelQuery": "Temecula, California",
+    "airport": null,
+    "drive": {
+      "miles": 90,
+      "roundTripMiles": 180,
+      "time": "1.75h each way",
+      "hoursEachWay": 1.75,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": null,
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      130,
+      160,
+      220,
+      260,
+      330
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Temecula California landscape",
+    "tone": "rose"
+  },
+  {
+    "slug": "las-vegas",
+    "name": "Las Vegas",
+    "region": "Nevada",
+    "eyebrow": "Nevada · 270 miles",
+    "hook": "Beds cost less than anywhere else on this list, and Red Rock Canyon is twenty minutes from the Strip.",
+    "whySeason": "The only months you can walk outside all day. Hotel rates sit at their lowest between the summer and the holidays.",
+    "image": null,
+    "hotelQuery": "Las Vegas, Nevada",
+    "airport": "LAS",
+    "drive": {
+      "miles": 270,
+      "roundTripMiles": 540,
+      "time": "4.25h each way",
+      "hoursEachWay": 4.25,
+      "hoursNote": "Kerb to kerb, before any stop.",
+      "distanceSource": "authored",
+      "verdict": "Drive. Nothing scheduled gets you there and back in a weekend."
+    },
+    "fees": [],
+    "transit": {
+      "mode": "plane",
+      "label": "Fly LAX to LAS",
+      "journeyTime": "1h 10m in the air",
+      "hoursEachWay": 4.5,
+      "hoursNote": "1h 10m in the air, plus the ride to LAX, two hours before departure, and the ride in.",
+      "fare": {
+        "label": "Return flight, LAX to LAS",
+        "provider": "Southwest and Spirit both fly it",
+        "amount": 96,
+        "unit": "per-person",
+        "checkedOn": "2026-09-16",
+        "source": "authored",
+        "url": "https://www.google.com/travel/flights?q=flights%20from%20LAX%20to%20LAS",
+        "note": "Collected by hand, not quoted for these dates."
+      }
+    },
+    "parkingPerNight": null,
+    "seededStayTotals": [
+      90,
+      110,
+      150,
+      180,
+      230
+    ],
+    "itinerary": [],
+    "content": null,
+    "photo": null,
+    "photoQuery": "Las Vegas Nevada",
+    "tone": "butter"
   }
 ]

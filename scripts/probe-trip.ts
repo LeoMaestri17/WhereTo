@@ -52,7 +52,11 @@ function allLines(): CostLine[] {
 
 function main(): void {
   heading('1. The committed data is the shape the model expects');
-  check('four destinations', DESTINATIONS.length === 4, `got ${DESTINATIONS.length}`);
+  check('at least twenty destinations', DESTINATIONS.length >= 20, `got ${DESTINATIONS.length}`);
+  check(
+    'every slug is unique',
+    new Set(DESTINATIONS.map((d) => d.slug)).size === DESTINATIONS.length,
+  );
   check('four windows', WINDOWS.length === 4, `got ${WINDOWS.length}`);
   check(
     'every window is a Friday',
@@ -65,8 +69,16 @@ function main(): void {
     'a window in the past prices a trip nobody can take',
   );
   check(
-    'every destination has artwork or a photograph',
-    DESTINATIONS.every((d) => d.photo !== null || (d.image?.startsWith('/assets/') ?? false)),
+    'every destination can show something',
+    DESTINATIONS.every(
+      (d) => d.photo !== null || (d.image?.startsWith('/assets/') ?? false) || d.photoQuery.length > 0,
+    ),
+  );
+  /* The fuel line is the AAA average times the mileage, so an estimated mileage must not be
+     allowed to claim an operator-sourced figure. */
+  check(
+    'an estimated distance never claims a published fuel price',
+    DESTINATIONS.every((d) => ['routed', 'authored'].includes(d.drive.distanceSource)),
   );
   check(
     'every destination has a photo search term',

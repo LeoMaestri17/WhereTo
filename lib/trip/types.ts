@@ -207,6 +207,14 @@ export interface Destination {
     hoursEachWay: number;
     /** How that figure is made up, so the reader can disagree with it. */
     hoursNote: string;
+    /**
+     * Where the mileage came from.
+     *
+     * 'routed' is a real road distance from a routing engine. 'authored' is our own estimate,
+     * and the fuel figure derived from it is labelled accordingly rather than borrowing the AAA
+     * price's credibility. A sourced price multiplied by a guessed distance is a guess.
+     */
+    distanceSource: 'routed' | 'authored';
     /** The editorial view, which the arithmetic does not always share. */
     verdict: string;
   };

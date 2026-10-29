@@ -11,6 +11,7 @@
     "warm": "tsx scripts/warm.ts",
     "generate-content": "tsx scripts/generate-content.ts",
     "fetch-photos": "tsx scripts/fetch-photos.ts",
+    "fetch-distances": "tsx scripts/fetch-distances.ts",
     "probe:budget": "tsx scripts/probe-budget.ts",
     "probe:trip": "tsx scripts/probe-trip.ts",
     "probe:pricing": "tsx scripts/probe-pricing.ts",
