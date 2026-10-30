@@ -1,17 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, Copy, ExternalLink } from 'lucide-react';
 import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
+import { CostIcon, type IconName } from '@/components/ui/icons';
 import { Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { describeDriver } from '@/lib/trip/brief';
 import { DESTINATIONS_BY_SLUG, WINDOWS } from '@/lib/trip/catalogue';
 import { money, perPerson, quoteTrip, type TripRow } from '@/lib/trip/quote';
 import { decodeTrip, encodeTrip } from '@/lib/trip/share';
+import type { CostCategory } from '@/lib/trip/categories';
 import type { CostLine } from '@/lib/trip/types';
 
 /**
@@ -26,13 +27,20 @@ import type { CostLine } from '@/lib/trip/types';
  * footnote: a price you can date and audit beats a fresher one you cannot.
  */
 
-const ROW_ICON: Record<string, string> = {
-  drive: '/assets/icon-fuel.webp',
-  plane: '/assets/icon-plane.webp',
-  train: '/assets/icon-ticket.webp',
-  coach: '/assets/icon-ticket.webp',
-  stay: '/assets/icon-bed.webp',
-  car: '/assets/icon-car.webp',
+const ROW_ICON: Record<string, IconName> = {
+  drive: 'fuel',
+  plane: 'plane',
+  train: 'train',
+  coach: 'train',
+  stay: 'bed',
+  car: 'car',
+};
+
+/** Row kind to cost category, so the glyph and its colour travel together, as on the canvas. */
+const ROW_CATEGORY: Record<TripRow['kind'], CostCategory> = {
+  travel: 'travel',
+  stay: 'stay',
+  car: 'car',
 };
 
 export function Summary({ slug }: { slug: string }) {
@@ -187,21 +195,18 @@ function LockedRow({
   dest,
 }: {
   row: TripRow;
-  icon: string;
+  icon: IconName;
   dest: { name: string };
 }) {
   const booking = bookingFor(row);
+  /* Derived from the row rather than passed in, so the tint cannot disagree with the row it
+     sits beside. */
+  const category = ROW_CATEGORY[row.kind];
   const free = row.lines.length === 0;
 
   return (
     <div className="flex items-start gap-3.5 p-4 sm:p-5">
-      <Image
-        src={icon}
-        alt=""
-        width={40}
-        height={40}
-        className="h-10 w-10 shrink-0 rounded-[10px] object-contain"
-      />
+      <CostIcon name={icon} category={category} size={40} />
 
       <div className="min-w-0 flex-1">
         <p className="text-[0.9375rem] font-bold leading-snug">{row.title}</p>
@@ -242,13 +247,7 @@ function LockedRow({
 function FeeRow({ line, amount }: { line: CostLine; amount: number }) {
   return (
     <div className="flex items-start gap-3.5 p-4 sm:p-5">
-      <Image
-        src="/assets/icon-ticket.webp"
-        alt=""
-        width={40}
-        height={40}
-        className="h-10 w-10 shrink-0 rounded-[10px] object-contain"
-      />
+      <CostIcon name="ticket" category="fees" size={40} />
       <div className="min-w-0 flex-1">
         <p className="text-[0.9375rem] font-bold leading-snug">{line.label}</p>
         

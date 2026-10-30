@@ -138,7 +138,10 @@ export function BuildCanvas({ slug }: { slug: string }) {
             sizes="100vw"
             rounded={false}
             eager
-            className="absolute inset-0 [&>div]:h-full [&>div]:w-full"
+            /* The hero carries a scrim and a title; a credit line under it would sit on the
+               page rather than the picture, so this one reveals on hover. */
+            credit="hover"
+            className="absolute inset-0 [&>div]:h-full [&>div]:w-full [&>div>div]:h-full"
           />
           {/* Weighted to the bottom, so the picture keeps its top two thirds. */}
           <div

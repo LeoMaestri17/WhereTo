@@ -98,6 +98,7 @@ export function DestinationPanel({
             ratio="wide"
             sizes="(max-width: 640px) 100vw, 576px"
             eager
+            credit="line"
           />
 
           <h2 className="type-display mt-5 flex items-center gap-2.5">

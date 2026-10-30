@@ -68,6 +68,7 @@ export function DestinationPhotoFrame({
   priority = false,
   eager = false,
   rounded = true,
+  credit = 'hover',
   className = '',
 }: {
   photo: { url: string; author: string; authorUrl: string; alt: string } | null;
@@ -79,6 +80,15 @@ export function DestinationPhotoFrame({
   priority?: boolean;
   eager?: boolean;
   rounded?: boolean;
+  /**
+   * How the photographer is credited.
+   *
+   * 'hover' reveals it over the image on hover or keyboard focus, which keeps a card clean.
+   * 'line' prints a quiet line underneath, for the large images where there is room. Burning it
+   * into the corner of every photograph, which is what this used to do, puts a dark pill on top
+   * of the one thing on the card doing the work.
+   */
+  credit?: 'hover' | 'line' | 'none';
   className?: string;
 }) {
   if (!photo) {
@@ -99,27 +109,45 @@ export function DestinationPhotoFrame({
 
   return (
     <div className={`relative ${className}`}>
-      <Photo
-        src={photo.url}
-        alt={photo.alt || name}
-        /* The gradient that stands in if the photograph fails says where you are going, not what
-           the photographer called their picture. */
-        label={name}
-        ratio={ratio}
-        sizes={sizes}
-        priority={priority}
-        eager={eager}
-        rounded={rounded}
-      />
-      <a
-        href={photo.authorUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="absolute bottom-2 right-2 z-10 rounded-full bg-[rgba(42,40,35,0.55)] px-2 py-0.5 text-[0.6875rem] font-medium text-paper backdrop-blur-sm transition-colors duration-200 hover:bg-[rgba(42,40,35,0.8)]"
-      >
-        {photo.author}
-      </a>
+      <div className="group/credit relative">
+        <Photo
+          src={photo.url}
+          alt={photo.alt || name}
+          /* The gradient that stands in if the photograph fails says where you are going, not
+             what the photographer called their picture. */
+          label={name}
+          ratio={ratio}
+          sizes={sizes}
+          priority={priority}
+          eager={eager}
+          rounded={rounded}
+        />
+        {credit === 'hover' ? (
+          <a
+            href={photo.authorUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="wt-ease absolute bottom-2 right-2 z-10 rounded-full bg-[rgba(42,40,35,0.6)] px-2 py-0.5 text-[0.6875rem] font-medium text-paper opacity-0 backdrop-blur-sm group-hover/credit:opacity-100 focus-visible:opacity-100"
+          >
+            {photo.author}
+          </a>
+        ) : null}
+      </div>
+      {credit === 'line' ? (
+        <p className="mt-1.5 text-[0.6875rem] text-faint">
+          Photograph by{' '}
+          <a
+            href={photo.authorUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wt-ease underline decoration-faint underline-offset-2 hover:text-muted"
+          >
+            {photo.author}
+          </a>{' '}
+          on Unsplash
+        </p>
+      ) : null}
     </div>
   );
 }
