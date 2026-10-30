@@ -46,15 +46,25 @@
   --peri: #a7b0e7;
   --peri-d: #7c88dc; /* the readable one: borders, text on cream, the focus ring */
 
-  /* ---------------------------------------------------------------- the total */
-  --coral: #ee8763;
-  --peach: #f6a98d;
+  /* ---------------------------------------------------------------- whether this happens
 
-  /* ---------------------------------------------------------------- cost categories */
-  --sage: #abbf9a; /* car */
-  --butter: #f4d070; /* tickets, entry fees */
-  --rose: #df949b; /* fuel */
-  --sky: #a7d1e7; /* parking */
+     Coral is the number that decides whether the trip comes off, and the states where the
+     answer is no: the total, the budget it is measured against, "over your budget", and "not
+     reachable without a car". One question — can we do this — so one colour. */
+  --coral: #ee8763;
+  --peach: #f6a98d; /* the delta chip, when a choice moves the total */
+
+  /* ---------------------------------------------------------------- cost categories
+
+     One per panel of the mark, in the mark's order. lib/trip/categories.ts decides them; these
+     comments only have to stay true. Beds is --peri above, which does double duty as the action
+     colour — a genuine overlap, and the next one worth unpicking. */
+  --sage: #abbf9a; /* getting there */
+  --rose: #df949b; /* the car */
+  --butter: #f4d070; /* entry and fees */
+
+  /* ---------------------------------------------------------------- where you start */
+  --sky: #a7d1e7; /* the origin control, and the campus dot on the map */
 
   /* ---------------------------------------------------------------- lines and depth */
   --hairline: rgba(42, 40, 35, 0.1);
@@ -195,7 +205,7 @@ body {
     letter-spacing: -0.02em;
   }
 
-  /* The total, and the only place coral is allowed. */
+  /* The total. The only place coral is set as a figure — see the note on Total in primitives. */
   .type-total {
     font-size: clamp(2rem, 4.5vw, 2.75rem);
     line-height: 1;
@@ -439,11 +449,13 @@ body {
   border-style: dashed;
 }
 
+/* Sky, like the origin control in the strip. This dot is campus — where you are leaving from —
+   and it was coral, which is the colour of what the trip costs. */
 .wt-origin-dot {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: var(--coral);
+  background: var(--sky);
   border: 3px solid var(--paper);
   box-shadow: var(--shadow-card);
 }

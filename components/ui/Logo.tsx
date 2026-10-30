@@ -20,7 +20,7 @@
  * ## The colours are not decoration
  *
  * Each panel is one of the four cost categories, and the mapping holds everywhere in the
- * product: sage is getting there, peri is beds, coral is the car, butter is entry and fees. The
+ * product: sage is getting there, peri is beds, rose is the car, butter is entry and fees. The
  * logo is therefore the legend for the money bar, which is why it is worth it being these four
  * colours in this order rather than any arrangement that looked nice.
  */

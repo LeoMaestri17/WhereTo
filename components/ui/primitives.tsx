@@ -153,10 +153,16 @@ export function Chip({
 /* ------------------------------------------------------------------ the total */
 
 /**
- * The only coral in the product.
+ * The only coral *figure* in the product.
  *
- * If this component is not on screen, no coral should be either. Putting it in one place is what
- * stops the rule eroding one hover state at a time.
+ * The comment here used to say "the only coral in the product", which was not true and had not
+ * been for a while: the budget slider, the over-budget warning and, until recently, the entire
+ * car cost category were all coral too. A rule stated in a doc comment is not a rule.
+ *
+ * What is true, and worth keeping true: coral is the number that decides whether the trip comes
+ * off, and the states where the answer is no — over budget, not reachable. This is the one place
+ * it is set as a figure rather than a control or a warning, so a coral number anywhere else
+ * means either that number or this rule is wrong.
  */
 export function Total({
   amount,

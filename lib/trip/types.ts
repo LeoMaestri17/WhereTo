@@ -86,7 +86,15 @@ export const AGE_BAND_LABELS: Record<AgeBand, string> = {
  * already attached rather than assembled at render time, where it would eventually get dropped
  * by someone tidying up a component.
  */
-export type Tone = 'peri' | 'coral' | 'sage' | 'butter' | 'rose' | 'peach' | 'sky';
+/**
+ * The tints a destination may carry on its card.
+ *
+ * Peri and coral are deliberately absent. Peri is the action colour and coral decides whether a
+ * trip happens, so a card tinted with either says something about itself that is not true. That
+ * used to be a sentence in a comment on the palette while both remained perfectly spellable
+ * here; none of the twenty destinations ever used them, which is luck rather than design.
+ */
+export type Tone = 'sage' | 'butter' | 'rose' | 'peach' | 'sky';
 
 export interface DestinationPhoto {
   /** The CDN URL, already sized. Served by Unsplash, never by us. */

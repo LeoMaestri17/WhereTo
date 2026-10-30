@@ -17,7 +17,16 @@ export const COST_CATEGORIES: CostCategory[] = ['travel', 'stay', 'car', 'fees']
 export const COST_COLOUR: Record<CostCategory, string> = {
   travel: 'var(--sage)',
   stay: 'var(--peri)',
-  car: 'var(--coral)',
+  /*
+   * Rose, and not coral, which is what this was.
+   *
+   * Coral is the total: the biggest figure on the page, the budget control and the warning when
+   * one passes the other. Giving it to the car as well meant the loudest colour in the palette
+   * answered two different questions on the same screen — a coral bar segment next to a coral
+   * total invites you to read the segment as the total. Rose was spare; sky was not, because it
+   * already means where you start.
+   */
+  car: 'var(--rose)',
   fees: 'var(--butter)',
 };
 
