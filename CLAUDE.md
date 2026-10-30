@@ -143,4 +143,14 @@ ANTHROPIC_API_KEY=...     # rotate after the demo, it has been through a chat lo
 SERPAPI_API_KEY=...       # free tier, 250/month, no card
 RESEARCH_MODE=cached      # keep this set unless you are deliberately spending
 RIDB_API_KEY=...          # optional, campground catalogue
+NEXT_PUBLIC_MAPBOX_TOKEN=pk...   # public by design, see below
 ```
+
+The Mapbox token is the one key here that is meant to reach the browser, and `NEXT_PUBLIC_*` is
+inlined at build time rather than read at runtime — so a deployment without it has no map, and
+setting it afterwards does nothing until the next build. It must be set in the host's own
+environment variables, not only in `.env.local`, which is git-ignored and never leaves the
+machine. Restrict it to the deployed domain in the Mapbox dashboard: a public token with no URL
+restriction can be lifted off the page and spent by anyone.
+
+A build with no token has no Map tab at all, rather than a tab leading to an empty frame.

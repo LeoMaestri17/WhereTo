@@ -9,7 +9,7 @@ import { PlaceTag } from '@/components/trip/facts';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
 import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
-import { MapView } from '@/components/trip/MapView';
+import { MAP_AVAILABLE, MapView } from '@/components/trip/MapView';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { describeWindow } from '@/lib/trip/brief';
 import { DESTINATIONS, ORIGIN, WINDOWS, windowById } from '@/lib/trip/catalogue';
@@ -129,18 +129,22 @@ export function DiscoveryBoard() {
         </p>
       </section>
 
-      <section className={`${MEASURE} mt-4`}>
-        <div className="inline-flex rounded-full border border-hairline bg-paper p-1">
-          <ViewTab on={view === 'board'} onClick={() => setView('board')} icon={<LayoutGrid size={14} strokeWidth={2.4} />}>
-            Board
-          </ViewTab>
-          <ViewTab on={view === 'map'} onClick={() => setView('map')} icon={<MapIcon size={14} strokeWidth={2.4} />}>
-            Map
-          </ViewTab>
-        </div>
-      </section>
+      {/* One view and no toggle when the build has no Mapbox token: a tab that leads to a dead
+          grey box is worse than a product that simply has one way of looking at things. */}
+      {MAP_AVAILABLE ? (
+        <section className={`${MEASURE} mt-4`}>
+          <div className="inline-flex rounded-full border border-hairline bg-paper p-1">
+            <ViewTab on={view === 'board'} onClick={() => setView('board')} icon={<LayoutGrid size={14} strokeWidth={2.4} />}>
+              Board
+            </ViewTab>
+            <ViewTab on={view === 'map'} onClick={() => setView('map')} icon={<MapIcon size={14} strokeWidth={2.4} />}>
+              Map
+            </ViewTab>
+          </div>
+        </section>
+      ) : null}
 
-      {view === 'map' ? (
+      {view === 'map' && MAP_AVAILABLE ? (
         <section className={`${MEASURE} mt-5`}>
           <MapView
             pins={priced.map((p) => ({ dest: p.dest, perPerson: p.perPerson }))}

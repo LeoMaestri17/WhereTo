@@ -52,6 +52,17 @@ function ringFeature(hours: number) {
   };
 }
 
+/**
+ * Whether this build has a map at all.
+ *
+ * NEXT_PUBLIC_* is inlined at build time, so this is a constant the moment the bundle is made,
+ * not something that can change while the app runs: a deployment either has a token or it never
+ * will. The board hides the Map tab when it does not, which is why there is no "needs a token"
+ * placeholder here any more — that sentence was written for whoever deploys the app and was
+ * being shown to students looking for a weekend away.
+ */
+export const MAP_AVAILABLE = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
+
 export interface MapPin {
   dest: Destination;
   perPerson: number | null;
@@ -222,14 +233,6 @@ export function MapView({
       relayout.current();
     }
   }, [hovered, pins]);
-
-  if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center rounded-[14px] border border-hairline bg-paper">
-        <p className="text-[0.9375rem] font-bold">Map needs a token</p>
-      </div>
-    );
-  }
 
   return (
     <div className="relative">
