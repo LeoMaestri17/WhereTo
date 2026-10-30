@@ -239,8 +239,12 @@ export function MapView({
         type: 'fill',
         source: 'bands',
         paint: {
-          'fill-color': '#a7b0e7',
-          'fill-opacity': ['interpolate', ['linear'], ['get', 'hours'], 2, 0.2, 6, 0.07],
+          /* Ink, not peri. These bands are hours from campus — not a cost, so not a cost colour.
+             Peri filled means Beds now, and a lavender ring round Los Angeles would be the third
+             thing peri was asked to say. A neutral also lets the pins keep every colour on the
+             map to themselves. */
+          'fill-color': '#2a2823',
+          'fill-opacity': ['interpolate', ['linear'], ['get', 'hours'], 2, 0.09, 6, 0.035],
         },
       });
       m.addLayer({
@@ -248,9 +252,9 @@ export function MapView({
         type: 'line',
         source: 'bands',
         paint: {
-          'line-color': '#7c88dc',
+          'line-color': '#2a2823',
           'line-width': 1.25,
-          'line-opacity': 0.55,
+          'line-opacity': 0.32,
           'line-dasharray': [4, 3],
         },
       });

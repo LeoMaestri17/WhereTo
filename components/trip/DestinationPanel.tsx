@@ -181,7 +181,7 @@ export function DestinationPanel({
         <div className="sticky bottom-0 border-t border-hairline bg-ground/95 px-5 py-3.5 backdrop-blur">
           <Link
             href={`/trip/${dest.slug}`}
-            className="wt-ease flex w-full items-center justify-center gap-2 rounded-full bg-peri px-6 py-3.5 text-[0.9375rem] font-semibold text-ink hover:bg-peri-d"
+            className="wt-ease flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[0.9375rem] font-semibold text-paper hover:bg-ink-hover"
           >
             Build this trip
             <ArrowRight size={17} strokeWidth={2.5} />

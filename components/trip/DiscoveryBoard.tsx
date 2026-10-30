@@ -211,7 +211,10 @@ function ViewTab({
       onClick={onClick}
       aria-pressed={on}
       className="wt-ease flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-semibold"
-      style={{ background: on ? 'var(--peri)' : 'transparent', color: 'var(--ink)' }}
+      style={{
+        background: on ? 'var(--ink)' : 'transparent',
+        color: on ? 'var(--paper)' : 'var(--ink)',
+      }}
     >
       {icon}
       {children}

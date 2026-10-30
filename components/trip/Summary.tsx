@@ -157,7 +157,7 @@ export function Summary({ slug }: { slug: string }) {
                 <button
                   type="button"
                   onClick={share}
-                  className="wt-ease inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-peri px-5 py-2.5 text-[0.875rem] font-semibold text-ink hover:bg-peri-d"
+                  className="wt-ease inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[0.875rem] font-semibold text-paper hover:bg-ink-hover"
                 >
                   {copied ? <Check size={15} strokeWidth={3} /> : <Copy size={15} strokeWidth={2.4} />}
                   {copied ? 'Link copied' : 'Copy share link'}

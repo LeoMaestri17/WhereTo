@@ -17,6 +17,17 @@ import { AGE_BAND_LABELS, PARTY_SIZES, type AgeBand, type Driver, type PartySize
  * the five you are in without reading any of them.
  */
 
+/*
+ * These reuse the palette on a different axis, and that is deliberate rather than a leak.
+ *
+ * A cost colour answers "what am I paying for"; a control tone answers "which of the five am I
+ * in". They never appear in the same component, and a tone is a 22% tint against paper rather
+ * than a fill, so the strip reads as five tinted objects and the money bar as four solid
+ * segments. Destination cards tint themselves the same way.
+ *
+ * Worth knowing when changing one: people is peri, which in the cost system means Beds, and
+ * budget is coral, which means what the trip costs. Neither is a claim about the control.
+ */
 export const CONTROL_TONE = {
   origin: 'var(--sky)',
   people: 'var(--peri)',

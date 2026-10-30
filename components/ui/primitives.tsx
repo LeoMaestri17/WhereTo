@@ -80,12 +80,20 @@ const BUTTON_SIZE = {
 } as const;
 
 /*
- * Peri at full strength is a pale lavender: white text on it measures about 2.1:1, which is
- * unreadable, and ink on it measures 9.4:1. So the solid button is ink on peri rather than the
- * white-on-brand it would be in most systems. Hover goes to peri-d, where ink still clears 6:1.
+ * The solid button is ink, not the brand colour.
+ *
+ * It was peri, which forced an awkward compromise: peri is a pale lavender, white on it measures
+ * about 2.1:1, so the one control the eye is meant to find first had to be set in dark text on a
+ * pale fill. It was also the Beds cost category, so a primary button and the accommodation
+ * segment of the money bar under it were the same lavender.
+ *
+ * Ink solves both. Paper on ink is 13:1, it cannot be mistaken for a category because no category
+ * is a neutral, and it leaves the four cost colours as the only colour system in the product.
+ * Peri-d stays on the outline and quiet variants, where it is a line or a label rather than a
+ * fill — that is the distinction the palette now rests on.
  */
 const BUTTON_VARIANT = {
-  solid: 'bg-peri text-ink hover:bg-peri-d hover:shadow-[var(--shadow-card)]',
+  solid: 'bg-ink text-paper hover:bg-ink-hover hover:shadow-[var(--shadow-card)]',
   outline: 'border border-hairline-strong bg-paper text-ink hover:border-peri-d hover:text-peri-d',
   quiet: 'text-ink hover:text-peri-d',
 } as const;
@@ -122,7 +130,7 @@ export function ButtonLink({
 }
 
 /**
- * A control-strip chip. Selected is peri; unselected is paper with a hairline.
+ * A control-strip chip. Selected is ink; unselected is paper with a hairline.
  *
  * `aria-pressed` rather than a role of its own: these toggle a value in place and the page
  * repopulates underneath, which is exactly what a pressed toggle button means.
@@ -143,8 +151,8 @@ export function Chip({
       aria-pressed={on}
       className={`wt-ease shrink-0 rounded-full px-4 py-2 text-[0.8125rem] font-semibold active:translate-y-px ${
         on
-          ? 'border border-peri-d bg-peri text-ink shadow-[inset_0_1px_3px_rgba(42,40,35,0.18)]'
-          : 'border border-hairline bg-paper text-ink hover:-translate-y-px hover:border-peri-d hover:shadow-[var(--shadow-card)]'
+          ? 'border border-ink bg-ink text-paper shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)]'
+          : 'border border-hairline bg-paper text-ink hover:-translate-y-px hover:border-ink hover:shadow-[var(--shadow-card)]'
       } ${className}`}
     />
   );

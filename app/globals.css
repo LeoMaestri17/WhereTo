@@ -29,6 +29,7 @@
 
   /* ---------------------------------------------------------------- type */
   --ink: #2a2823; /* 13.2:1 on ground — all body copy */
+  --ink-hover: #413d35; /* the solid button, hovered; paper on it still clears 10:1 */
   --muted: #8a8275; /* 3.4:1  — labels and large secondary text ONLY, see the note below */
   --faint: #b5ae9f; /* 2.0:1  — decorative: rules, disabled marks, never text that matters */
 
@@ -42,9 +43,18 @@
     someone with good eyes on a good screen.
   */
 
-  /* ---------------------------------------------------------------- action */
+  /* ---------------------------------------------------------------- beds, and acting
+
+     Peri filled is the Beds cost category and nothing else. Peri-d — the darker one, used as a
+     stroke or as text — means you can act on this: the focus ring, a link, a hover border. Fill
+     against line, which is a difference you can see without knowing the rule.
+
+     Peri filled used to be the action colour too, so the same lavender was the primary button
+     and the accommodation segment of the money bar beneath it. Solid buttons are ink now. That
+     also retires a workaround: white on peri measures 2.1:1, so the one button the eye should
+     go to first had to be set in dark text on a pale fill to be readable at all. */
   --peri: #a7b0e7;
-  --peri-d: #7c88dc; /* the readable one: borders, text on cream, the focus ring */
+  --peri-d: #7c88dc;
 
   /* ---------------------------------------------------------------- whether this happens
 
@@ -57,8 +67,7 @@
   /* ---------------------------------------------------------------- cost categories
 
      One per panel of the mark, in the mark's order. lib/trip/categories.ts decides them; these
-     comments only have to stay true. Beds is --peri above, which does double duty as the action
-     colour — a genuine overlap, and the next one worth unpicking. */
+     comments only have to stay true. Beds is --peri, above. */
   --sage: #abbf9a; /* getting there */
   --rose: #df949b; /* the car */
   --butter: #f4d070; /* entry and fees */
@@ -80,6 +89,7 @@
   --color-ground: var(--ground);
   --color-paper: var(--paper);
   --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
   --color-peri: var(--peri);
@@ -117,11 +127,12 @@ body {
 }
 
 ::selection {
-  background: var(--peri);
+  background: var(--peri-d);
   color: var(--ink);
 }
 
-/* Peri at full strength is too pale to be a visible ring on cream; peri-d is the readable one. */
+/* Peri at full strength is too pale to be a visible ring on cream; peri-d is the readable one,
+   and a ring is a line rather than a fill, which is what peri-d means everywhere. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--peri-d);
   outline-offset: 2px;
@@ -406,7 +417,7 @@ body {
   font-variant-numeric: tabular-nums;
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--pin, var(--peri));
+  border: 2px solid var(--pin, var(--ink));
   border-radius: 999px;
   padding: 3px 9px;
   cursor: pointer;
@@ -420,7 +431,7 @@ body {
 .wt-pin.is-active {
   transform: scale(1.14);
   box-shadow: var(--shadow-lift);
-  background: var(--pin, var(--peri));
+  background: var(--pin, var(--ink));
   z-index: 5;
 }
 
@@ -432,7 +443,7 @@ body {
   padding: 0;
   font-size: 0;
   overflow: hidden;
-  background: var(--pin, var(--peri));
+  background: var(--pin, var(--ink));
 }
 
 .wt-pin.is-dot:hover,
@@ -441,7 +452,7 @@ body {
   height: auto;
   padding: 3px 9px;
   font-size: 0.8125rem;
-  background: var(--pin, var(--peri));
+  background: var(--pin, var(--ink));
 }
 
 .wt-pin.is-blocked {
