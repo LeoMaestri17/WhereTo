@@ -320,7 +320,7 @@ export function MapView({
 
   return (
     <div className="relative">
-      <div ref={container} className="wt-map h-[62vh] w-full overflow-hidden rounded-[14px]" />
+      <div ref={container} className="h-[62vh] w-full overflow-hidden rounded-[14px]" />
       {/* The rings are approximate, and say so once rather than on every pin.
 
           Top-left, not bottom-left, where it covered the Mapbox wordmark. Their terms require
