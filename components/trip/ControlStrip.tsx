@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Search } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Logo';
-import { Eyebrow, MEASURE } from '@/components/ui/primitives';
+import { Label, MEASURE } from '@/components/ui/primitives';
 import { CommandPalette, useCommandPalette } from '@/components/trip/CommandPalette';
 import {
   BudgetEditor,
@@ -235,7 +235,7 @@ function ControlButton({
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
-      <Eyebrow className="w-[4.5rem] shrink-0 pt-2">{label}</Eyebrow>
+      <Label className="w-[4.5rem] shrink-0 pt-2">{label}</Label>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

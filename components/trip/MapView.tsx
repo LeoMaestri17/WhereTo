@@ -236,7 +236,7 @@ export function MapView({
       <div ref={container} className="wt-map h-[62vh] w-full overflow-hidden rounded-[14px]" />
       {/* The rings are approximate, and say so once rather than on every pin. */}
       <div className="pointer-events-none absolute bottom-3 left-3 rounded-[10px] border border-hairline bg-paper/92 px-3 py-2 backdrop-blur">
-        <p className="type-eyebrow">Drive time from campus</p>
+        <p className="type-label">Drive time from campus</p>
         <p className="type-body mt-1 text-muted">
           Rings at 2, 4 and 6 hours, about {ASSUMED_MPH} mph
         </p>

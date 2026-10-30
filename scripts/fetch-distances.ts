@@ -144,7 +144,9 @@ async function main(): Promise<void> {
       dest.drive.hoursEachWay = hours;
       dest.drive.time = formatHours(hours);
       dest.drive.distanceSource = 'routed';
-      dest.eyebrow = `${dest.region} · ${miles} miles`;
+      /* No display string to rewrite here any more. The place tag is rendered from region and
+         drive.miles, so a routed mileage reaches the card by updating the mileage and nothing
+         else — which is the point of not storing it twice. */
       ok += 1;
 
       const drift = miles - was;

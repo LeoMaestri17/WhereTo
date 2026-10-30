@@ -6,9 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, Copy, ExternalLink } from 'lucide-react';
 import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { CostIcon, type IconName } from '@/components/ui/icons';
-import { Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { Card, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { TripFacts } from '@/components/trip/facts';
 import { useBrief } from '@/components/trip/ControlStrip';
-import { describeDriver } from '@/lib/trip/brief';
 import { DESTINATIONS_BY_SLUG, WINDOWS } from '@/lib/trip/catalogue';
 import { money, perPerson, quoteTrip, type TripRow } from '@/lib/trip/quote';
 import { decodeTrip, encodeTrip } from '@/lib/trip/share';
@@ -111,12 +111,14 @@ export function Summary({ slug }: { slug: string }) {
       </div>
 
       <section className={`${MEASURE} pt-5`}>
-        <Eyebrow>Your trip</Eyebrow>
-        <h1 className="type-display mt-2.5">{dest.name}</h1>
-        <p className="type-secondary mt-2.5">
-          {window.label} · {window.nights} nights · {brief.partySize}{' '}
-          {brief.partySize === 1 ? 'person' : 'people'} · {describeDriver(brief.driver)}
-        </p>
+        <h1 className="type-display">{dest.name}</h1>
+        <TripFacts
+          className="mt-3"
+          windowLabel={window.label}
+          nights={window.nights}
+          partySize={brief.partySize}
+          driver={brief.driver}
+        />
       </section>
 
       {quote.perPersonTotal === null ? (
@@ -210,13 +212,17 @@ function LockedRow({
 
       <div className="min-w-0 flex-1">
         <p className="text-[0.9375rem] font-bold leading-snug">{row.title}</p>
-        <p className="type-body mt-0.5 text-muted">{row.detail.filter(Boolean).join(' · ')}</p>
+        <p className="type-body mt-0.5 flex flex-wrap items-baseline gap-x-3.5 gap-y-0.5 text-muted">
+          {row.detail.filter(Boolean).map((d) => (
+            <span key={d}>{d}</span>
+          ))}
+        </p>
 
         {!free ? (
           <SourceTag
             source={row.source}
             /* The check date, next to the number, every time. */
-            detail={row.checkedLabel ?? `${row.lines[0].provider} · not checked since ${row.lines[0].checkedOn}`}
+            detail={row.checkedLabel ?? `${row.lines[0].provider}, not checked since ${row.lines[0].checkedOn}`}
             className="mt-1.5"
           />
         ) : (
@@ -253,7 +259,7 @@ function FeeRow({ line, amount }: { line: CostLine; amount: number }) {
         
         <SourceTag
           source={line.source}
-          detail={`${line.provider} · checked ${line.checkedOn}`}
+          detail={`${line.provider}, checked ${line.checkedOn}`}
           className="mt-1.5"
         />
       </div>

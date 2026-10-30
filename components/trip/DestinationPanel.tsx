@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { DestinationPhotoFrame, GradientPlaceholder } from '@/components/ui/Photo';
-import { Eyebrow, SourceTag } from '@/components/ui/primitives';
+import { Label, SourceTag } from '@/components/ui/primitives';
+import { Facts, Named, PlaceTag } from '@/components/trip/facts';
 import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
 import { money, type TripQuote } from '@/lib/trip/quote';
 import type { Destination } from '@/lib/trip/types';
@@ -79,7 +80,7 @@ export function DestinationPanel({
         className="relative flex h-full w-full max-w-xl flex-col overflow-y-auto bg-ground shadow-[var(--shadow-lift)] focus:outline-none"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-hairline bg-ground/95 px-5 py-3.5 backdrop-blur">
-          <p className="type-eyebrow">{dest.eyebrow}</p>
+          <PlaceTag region={dest.region} miles={dest.drive.miles} />
           <button
             type="button"
             onClick={onClose}
@@ -129,7 +130,7 @@ export function DestinationPanel({
 
           {/* ------------------------------------------------ where the money goes */}
           <div className="mt-7">
-            <Eyebrow>Where the money goes</Eyebrow>
+            <Label>Where the money goes</Label>
 
             {quote.perPersonTotal === null ? (
               <p className="type-body mt-3">{quote.verdict}</p>
@@ -151,7 +152,7 @@ export function DestinationPanel({
 
           {/* ------------------------------------------------ what you actually go for */}
           <div className="mt-8">
-            <Eyebrow>What people go for</Eyebrow>
+            <Label>What people go for</Label>
             <ul className="mt-3.5 flex flex-col gap-3.5">
               {dest.itinerary.map((item) => (
                 <li key={item.title} className="flex gap-3.5">
@@ -165,9 +166,10 @@ export function DestinationPanel({
                   <div className="min-w-0">
                     <p className="text-[0.9375rem] font-bold">{item.title}</p>
                     
-                    <p className="type-body mt-1 text-muted">
-                      {item.cost} · {item.timeNeeded}
-                    </p>
+                    <Facts className="mt-1">
+                      <Named quiet>{item.cost}</Named>
+                      <Named quiet>{item.timeNeeded}</Named>
+                    </Facts>
                   </div>
                 </li>
               ))}

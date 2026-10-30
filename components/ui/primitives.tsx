@@ -18,14 +18,21 @@ export const MEASURE = 'mx-auto w-full max-w-6xl px-4 sm:px-8';
 
 /* ------------------------------------------------------------------ text */
 
-export function Eyebrow({
+/**
+ * What a group of content or a figure is called.
+ *
+ * Named Label rather than Eyebrow on purpose. "Eyebrow" is a name for a position on the page,
+ * so anything could be put there and was; a label has to be the name of something, which is a
+ * question you have to answer before you add one.
+ */
+export function Label({
   children,
   className = '',
 }: {
   children: ReactNode;
   className?: string;
 }) {
-  return <p className={`type-eyebrow ${className}`}>{children}</p>;
+  return <p className={`type-label ${className}`}>{children}</p>;
 }
 
 /* ------------------------------------------------------------------ surfaces */

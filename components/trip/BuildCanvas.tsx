@@ -7,9 +7,9 @@ import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { CostIcon, type IconName } from '@/components/ui/icons';
 import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
 import { DestinationPhotoFrame } from '@/components/ui/Photo';
-import { Button, Card, Eyebrow, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { Button, Card, Label, MEASURE, SourceTag, Total } from '@/components/ui/primitives';
+import { PlaceTag, TripFacts } from '@/components/trip/facts';
 import { useBrief } from '@/components/trip/ControlStrip';
-import { describeDriver } from '@/lib/trip/brief';
 import { DESTINATIONS_BY_SLUG, WINDOWS } from '@/lib/trip/catalogue';
 import {
   money,
@@ -141,7 +141,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
             /* The hero carries a scrim and a title; a credit line under it would sit on the
                page rather than the picture, so this one reveals on hover. */
             credit="hover"
-            className="absolute inset-0 [&>div]:h-full [&>div]:w-full [&>div>div]:h-full"
+            className="absolute inset-0 [&>div]:h-full [&>div]:w-full"
           />
           {/* Weighted to the bottom, so the picture keeps its top two thirds. */}
           <div
@@ -159,9 +159,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
                 style={{ background: `var(--${dest.tone})` }}
                 aria-hidden
               />
-              <span className="type-eyebrow" style={{ color: 'rgba(255,253,248,0.88)' }}>
-                {dest.eyebrow}
-              </span>
+              <PlaceTag region={dest.region} miles={dest.drive.miles} onPhoto />
             </span>
             <h1 className="type-display mt-2" style={{ color: 'var(--paper)' }}>
               {dest.name}
@@ -175,11 +173,13 @@ export function BuildCanvas({ slug }: { slug: string }) {
       </section>
 
       <section className={`${MEASURE} mt-7`}>
-        <p className="type-secondary">
-          {window.label} · {window.nights} nights · {partySize}{' '}
-          {partySize === 1 ? 'person' : 'people'} · {describeDriver(driver)}
-          {brief.windowId === null ? ' · cheapest of the warmed weekends' : ''}
-        </p>
+        <TripFacts
+          windowLabel={window.label}
+          nights={window.nights}
+          partySize={partySize}
+          driver={driver}
+          note={brief.windowId === null ? 'cheapest of the warmed weekends' : null}
+        />
       </section>
 
       {!quote.reachable ? (
@@ -242,7 +242,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
           <Card className="p-4 sm:p-5">
             <div className="flex items-center gap-2.5">
               <CostIcon name="ticket" category="fees" size={30} />
-              <Eyebrow>Entry and fees</Eyebrow>
+              <Label>Entry and fees</Label>
             </div>
             <ul className="mt-3.5 flex flex-col gap-3">
               {quote.fees.lines.map((line) => (
@@ -251,7 +251,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
                     <span className="text-[0.9375rem] font-semibold">{line.label}</span>
                     <SourceTag
                       source={line.source}
-                      detail={`${line.provider} · ${hostOf(line.url)}`}
+                      detail={`${line.provider}, ${hostOf(line.url)}`}
                     />
                   </span>
                   <span className="type-figure shrink-0 text-[1rem]">
@@ -269,10 +269,6 @@ export function BuildCanvas({ slug }: { slug: string }) {
         <>
           <section className={`${MEASURE} mt-5`}>
             <Card className="p-5 sm:p-7">
-              <Eyebrow>
-                {window.label} · {partySize} {partySize === 1 ? 'person' : 'people'}
-              </Eyebrow>
-
               {quote.perPersonTotal === null ? (
                 <p className="mt-3 text-[0.9375rem] font-bold">Not reachable</p>
               ) : (
@@ -328,7 +324,7 @@ export function BuildCanvas({ slug }: { slug: string }) {
               <ul className="divide-y divide-hairline border-t border-hairline">
                 {dest.itinerary.map((item) => (
                   <li key={item.title} className="p-4 sm:p-5">
-                    <Eyebrow>{item.eyebrow}</Eyebrow>
+                    <Label>{item.when}</Label>
                     <p className="mt-1.5 text-[0.9375rem] font-bold">{item.title}</p>
                     <p className="type-body mt-1.5 text-muted">{item.what}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.8125rem]">
@@ -377,12 +373,14 @@ function AssembledRow({
           <p className={`text-[1rem] font-bold leading-snug ${unavailable ? 'text-muted' : ''}`}>
             {row.title}
           </p>
-          <p className="type-body mt-1 flex flex-wrap items-center gap-x-1.5 text-muted">
-            <span>{row.detail.filter(Boolean).join(' · ')}</span>
+          <p className="type-body mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5 text-muted">
+            {row.detail.filter(Boolean).map((d) => (
+              <span key={d}>{d}</span>
+            ))}
             {row.lines.length > 0 ? (
               <SourceTag
                 source={row.source}
-                detail={row.checkedLabel ?? `${row.lines[0].provider} · ${hostOf(row.lines[0].url)}`}
+                detail={row.checkedLabel ?? `${row.lines[0].provider}, ${hostOf(row.lines[0].url)}`}
               />
             ) : null}
           </p>
@@ -520,7 +518,7 @@ function RunningTotal({ current, preview }: { current: number; preview: number |
   return (
     <div className="mx-auto mb-4 flex w-full max-w-3xl items-center justify-between gap-4 rounded-[14px] border border-hairline bg-paper px-4 py-3">
       <div>
-        <Eyebrow>Running total</Eyebrow>
+        <Label>Running total</Label>
         <p className="type-figure mt-0.5 text-[1.375rem]">
           <AnimatedMoney value={showing} /> <span className="type-secondary">a head</span>
         </p>

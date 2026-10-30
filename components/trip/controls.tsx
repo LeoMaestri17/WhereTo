@@ -232,7 +232,7 @@ export function DatesEditor({
       {WINDOWS.map((w) => (
         <ScrubCell key={w.id} on={value === w.id} tone="var(--butter)" onClick={() => onChange(w.id)}>
           <span className="text-[0.75rem] font-bold">{w.label.split(' ')[0]}</span>
-          <span className="type-eyebrow mt-0.5 text-[0.5625rem] tracking-[0.1em]">
+          <span className="mt-0.5 text-[0.625rem] font-semibold text-muted">
             {w.label.split(' ').slice(1).join(' ')}
           </span>
         </ScrubCell>

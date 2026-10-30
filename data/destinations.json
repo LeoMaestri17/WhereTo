@@ -3,7 +3,6 @@
     "slug": "zion",
     "name": "Zion National Park",
     "region": "Southern Utah",
-    "eyebrow": "Utah · 430 miles",
     "hook": "Seven hours each way, which is exactly why nobody organises it and why it is worth organising.",
     "whySeason": "The best month there is. Highs in the mid-seventies, the cottonwoods along the Virgin River turning, and the summer crowds gone. The shuttle is still running, which matters more than it sounds.",
     "image": "/assets/zion.webp",
@@ -62,43 +61,43 @@
     "itinerary": [
       {
         "title": "Watchman Trail at dusk",
-        "eyebrow": "Friday evening",
         "what": "After seven hours in a car you want the canyon to mean something before bed, and this is the one Zion hike that starts from the Visitor Center car park itself — no shuttle, no timing.3.3 miles round trip, about 480 feet of climb, roughly two hours on sandy uneven ground. It ends on a bench looking down the canyon at the Watchman with the lights of Springdale coming on below.",
         "cost": "Free, beyond park entry",
         "costSource": "https://www.nps.gov/thingstodo/hike-watchman-trail.htm",
         "needsCar": false,
         "timeNeeded": "2 hours",
-        "catch": "The trail is unlit, has drop-offs and steps up to 24 inches, and in early October the canyon walls take the light long before the sky goes dark. Start two hours before sunset, not one, or you finish the descent by phone torch on sandy rock."
+        "catch": "The trail is unlit, has drop-offs and steps up to 24 inches, and in early October the canyon walls take the light long before the sky goes dark. Start two hours before sunset, not one, or you finish the descent by phone torch on sandy rock.",
+        "when": "Friday evening"
       },
       {
         "title": "Angels Landing chains",
-        "eyebrow": "Saturday, dawn",
         "what": "The reason to do this is not the summit photograph, it is the half mile before it: a ridge a few feet wide with what the park itself calls drop-offs of as much as 1,000 feet on each side, moving hand over hand along bolted chains. From The Grotto it is 1.9 miles and 1,187 feet to Scout Lookout, then the final half mile on the chains. Scout Lookout needs no permit at all and gets you the same view.",
         "cost": "$6 per application, plus $3 per person if drawn",
         "costSource": "https://www.nps.gov/zion/planyourvisit/angels-landing-hiking-permits.htm",
         "needsCar": false,
         "timeNeeded": "5 to 6 hours door to door",
-        "catch": "The seasonal lottery covering every date from 1 September to 30 November closed on 20 July 2026 — it is gone. All that is left is the day-before lottery, which shuts at 3pm Mountain Time the day before you hike, so you apply from the car on Friday and find out after you have already arrived. Plan the weekend so a no costs you nothing."
+        "catch": "The seasonal lottery covering every date from 1 September to 30 November closed on 20 July 2026 — it is gone. All that is left is the day-before lottery, which shuts at 3pm Mountain Time the day before you hike, so you apply from the car on Friday and find out after you have already arrived. Plan the weekend so a no costs you nothing.",
+        "when": "Saturday, dawn"
       },
       {
         "title": "The Narrows, bottom up",
-        "eyebrow": "Saturday, afternoon",
         "what": "You walk up the Virgin River itself between walls a thousand feet high and twenty feet apart. From the Temple of Sinawava the paved Riverside Walk runs a mile to where the path ends and the river becomes the trail. Go as far as Mystery Falls or push on to Wall Street — there is no summit, so you turn round when you have had enough.",
         "cost": "Free from the bottom. No permit needed.",
         "costSource": "https://www.nps.gov/zion/planyourvisit/thenarrows.htm",
         "needsCar": false,
         "timeNeeded": "3 to 5 hours",
-        "catch": "In October the water is cold enough that outfitters in Springdale hire drysuits, and the river is the trail — there is nowhere to go if a flash flood comes down. Check the park’s flash flood forecast the morning you go and do not argue with it."
+        "catch": "In October the water is cold enough that outfitters in Springdale hire drysuits, and the river is the trail — there is nowhere to go if a flash flood comes down. Check the park’s flash flood forecast the morning you go and do not argue with it.",
+        "when": "Saturday, afternoon"
       },
       {
         "title": "Canyon Overlook at sunrise",
-        "eyebrow": "Sunday, early",
         "what": "A mile round trip for a view most people drive past. It sits just east of the Mount Carmel tunnel, which is one of the few stretches of the park you are still allowed to drive, so it works on the way out. Half an hour up, and the whole lower canyon opens underneath you.",
         "cost": "Free, beyond park entry",
         "costSource": "https://www.nps.gov/thingstodo/hike-canyon-overlook-trail.htm",
         "needsCar": true,
         "timeNeeded": "1 hour, plus the drive to the trailhead",
-        "catch": "The car park holds about a dozen cars and fills before dawn on an October weekend. The overflow is roadside on a blind bend in a tunnel approach, which is as bad an idea as it sounds."
+        "catch": "The car park holds about a dozen cars and fills before dawn on an October weekend. The overflow is roadside on a blind bend in a tunnel approach, which is as bad an idea as it sounds.",
+        "when": "Sunday, early"
       }
     ],
     "content": null,
@@ -121,7 +120,6 @@
     "slug": "san-francisco",
     "name": "San Francisco",
     "region": "Bay Area",
-    "eyebrow": "California · 380 miles",
     "hook": "An hour and a half in the air, and the only Californian city that works better without a car than with one.",
     "whySeason": "The warmest, clearest month of the San Francisco year, which is the opposite of what visitors expect. The summer fog has gone and the city gets the fortnight of proper weather it spends the rest of the year denying it has.",
     "image": "/assets/sanfrancisco.webp",
@@ -194,43 +192,43 @@
     "itinerary": [
       {
         "title": "The bridge by bike",
-        "eyebrow": "Saturday, morning",
         "what": "Hire a bike in the Marina, ride the bridge deck with the container ships going under you, and freewheel down into Sausalito for lunch. The ferry brings you and the bike back, which is the part that makes it a morning rather than a day.",
         "cost": "Bike hire and the Sausalito ferry",
         "costSource": "https://www.blazingsaddles.com/san-francisco/rentals",
         "needsCar": false,
         "timeNeeded": "4 hours",
-        "catch": "The bridge is loud, cold and busier with pedestrians than the photographs suggest, and the west footway is closed to bikes at weekends. Ride early — by noon you are threading a crowd."
+        "catch": "The bridge is loud, cold and busier with pedestrians than the photographs suggest, and the west footway is closed to bikes at weekends. Ride early — by noon you are threading a crowd.",
+        "when": "Saturday, morning"
       },
       {
         "title": "Alcatraz",
-        "eyebrow": "Book ahead",
         "what": "The cell house audio tour is narrated by men who were imprisoned there and guards who worked there, and it is better than it has any right to be. The boat is part of it — the city recedes behind you exactly as it did for them.",
         "cost": "Ferry and tour, from the official operator only",
         "costSource": "https://www.cityexperiences.com/san-francisco/city-cruises/alcatraz/",
         "needsCar": false,
         "timeNeeded": "3 hours",
-        "catch": "It sells out weeks ahead, and every same-day ticket you will be offered near the pier is a resale at a markup. If you have not booked before you fly, assume you are not going."
+        "catch": "It sells out weeks ahead, and every same-day ticket you will be offered near the pier is a resale at a markup. If you have not booked before you fly, assume you are not going.",
+        "when": "Book ahead"
       },
       {
         "title": "The Mission, for dinner",
-        "eyebrow": "Friday evening",
         "what": "The best-value eating in the city and the reason to land on a Friday rather than a Saturday. A burrito the size of a forearm for under fifteen dollars, murals down Balmy Alley, and the 14 Mission or the J Church gets you there from anywhere downtown.",
         "cost": "Around $12 to $16 for a burrito",
         "costSource": "https://www.lataqueriasf.com/",
         "needsCar": false,
         "timeNeeded": "2 hours",
-        "catch": "The bar scene here is the draw for a lot of people and all of it is 21 and over. Under 21 this is a food trip, and the food is genuinely the better half."
+        "catch": "The bar scene here is the draw for a lot of people and all of it is 21 and over. Under 21 this is a food trip, and the food is genuinely the better half.",
+        "when": "Friday evening"
       },
       {
         "title": "Lands End",
-        "eyebrow": "Sunday, early",
         "what": "A cliff path through cypress on the outer edge of the city, with the bridge appearing between the trees and the Sutro Baths ruins collapsing into the sea at the end of it. Almost nobody who visits San Francisco for a weekend does this, and it is the best hour the city has.",
         "cost": "Free",
         "costSource": "https://www.nps.gov/goga/planyourvisit/landsend.htm",
         "needsCar": false,
         "timeNeeded": "2 hours including the 38 Geary out and back",
-        "catch": "This is the one corner of the city where the fog does not read the calendar. It can be clear downtown and completely socked in at Lands End, and the bridge you came to see will simply not be there."
+        "catch": "This is the one corner of the city where the fog does not read the calendar. It can be clear downtown and completely socked in at Lands End, and the bridge you came to see will simply not be there.",
+        "when": "Sunday, early"
       }
     ],
     "content": null,
@@ -253,7 +251,6 @@
     "slug": "joshua-tree",
     "name": "Joshua Tree",
     "region": "High desert",
-    "eyebrow": "California · 145 miles",
     "hook": "Two and a half hours out and the sky does something you will not have seen in Europe.",
     "whySeason": "The month the desert becomes survivable again. Highs in the mid-eighties instead of the hundred-and-tens of summer, nights cold enough for a jacket, and the clearest skies of the year.",
     "image": "/assets/joshuatree.webp",
@@ -302,43 +299,43 @@
     "itinerary": [
       {
         "title": "Hidden Valley loop",
-        "eyebrow": "Saturday, morning",
         "what": "A mile round a bowl of rock that cattle rustlers supposedly used as a natural corral, and the fastest way to understand what the park actually is. Boulders the size of houses, Joshua trees at every angle, and the loop is flat enough to do in trainers.",
         "cost": "Free, beyond park entry",
         "costSource": "https://www.nps.gov/thingstodo/hike-hidden-valley-nature-trail.htm",
         "needsCar": true,
         "timeNeeded": "1 hour",
-        "catch": "It is the first stop inside the west entrance, so it takes the full weight of the day-trip traffic from about ten in the morning. Get there before nine and you will have it nearly to yourself."
+        "catch": "It is the first stop inside the west entrance, so it takes the full weight of the day-trip traffic from about ten in the morning. Get there before nine and you will have it nearly to yourself.",
+        "when": "Saturday, morning"
       },
       {
         "title": "Keys View at sunset",
-        "eyebrow": "Saturday, dusk",
         "what": "A five-thousand-foot viewpoint looking straight down onto the San Andreas Fault, the Coachella Valley and the Salton Sea, with San Jacinto opposite. You drive to it, which for once is the point — the light goes orange across the whole valley floor and you are standing above it.",
         "cost": "Free, beyond park entry",
         "costSource": "https://www.nps.gov/thingstodo/drive-keys-view.htm",
         "needsCar": true,
         "timeNeeded": "1 hour including the drive up",
-        "catch": "The wind at the top is genuinely cold after dark and there is no shelter. Also, the haze blowing in from Los Angeles can flatten the view entirely — a clear day in the park is not a clear view from Keys."
+        "catch": "The wind at the top is genuinely cold after dark and there is no shelter. Also, the haze blowing in from Los Angeles can flatten the view entirely — a clear day in the park is not a clear view from Keys.",
+        "when": "Saturday, dusk"
       },
       {
         "title": "The sky, after dark",
-        "eyebrow": "The real reason",
         "what": "This is what you came for and it costs nothing. Joshua Tree is a Dark Sky Park within reach of Los Angeles, and on a moonless night the Milky Way is a solid band with structure in it. Pull off anywhere along Park Boulevard, turn the engine and the lights off, and give your eyes twenty minutes.",
         "cost": "Free",
         "costSource": "https://www.nps.gov/jotr/planyourvisit/stargazing.htm",
         "needsCar": true,
         "timeNeeded": "An hour, and you will stay longer",
-        "catch": "A bright moon washes the whole thing out, so check the phase before you settle on dates. And the desert drops twenty-five degrees after sunset; people arrive in shorts and leave after ten minutes."
+        "catch": "A bright moon washes the whole thing out, so check the phase before you settle on dates. And the desert drops twenty-five degrees after sunset; people arrive in shorts and leave after ten minutes.",
+        "when": "The real reason"
       },
       {
         "title": "Jumbo Rocks scrambling",
-        "eyebrow": "Sunday, morning",
         "what": "No ropes, no skill, no guide. The granite here is coarse enough to walk up at angles that look impossible, and Skull Rock is at the roadside for the photograph. It is the most fun you can have in the park without equipment.",
         "cost": "Free, beyond park entry",
         "costSource": "https://www.nps.gov/jotr/planyourvisit/rock-climbing.htm",
         "needsCar": true,
         "timeNeeded": "2 hours",
-        "catch": "Coarse granite takes skin off, going down is much harder than going up, and there is no phone signal to call anybody if you misjudge it. Stay within what you can reverse."
+        "catch": "Coarse granite takes skin off, going down is much harder than going up, and there is no phone signal to call anybody if you misjudge it. Stay within what you can reverse.",
+        "when": "Sunday, morning"
       }
     ],
     "content": null,
@@ -361,7 +358,6 @@
     "slug": "san-diego",
     "name": "San Diego",
     "region": "SoCal coast",
-    "eyebrow": "SoCal coast · 120 miles",
     "hook": "The Surfliner runs along the sand for the last hour, and you never need a car once you arrive.",
     "whySeason": "Locals call it the second summer. The marine layer that greys out May and June is long gone, the water is at its warmest of the year, and the crowds went home in August.",
     "image": "/assets/sandiego.webp",
@@ -434,43 +430,43 @@
     "itinerary": [
       {
         "title": "La Jolla Cove",
-        "eyebrow": "Saturday, morning",
         "what": "Sea lions and harbour seals hauled out on the rocks at eye level, close enough that the smell is part of the experience. The cliff path above the cove runs a mile with the animals below you the whole way, and the water in the cove itself is the clearest in Southern California.",
         "cost": "Free",
         "costSource": "https://www.sandiego.gov/lifeguards/beaches/lajolla",
         "needsCar": false,
         "timeNeeded": "3 hours including the bus out",
-        "catch": "They are wild animals on a public beach and people get far too close for a photograph. There is a legally enforced distance, the bulls do charge, and the pupping-season closures move without much notice."
+        "catch": "They are wild animals on a public beach and people get far too close for a photograph. There is a legally enforced distance, the bulls do charge, and the pupping-season closures move without much notice.",
+        "when": "Saturday, morning"
       },
       {
         "title": "Balboa Park",
-        "eyebrow": "Saturday, afternoon",
         "what": "Fourteen hundred acres of Spanish Colonial Revival built for a 1915 exposition and never taken down, with seventeen museums inside it. Walking the grounds, the Botanical Building and the lily pond costs nothing, and that alone is worth the afternoon.",
         "cost": "Grounds free; museums charge individually",
         "costSource": "https://balboapark.org/",
         "needsCar": false,
         "timeNeeded": "4 hours",
-        "catch": "Paid parking arrived in January 2026, so arriving by car now costs you before you start — take the 7 bus. And seventeen museums is a trap: pick two, or you will spend the day queueing rather than looking."
+        "catch": "Paid parking arrived in January 2026, so arriving by car now costs you before you start — take the 7 bus. And seventeen museums is a trap: pick two, or you will spend the day queueing rather than looking.",
+        "when": "Saturday, afternoon"
       },
       {
         "title": "Sunset Cliffs",
-        "eyebrow": "Friday, dusk",
         "what": "A mile of eroding sandstone bluff on the western edge of Point Loma, facing directly into the sunset with nothing between you and Hawaii. It is where the city goes to watch the day end, and it is free.",
         "cost": "Free",
         "costSource": "https://www.sandiego.gov/park-and-recreation/parks/regional/shoreline/sunsetcliffs",
         "needsCar": false,
         "timeNeeded": "2 hours",
-        "catch": "The cliffs are actively crumbling and the fenced-off sections are fenced off for a reason — people fall from here every year, usually while stepping back for a photograph."
+        "catch": "The cliffs are actively crumbling and the fenced-off sections are fenced off for a reason — people fall from here every year, usually while stepping back for a photograph.",
+        "when": "Friday, dusk"
       },
       {
         "title": "The Gaslamp, or not",
-        "eyebrow": "Saturday night",
         "what": "Sixteen blocks of Victorian commercial buildings turned into the city’s going-out district, and the default answer to what to do on a Saturday night in San Diego.",
         "cost": "Free to walk; everything inside is not",
         "costSource": "https://www.gaslamp.org/",
         "needsCar": false,
         "timeNeeded": "An evening",
-        "catch": "After dark this is effectively a 21-and-over district — the bars card at the door and most of the venues will not admit you at all under 21. If that is the group, Little Italy two blocks north is restaurants rather than bars and stays open to everyone."
+        "catch": "After dark this is effectively a 21-and-over district — the bars card at the door and most of the venues will not admit you at all under 21. If that is the group, Little Italy two blocks north is restaurants rather than bars and stays open to everyone.",
+        "when": "Saturday night"
       }
     ],
     "content": null,
@@ -493,7 +489,6 @@
     "slug": "santa-barbara",
     "name": "Santa Barbara",
     "region": "Central coast",
-    "eyebrow": "Central coast · 95 miles",
     "hook": "Ninety minutes up the coast and the only beach town near LA that closes at a sensible hour.",
     "whySeason": "The fog that greys out June is long gone, the water is still warm, and the wine country behind the town is picking.",
     "image": null,
@@ -555,7 +550,6 @@
     "slug": "ventura",
     "name": "Ventura",
     "region": "Central coast",
-    "eyebrow": "Central coast · 70 miles",
     "hook": "The cheapest stretch of Californian coast you can reach before lunch, and the boat to the Channel Islands leaves from here.",
     "whySeason": "Clear and warm into November, and the island crossings run all winter.",
     "image": null,
@@ -617,7 +611,6 @@
     "slug": "pismo-beach",
     "name": "Pismo Beach",
     "region": "Central coast",
-    "eyebrow": "Central coast · 190 miles",
     "hook": "You can still drive on the sand here, which is not true anywhere else in California.",
     "whySeason": "The monarchs arrive in the grove through November and stay until February.",
     "image": null,
@@ -679,7 +672,6 @@
     "slug": "morro-bay",
     "name": "Morro Bay",
     "region": "Central coast",
-    "eyebrow": "Central coast · 200 miles",
     "hook": "A working fishing harbour under a volcanic plug, with otters in the bay and none of the Carmel prices.",
     "whySeason": "Quiet once the summer traffic goes, and the sea otters are easiest to find in cold water.",
     "image": null,
@@ -725,7 +717,6 @@
     "slug": "monterey",
     "name": "Monterey",
     "region": "Central coast",
-    "eyebrow": "Central coast · 330 miles",
     "hook": "The aquarium is the best in the country and the rest of the peninsula is free.",
     "whySeason": "Grey whales start moving south past Point Pinos through December.",
     "image": null,
@@ -771,7 +762,6 @@
     "slug": "carmel",
     "name": "Carmel-by-the-Sea",
     "region": "Central coast",
-    "eyebrow": "Central coast · 335 miles",
     "hook": "Expensive to sleep in, free to walk through, and the start of the Big Sur road.",
     "whySeason": "Clear winter light, and the hotels drop their rates the moment summer ends.",
     "image": null,
@@ -817,7 +807,6 @@
     "slug": "laguna-beach",
     "name": "Laguna Beach",
     "region": "Orange County",
-    "eyebrow": "Orange County · 60 miles",
     "hook": "Thirty coves strung along six miles, most of them reachable only on foot.",
     "whySeason": "The water holds its summer temperature into October and the crowds do not.",
     "image": null,
@@ -863,7 +852,6 @@
     "slug": "palm-springs",
     "name": "Palm Springs",
     "region": "Low desert",
-    "eyebrow": "Low desert · 110 miles",
     "hook": "A tram that climbs 8,500 feet in ten minutes, from desert floor to pine forest.",
     "whySeason": "The month the desert becomes pleasant again, and the mid-century hotels drop off their summer peak.",
     "image": null,
@@ -909,7 +897,6 @@
     "slug": "big-bear-lake",
     "name": "Big Bear Lake",
     "region": "San Bernardino",
-    "eyebrow": "San Bernardino · 100 miles",
     "hook": "Two hours from the beach to seven thousand feet, and the first snow usually lands in November.",
     "whySeason": "The lake is quiet between the summer boats and the ski season opening.",
     "image": null,
@@ -955,7 +942,6 @@
     "slug": "idyllwild",
     "name": "Idyllwild",
     "region": "San Jacinto",
-    "eyebrow": "San Jacinto · 110 miles",
     "hook": "A pine village with no chain anything, and granite walls that taught half of American climbing.",
     "whySeason": "Cold enough for the fires to be lit, warm enough to climb in the afternoon.",
     "image": null,
@@ -1001,7 +987,6 @@
     "slug": "mammoth-lakes",
     "name": "Mammoth Lakes",
     "region": "Eastern Sierra",
-    "eyebrow": "Eastern Sierra · 310 miles",
     "hook": "The 395 up the back of the Sierra is the best road in the state and almost nobody drives it.",
     "whySeason": "The season turns here first. Expect snow on the passes from November.",
     "image": null,
@@ -1047,7 +1032,6 @@
     "slug": "lake-tahoe",
     "name": "Lake Tahoe",
     "region": "Sierra Nevada",
-    "eyebrow": "Sierra Nevada · 470 miles",
     "hook": "Eight hours is a lot, but it is the clearest big lake in the country and the only one with ski lifts on its shore.",
     "whySeason": "Between seasons: the summer crowds have gone and the lifts have not opened, so everything is cheap.",
     "image": null,
@@ -1093,7 +1077,6 @@
     "slug": "solvang",
     "name": "Solvang",
     "region": "Santa Ynez",
-    "eyebrow": "Santa Ynez · 130 miles",
     "hook": "A Danish village built by actual Danes, surrounded by the vineyards that made the valley famous.",
     "whySeason": "Harvest is finished, the tasting rooms are quiet, and the town lights up for Christmas from late November.",
     "image": null,
@@ -1139,7 +1122,6 @@
     "slug": "ojai",
     "name": "Ojai",
     "region": "Ventura County",
-    "eyebrow": "Ventura County · 80 miles",
     "hook": "A valley with no traffic lights on its main street and a sunset that turns the mountains pink.",
     "whySeason": "The pink moment is sharpest in cold clear air, and the citrus is coming in.",
     "image": null,
@@ -1185,7 +1167,6 @@
     "slug": "temecula",
     "name": "Temecula",
     "region": "Inland",
-    "eyebrow": "Inland · 90 miles",
     "hook": "Forty wineries ninety minutes from campus, and the balloons go up at dawn.",
     "whySeason": "Crush is over and the tasting rooms stop charging summer prices.",
     "image": null,
@@ -1231,7 +1212,6 @@
     "slug": "las-vegas",
     "name": "Las Vegas",
     "region": "Nevada",
-    "eyebrow": "Nevada · 270 miles",
     "hook": "Beds cost less than anywhere else on this list, and Red Rock Canyon is twenty minutes from the Strip.",
     "whySeason": "The only months you can walk outside all day. Hotel rates sit at their lowest between the summer and the holidays.",
     "image": null,

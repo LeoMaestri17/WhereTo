@@ -107,33 +107,47 @@ export function DestinationPhotoFrame({
     );
   }
 
+  /*
+   * No wrapper element around the Photo, and no unconditional `relative`.
+   *
+   * Both of those cost an hour between them. Callers reach through this component with
+   * depth-based selectors like [&>div]:h-full to make a frame fill its container, so an extra
+   * level breaks them silently — the group and the positioning context live on the outer div,
+   * which was already here.
+   *
+   * And `relative` cannot be hardcoded alongside a caller's class string. Tailwind resolves two
+   * position utilities by their order in the generated stylesheet, not by their order in the
+   * attribute, so `relative` beat the trip hero's `absolute inset-0`, the inset did nothing, and
+   * the hero photograph sat 39px short of its own 200px box from the day it was written. A
+   * caller that positions the frame itself has already given us a containing block.
+   */
+  const positioned = /(?:^|\s)(?:absolute|fixed|sticky|relative)(?:\s|$)/.test(className);
+
   return (
-    <div className={`relative ${className}`}>
-      <div className="group/credit relative">
-        <Photo
-          src={photo.url}
-          alt={photo.alt || name}
-          /* The gradient that stands in if the photograph fails says where you are going, not
-             what the photographer called their picture. */
-          label={name}
-          ratio={ratio}
-          sizes={sizes}
-          priority={priority}
-          eager={eager}
-          rounded={rounded}
-        />
-        {credit === 'hover' ? (
-          <a
-            href={photo.authorUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="wt-ease absolute bottom-2 right-2 z-10 rounded-full bg-[rgba(42,40,35,0.6)] px-2 py-0.5 text-[0.6875rem] font-medium text-paper opacity-0 backdrop-blur-sm group-hover/credit:opacity-100 focus-visible:opacity-100"
-          >
-            {photo.author}
-          </a>
-        ) : null}
-      </div>
+    <div className={`group/credit ${positioned ? '' : 'relative'} ${className}`}>
+      <Photo
+        src={photo.url}
+        alt={photo.alt || name}
+        /* The gradient that stands in if the photograph fails says where you are going, not
+           what the photographer called their picture. */
+        label={name}
+        ratio={ratio}
+        sizes={sizes}
+        priority={priority}
+        eager={eager}
+        rounded={rounded}
+      />
+      {credit === 'hover' ? (
+        <a
+          href={photo.authorUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="wt-ease absolute bottom-2 right-2 z-10 rounded-full bg-[rgba(42,40,35,0.6)] px-2 py-0.5 text-[0.6875rem] font-medium text-paper opacity-0 backdrop-blur-sm group-hover/credit:opacity-100 focus-visible:opacity-100"
+        >
+          {photo.author}
+        </a>
+      ) : null}
       {credit === 'line' ? (
         <p className="mt-1.5 text-[0.6875rem] text-faint">
           Photograph by{' '}

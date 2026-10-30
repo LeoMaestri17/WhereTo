@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { AnimatedMoney } from '@/components/ui/AnimatedMoney';
 import { DestinationPhotoFrame } from '@/components/ui/Photo';
-import { Card, Eyebrow, MEASURE, SourceTag } from '@/components/ui/primitives';
+import { Card, MEASURE, SourceTag } from '@/components/ui/primitives';
+import { PlaceTag } from '@/components/trip/facts';
 import { useBrief } from '@/components/trip/ControlStrip';
 import { DestinationPanel } from '@/components/trip/DestinationPanel';
 import { MoneyBar, partsFromQuote } from '@/components/trip/MoneyBar';
@@ -114,19 +115,16 @@ export function DiscoveryBoard() {
       {/* A status line, not a pitch: it reports the state of your own search and changes when
           you change a chip. The board starts inside the first screenful. */}
       <section className={`${MEASURE} pt-5`}>
-        <p className="type-secondary flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-bold text-ink">{DESTINATIONS.length} places</span>
-          <span aria-hidden>·</span>
-          <span>from {ORIGIN.city}</span>
-          <span aria-hidden>·</span>
+        <p className="type-secondary flex flex-wrap items-baseline gap-x-5 gap-y-1">
+          <span>
+            <span className="type-figure text-ink">{DESTINATIONS.length}</span> places from{' '}
+            {ORIGIN.city}
+          </span>
           <span>{describeWindow(brief.windowId)}</span>
           {range ? (
-            <>
-              <span aria-hidden>·</span>
-              <span className="font-bold text-ink">
-                {money(range.low)} to {money(range.high)} a head
-              </span>
-            </>
+            <span className="font-semibold text-ink">
+              {money(range.low)} to {money(range.high)} a head
+            </span>
           ) : null}
         </p>
       </section>
@@ -248,7 +246,11 @@ function BoardCard({
       interactive
       onMouseEnter={() => onHover?.(dest.slug)}
       onMouseLeave={() => onHover?.(null)}
-      className="wt-card relative h-full overflow-hidden"
+      /* group/credit, not on the photo frame where it would read more naturally. The heading's
+         stretched link covers the whole card with an ::after overlay, so the pointer hit-tests
+         to the heading and the frame underneath never matches :hover — the credit stayed
+         invisible on every card. The group has to sit on an element that is genuinely hovered. */
+      className="wt-card group/credit relative h-full overflow-hidden"
       style={{ ['--tone' as string]: `var(--${dest.tone})` }}
     >
       <div className="relative overflow-hidden">
@@ -275,7 +277,7 @@ function BoardCard({
               style={{ background: `var(--${dest.tone})` }}
               aria-hidden
             />
-            <Eyebrow>{dest.eyebrow}</Eyebrow>
+            <PlaceTag region={dest.region} miles={dest.drive.miles} />
           </span>
           <h2 className="type-title mt-1.5">
             <button

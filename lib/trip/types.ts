@@ -103,8 +103,18 @@ export interface DestinationPhoto {
 
 export interface ItineraryItem {
   title: string;
-  /** Tracked-out caps label. One to three words. */
-  eyebrow: string;
+  /**
+   * When in the weekend this happens: "Saturday, dawn", "Friday evening".
+   *
+   * Called `eyebrow` until the presentation was the name — the doc comment on it read "tracked-out
+   * caps label", which described a text-transform rather than any fact about the trip. A field
+   * named after how it is set will be set that way forever.
+   *
+   * Not every one is a time. "Book ahead" and "The real reason" earn their place in the same slot
+   * because what they answer is still "when does this come up", and a list of sixteen that is
+   * mostly a sequence is not a sequence worth drawing a timeline spine down.
+   */
+  when: string;
   what: string;
   /** Human cost string: "Free, beyond park entry", "$6 per application". */
   cost: string;
@@ -152,9 +162,8 @@ export interface GeneratedContent {
 export interface Destination {
   slug: string;
   name: string;
+  /** "Southern Utah", "Bay Area". Rendered with the mileage by `PlaceTag`. */
   region: string;
-  /** "Utah · 430 miles". */
-  eyebrow: string;
   /** One line: why go, never what it is. */
   hook: string;
   /** What early winter is actually like there. */
