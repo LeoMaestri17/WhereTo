@@ -63,6 +63,80 @@ function ringFeature(hours: number) {
  */
 export const MAP_AVAILABLE = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
 
+/**
+ * The cream palette, applied to Mapbox's own layers.
+ *
+ * This used to be a CSS filter on the canvas — sepia, desaturate, hue-rotate — which worked in
+ * the sense that the map came out cream, and failed in the sense that it also went through the
+ * drive-time bands drawn on that same canvas. The bands are the one thing on this map nobody
+ * else offers and they were the faintest thing on it. Desaturating the base map and the data
+ * drawn over it with one instruction can only ever do that.
+ *
+ * Matching is on `source-layer`, which is the Mapbox Streets v8 tile schema — `water`, `road`,
+ * `admin` — and not on layer ids. An earlier attempt matched ids, which Mapbox renames between
+ * style versions, so it silently coloured nothing. Each layer is set inside its own try/catch
+ * because one layer rejecting a paint property should cost that layer, not the whole map.
+ */
+const MAP_PALETTE = {
+  ground: '#f8f2e6',
+  water: '#bcdcee',
+  landuse: '#eef0e4',
+  road: '#e8dfcd',
+  roadMajor: '#ddd2bc',
+  admin: 'rgba(42, 40, 35, 0.22)',
+  label: '#8a8275',
+  labelHalo: '#f8f2e6',
+} as const;
+
+/** Only the properties this function sets; Mapbox types the full list as a 300-member union. */
+type PaintProp =
+  | 'background-color'
+  | 'fill-color'
+  | 'line-color'
+  | 'text-color'
+  | 'text-halo-color';
+
+function paintBaseMap(m: mapboxgl.Map) {
+  let layers: mapboxgl.Layer[];
+  try {
+    layers = (m.getStyle()?.layers ?? []) as mapboxgl.Layer[];
+  } catch {
+    return;
+  }
+
+  for (const layer of layers) {
+    // Our own layers are already the colour we want them.
+    if (layer.id.startsWith('band-')) continue;
+
+    const source = (layer as { 'source-layer'?: string })['source-layer'] ?? '';
+    const set = (prop: PaintProp, value: string) => {
+      try {
+        m.setPaintProperty(layer.id, prop, value);
+      } catch {
+        // A layer that does not carry this property is not an error worth stopping for.
+      }
+    };
+
+    if (layer.type === 'background') {
+      set('background-color', MAP_PALETTE.ground);
+    } else if (layer.type === 'fill') {
+      if (source === 'water' || source === 'waterway') set('fill-color', MAP_PALETTE.water);
+      else if (source === 'landuse' || source === 'landuse_overlay')
+        set('fill-color', MAP_PALETTE.landuse);
+      else set('fill-color', MAP_PALETTE.ground);
+    } else if (layer.type === 'line') {
+      if (source === 'water' || source === 'waterway') set('line-color', MAP_PALETTE.water);
+      else if (source === 'admin') set('line-color', MAP_PALETTE.admin);
+      else if (source === 'road' || source === 'aeroway')
+        set('line-color', layer.id.includes('motorway') ? MAP_PALETTE.roadMajor : MAP_PALETTE.road);
+      else set('line-color', MAP_PALETTE.road);
+    } else if (layer.type === 'symbol') {
+      set('text-color', MAP_PALETTE.label);
+      set('text-halo-color', MAP_PALETTE.labelHalo);
+    }
+  }
+}
+
 export interface MapPin {
   dest: Destination;
   perPerson: number | null;
@@ -152,6 +226,9 @@ export function MapView({
     m.on('zoom', () => relayout.current());
 
     m.on('load', () => {
+      /* The bands go on before the recolouring, not after. A previous version painted the base
+         map first, threw partway through, and took the bands down with it — the feature that
+         justifies having a map at all vanished because of a styling error. */
       m.addSource('bands', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: BANDS.map(ringFeature) },
@@ -162,16 +239,23 @@ export function MapView({
         type: 'fill',
         source: 'bands',
         paint: {
-          'fill-color': '#A7B0E7',
-          'fill-opacity': ['interpolate', ['linear'], ['get', 'hours'], 2, 0.16, 6, 0.05],
+          'fill-color': '#a7b0e7',
+          'fill-opacity': ['interpolate', ['linear'], ['get', 'hours'], 2, 0.2, 6, 0.07],
         },
       });
       m.addLayer({
         id: 'band-line',
         type: 'line',
         source: 'bands',
-        paint: { 'line-color': '#7C88DC', 'line-width': 1, 'line-opacity': 0.4, 'line-dasharray': [3, 3] },
+        paint: {
+          'line-color': '#7c88dc',
+          'line-width': 1.25,
+          'line-opacity': 0.55,
+          'line-dasharray': [4, 3],
+        },
       });
+
+      paintBaseMap(m);
 
       const origin = document.createElement('div');
       origin.className = 'wt-origin-dot';
@@ -237,8 +321,11 @@ export function MapView({
   return (
     <div className="relative">
       <div ref={container} className="wt-map h-[62vh] w-full overflow-hidden rounded-[14px]" />
-      {/* The rings are approximate, and say so once rather than on every pin. */}
-      <div className="pointer-events-none absolute bottom-3 left-3 rounded-[10px] border border-hairline bg-paper/92 px-3 py-2 backdrop-blur">
+      {/* The rings are approximate, and say so once rather than on every pin.
+
+          Top-left, not bottom-left, where it covered the Mapbox wordmark. Their terms require
+          that attribution stay visible, so this is not a matter of taste. */}
+      <div className="pointer-events-none absolute left-3 top-3 rounded-[10px] border border-hairline bg-paper/92 px-3 py-2 backdrop-blur">
         <p className="type-label">Drive time from campus</p>
         <p className="type-body mt-1 text-muted">
           Rings at 2, 4 and 6 hours, about {ASSUMED_MPH} mph

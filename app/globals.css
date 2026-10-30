@@ -386,10 +386,6 @@ body {
    them, and by type, which flattens the map because not every fill is land. A filter cannot miss
    a layer and keeps the contrast the cartographers chose. Markers are DOM siblings of the canvas,
    so the price pins keep their true colours. */
-.wt-map .mapboxgl-canvas {
-  filter: sepia(0.42) saturate(0.78) hue-rotate(-8deg) brightness(1.04) contrast(0.96);
-}
-
 /* ------------------------------------------------------------------ map
 
    A price pin, not a generic marker: the number is the point, so it is the pin. */
