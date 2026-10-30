@@ -71,6 +71,20 @@ export function MapView({
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Record<string, mapboxgl.Marker>>({});
+  const order = useRef<string[]>([]);
+  const frame = useRef<number | null>(null);
+
+  /*
+   * Price labels collide badly near the origin: Laguna, Temecula, Idyllwild, Big Bear and Palm
+   * Springs sit within a short radius and their labels overlap into an unreadable knot.
+   *
+   * So pins are laid out in screen space on every view change. Working in priority order, a pin
+   * whose label would overlap one already placed collapses to a dot instead. Nothing is removed
+   * and nothing is hidden: a collapsed pin keeps its position and its colour, expands on hover,
+   * and becomes a full label again as soon as zooming gives it room. Cheapest first, because
+   * that is the pin most worth being able to read.
+   */
+  const relayout = useRef(() => {});
 
   useEffect(() => {
     if (!container.current || map.current) return;
@@ -90,6 +104,41 @@ export function MapView({
       cooperativeGestures: true,
     });
     map.current = m;
+
+    const layout = () => {
+      const placed: { left: number; top: number; right: number; bottom: number }[] = [];
+      for (const slug of order.current) {
+        const marker = markers.current[slug];
+        if (!marker) continue;
+        const el = marker.getElement();
+
+        // Measure as a full label, or a pin that collapsed last pass never grows back.
+        el.classList.remove('is-dot');
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        const p = m.project(marker.getLngLat());
+        const box = {
+          left: p.x - w / 2,
+          top: p.y - h / 2,
+          right: p.x + w / 2,
+          bottom: p.y + h / 2,
+        };
+
+        const clashes = placed.some(
+          (q) => box.left < q.right && box.right > q.left && box.top < q.bottom && box.bottom > q.top,
+        );
+        if (clashes) el.classList.add('is-dot');
+        else placed.push(box);
+      }
+    };
+
+    relayout.current = () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current = requestAnimationFrame(layout);
+    };
+
+    m.on('move', () => relayout.current());
+    m.on('zoom', () => relayout.current());
 
     m.on('load', () => {
       m.addSource('bands', {
@@ -155,12 +204,22 @@ export function MapView({
         .setLngLat(pin.dest.coords)
         .addTo(m);
     }
+
+    order.current = [...pins]
+      .filter((p) => p.dest.coords)
+      .sort((a, b) => (a.perPerson ?? Infinity) - (b.perPerson ?? Infinity))
+      .map((p) => p.dest.slug);
+    relayout.current();
   }, [pins, onHover, onSelect]);
 
   /* Hovering a card raises its pin, which is the other half of the link. */
   useEffect(() => {
     for (const [slug, marker] of Object.entries(markers.current)) {
       marker.getElement().classList.toggle('is-active', slug === hovered);
+    }
+    if (hovered) {
+      order.current = [hovered, ...order.current.filter((s) => s !== hovered)];
+      relayout.current();
     }
   }, [hovered, pins]);
 
